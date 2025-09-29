@@ -1,0 +1,448 @@
+package vcmsa.projects.prog7314.ui.screens
+
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import kotlinx.coroutines.launch
+import vcmsa.projects.prog7314.R
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
+import vcmsa.projects.prog7314.utils.AuthManager
+import vcmsa.projects.prog7314.utils.AuthResult
+import vcmsa.projects.prog7314.utils.BiometricHelper
+
+@Composable
+fun LoginScreen(
+    onLoginSuccess: () -> Unit = {},
+    onNavigateToRegister: () -> Unit = {},
+    onForgotPassword: () -> Unit = {}
+) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var showBiometricPrompt by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val activity = context as? FragmentActivity
+    val coroutineScope = rememberCoroutineScope()
+
+    // Check if biometric login is available
+    val hasSavedCredentials = remember { AuthManager.hasSavedCredentials(context) }
+    val isBiometricEnabled = remember { BiometricHelper.isBiometricEnabled(context) }
+    val isBiometricAvailable = remember { BiometricHelper.isBiometricAvailable(context) }
+    val canUseBiometricLogin = hasSavedCredentials && isBiometricEnabled && isBiometricAvailable
+
+    // Auto-show biometric prompt for returning users
+    LaunchedEffect(canUseBiometricLogin) {
+        if (canUseBiometricLogin && activity != null && !showBiometricPrompt) {
+            showBiometricPrompt = true
+        }
+    }
+
+    // Show biometric prompt
+    if (showBiometricPrompt && activity != null && canUseBiometricLogin) {
+        LaunchedEffect(Unit) {
+            BiometricHelper.showBiometricLoginPrompt(
+                activity = activity,
+                onSuccess = {
+                    // Biometric authentication successful
+                    val offlineLoginSuccess = AuthManager.performOfflineLogin(context)
+                    if (offlineLoginSuccess) {
+                        Log.d("LoginScreen", "✅ Offline biometric login successful")
+                        onLoginSuccess()
+                    } else {
+                        showBiometricPrompt = false
+                        errorMessage = "Offline login failed. Please use password."
+                    }
+                },
+                onError = { error ->
+                    showBiometricPrompt = false
+                    Log.e("LoginScreen", "Biometric error: $error")
+                    // User can still use password login
+                }
+            )
+        }
+    }
+
+    // Google Sign-In launcher
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            // Sign in with Firebase using the Google account
+            coroutineScope.launch {
+                isLoading = true
+                when (val authResult = AuthManager.signInWithGoogle(account)) {
+                    is AuthResult.Success -> {
+                        // Save user profile to database
+                        val userId = authResult.user?.uid ?: ""
+                        val userEmail = authResult.user?.email ?: ""
+                        val username = authResult.user?.displayName ?: userEmail.substringBefore("@")
+
+                        val userRepo = RepositoryProvider.getUserProfileRepository(context)
+
+                        // Check if user profile exists
+                        val existingProfile = userRepo.getUserProfile(userId)
+                        if (existingProfile == null) {
+                            // Create new profile
+                            userRepo.createNewUserProfile(
+                                userId = userId,
+                                username = username,
+                                email = userEmail
+                            )
+                            Log.d("LoginScreen", "✅ New Google user profile created in database")
+                        } else {
+                            Log.d("LoginScreen", "✅ Existing Google user profile loaded")
+                        }
+
+                        isLoading = false
+                        onLoginSuccess()
+                    }
+                    is AuthResult.Error -> {
+                        isLoading = false
+                        errorMessage = authResult.message
+                    }
+                }
+            }
+        } catch (e: ApiException) {
+            isLoading = false
+            errorMessage = "Google sign-in failed: ${e.message}"
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF00BCD4), // Cyan
+                        Color(0xFF0288D1)  // Blue
+                    )
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Logo
+            Image(
+                painter = painterResource(id = R.drawable.transparent_logo),
+                contentDescription = "Memory Match Madness Logo",
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(bottom = 16.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            Text(
+                text = "TEST YOUR MEMORY SKILLS!",
+                fontSize = 14.sp,
+                color = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+
+            // Login Form Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.9f)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "LOGIN",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0288D1),
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+
+                    // Show saved email if biometric is available
+                    if (canUseBiometricLogin) {
+                        val savedEmail = AuthManager.getSavedEmail(context) ?: ""
+                        Text(
+                            text = "Welcome back, $savedEmail",
+                            fontSize = 14.sp,
+                            color = Color(0xFF0288D1),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Fingerprint Login Button
+                        Button(
+                            onClick = {
+                                showBiometricPrompt = true
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .padding(bottom = 16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF4CAF50) // Green
+                            ),
+                            shape = RoundedCornerShape(25.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = android.R.drawable.ic_secure),
+                                contentDescription = "Fingerprint",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp).padding(end = 8.dp)
+                            )
+                            Text(
+                                text = "LOGIN WITH FINGERPRINT",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Divider(modifier = Modifier.padding(vertical = 16.dp))
+
+                        Text(
+                            text = "or login with password",
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    // Error Message
+                    if (errorMessage.isNotEmpty()) {
+                        Text(
+                            text = errorMessage,
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    // Email Field
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            errorMessage = ""
+                        },
+                        label = { Text("Email Address") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        enabled = !isLoading
+                    )
+
+                    // Password Field
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            errorMessage = ""
+                        },
+                        label = { Text("Password") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp),
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        singleLine = true,
+                        enabled = !isLoading
+                    )
+
+                    // Login Button
+                    Button(
+                        onClick = {
+                            when {
+                                email.isEmpty() || password.isEmpty() -> {
+                                    errorMessage = "Please fill in all fields"
+                                }
+                                !email.contains("@") -> {
+                                    errorMessage = "Please enter a valid email address"
+                                }
+                                else -> {
+                                    isLoading = true
+                                    errorMessage = ""
+
+                                    // Firebase login
+                                    coroutineScope.launch {
+                                        when (val result = AuthManager.loginWithEmail(email, password)) {
+                                            is AuthResult.Success -> {
+                                                // Save user profile to database
+                                                val userId = result.user?.uid ?: ""
+                                                val userEmail = result.user?.email ?: ""
+                                                val username = userEmail.substringBefore("@")
+
+                                                val userRepo = RepositoryProvider.getUserProfileRepository(context)
+
+                                                // Check if user profile exists
+                                                val existingProfile = userRepo.getUserProfile(userId)
+                                                if (existingProfile == null) {
+                                                    // Create new profile
+                                                    userRepo.createNewUserProfile(
+                                                        userId = userId,
+                                                        username = username,
+                                                        email = userEmail
+                                                    )
+                                                    Log.d("LoginScreen", "✅ New user profile created in database")
+                                                } else {
+                                                    Log.d("LoginScreen", "✅ Existing user profile loaded")
+                                                }
+
+                                                isLoading = false
+                                                onLoginSuccess()
+                                            }
+                                            is AuthResult.Error -> {
+                                                isLoading = false
+                                                errorMessage = result.message
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .padding(bottom = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFF9800) // Orange
+                        ),
+                        shape = RoundedCornerShape(25.dp),
+                        enabled = !isLoading
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "PLAY NOW",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "or continue with",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+
+                    // Google Sign-In Button
+                    Button(
+                        onClick = {
+                            isLoading = true
+                            val signInIntent = AuthManager.getGoogleSignInIntent()
+                            if (signInIntent != null) {
+                                googleSignInLauncher.launch(signInIntent)
+                            } else {
+                                isLoading = false
+                                errorMessage = "Google Sign-In not initialized"
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .padding(bottom = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE91E63) // Pink
+                        ),
+                        shape = RoundedCornerShape(25.dp),
+                        enabled = !isLoading
+                    ) {
+                        Text(
+                            text = "SIGN IN WITH GOOGLE",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    // Forgot Password
+                    TextButton(
+                        onClick = {
+                            if (email.isNotEmpty() && email.contains("@")) {
+                                coroutineScope.launch {
+                                    when (val result = AuthManager.sendPasswordResetEmail(email)) {
+                                        is AuthResult.Success -> {
+                                            errorMessage = "Password reset email sent!"
+                                        }
+                                        is AuthResult.Error -> {
+                                            errorMessage = result.message
+                                        }
+                                    }
+                                }
+                            } else {
+                                errorMessage = "Enter your email address first"
+                            }
+                        },
+                        enabled = !isLoading
+                    ) {
+                        Text(
+                            text = "Forgot Password?",
+                            color = Color(0xFF0288D1)
+                        )
+                    }
+
+                    // Create Account
+                    TextButton(
+                        onClick = onNavigateToRegister,
+                        enabled = !isLoading
+                    ) {
+                        Text(
+                            text = "Create New Account",
+                            color = Color(0xFF0288D1)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen()
+}
