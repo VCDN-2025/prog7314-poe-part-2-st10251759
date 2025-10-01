@@ -17,18 +17,15 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.data.AppDatabase
-import vcmsa.projects.prog7314.data.entities.UserProfileEntity
+import vcmsa.projects.prog7314.data.models.GameTheme
+import vcmsa.projects.prog7314.data.models.GridSize
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.GameResultRepository
 import vcmsa.projects.prog7314.data.repository.AchievementRepository
 import vcmsa.projects.prog7314.data.repository.ApiRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.data.sync.SyncManager
-import vcmsa.projects.prog7314.ui.screens.LoadingScreen
-import vcmsa.projects.prog7314.ui.screens.LoginScreen
-import vcmsa.projects.prog7314.ui.screens.MainMenuScreen
-import vcmsa.projects.prog7314.ui.screens.RegisterScreen
-import vcmsa.projects.prog7314.ui.screens.SettingsScreen
+import vcmsa.projects.prog7314.ui.screens.*
 import vcmsa.projects.prog7314.ui.theme.PROG7314Theme
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.BiometricHelper
@@ -79,6 +76,7 @@ class MainActivity : FragmentActivity() {
         NetworkManager.cleanup()
         syncManager.cleanup()
     }
+
     private fun testApiConnection() {
         lifecycleScope.launch {
             try {
@@ -98,6 +96,7 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
+
     private fun testDatabase() {
         lifecycleScope.launch {
             try {
@@ -215,6 +214,12 @@ fun MemoryMatchMadnessApp() {
     var showBiometricDialog by remember { mutableStateOf(false) }
     var userEmail by remember { mutableStateOf("") }
 
+    // Adventure Mode navigation states
+    var showThemeSelection by remember { mutableStateOf(false) }
+    var showGridSelection by remember { mutableStateOf(false) }
+    var selectedTheme by remember { mutableStateOf<GameTheme?>(null) }
+    var selectedGridSize by remember { mutableStateOf<GridSize?>(null) }
+
     val context = LocalContext.current
     val activity = context as? FragmentActivity
     val coroutineScope = rememberCoroutineScope()
@@ -297,6 +302,38 @@ fun MemoryMatchMadnessApp() {
             )
         }
 
+        showThemeSelection -> {
+            ThemeSelectionScreen(
+                onThemeSelected = { theme ->
+                    selectedTheme = theme
+                    showThemeSelection = false
+                    showGridSelection = true
+                },
+                onBackClick = {
+                    showThemeSelection = false
+                    showMainMenu = true
+                }
+            )
+        }
+
+        showGridSelection -> {
+            GridSizeSelectionScreen(
+                onGridSizeSelected = { gridSize ->
+                    selectedGridSize = gridSize
+                    showGridSelection = false
+                    // TODO: Navigate to Gameplay Screen
+                    // For now, go back to main menu
+                    Log.d("MainActivity", "Selected Theme: ${selectedTheme?.themeName}")
+                    Log.d("MainActivity", "Selected Grid: ${gridSize.gridLabel}")
+                    showMainMenu = true
+                },
+                onBackClick = {
+                    showGridSelection = false
+                    showThemeSelection = true
+                }
+            )
+        }
+
         showMainMenu -> {
             // Get user profile from database
             val currentUser = AuthManager.getCurrentUser()
@@ -319,7 +356,8 @@ fun MemoryMatchMadnessApp() {
                     // TODO: Navigate to Arcade Mode
                 },
                 onAdventureModeClick = {
-                    // TODO: Navigate to Adventure Mode
+                    showMainMenu = false
+                    showThemeSelection = true
                 },
                 onMultiplayerClick = {
                     // TODO: Navigate to Multiplayer
@@ -338,10 +376,10 @@ fun MemoryMatchMadnessApp() {
         }
 
         else -> {
-            // TODO: Main Game Screen will go here
-            androidx.compose.material3.Text(
+            // Fallback screen
+            Text(
                 text = "Authentication Successful! Game Screen Coming Soon...",
-                modifier = androidx.compose.ui.Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
