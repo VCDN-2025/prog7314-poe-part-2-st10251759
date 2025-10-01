@@ -21,6 +21,7 @@ import vcmsa.projects.prog7314.data.entities.UserProfileEntity
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.GameResultRepository
 import vcmsa.projects.prog7314.data.repository.AchievementRepository
+import vcmsa.projects.prog7314.data.repository.ApiRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.data.sync.SyncManager
 import vcmsa.projects.prog7314.ui.screens.LoadingScreen
@@ -47,6 +48,8 @@ class MainActivity : FragmentActivity() {
         // Initialize Google Sign-In
         AuthManager.initializeGoogleSignIn(this)
 
+        //test API
+        testApiConnection()
         // Initialize Network Manager
         NetworkManager.initialize(this)
 
@@ -76,7 +79,25 @@ class MainActivity : FragmentActivity() {
         NetworkManager.cleanup()
         syncManager.cleanup()
     }
+    private fun testApiConnection() {
+        lifecycleScope.launch {
+            try {
+                val apiRepo = ApiRepository()
 
+                // Test token verification
+                val tokenResult = apiRepo.verifyFirebaseToken()
+                if (tokenResult.isSuccess) {
+                    Log.d("MainActivity", "✅ API Connection Successful!")
+                    Log.d("MainActivity", "User ID: ${tokenResult.getOrNull()?.userId}")
+                } else {
+                    Log.e("MainActivity", "❌ API Connection Failed: ${tokenResult.exceptionOrNull()?.message}")
+                }
+
+            } catch (e: Exception) {
+                Log.e("MainActivity", "❌ API Test Error: ${e.message}", e)
+            }
+        }
+    }
     private fun testDatabase() {
         lifecycleScope.launch {
             try {
