@@ -12,38 +12,91 @@ enum class GameTheme(
         themeName = "Animals",
         previewImage = R.drawable.animal_theme,
         cardImages = listOf(
-            // your animal images
-        )
+        R.drawable.animal_1,
+            R.drawable.animal_2,
+            R.drawable.animal_3,
+            R.drawable.animal_3,
+            R.drawable.animal_4,
+            R.drawable.animal_5,
+            R.drawable.animal_6,
+            R.drawable.animal_7,
+            R.drawable.animal_8,
+            R.drawable.animal_9,
+            R.drawable.animal_10,
+            R.drawable.animal_11,
+            R.drawable.animal_12,
+
+            )
     ),
     POKEMON(
         themeName = "Pokémon",
         previewImage = R.drawable.pokemon_theme,
         cardImages = listOf(
-            R.drawable.pikachu,
-            R.drawable.pokemon_card_matching,
-            R.drawable.pokemon_card_matching_2,
-            R.drawable.pokemon_card_matching_3
+            R.drawable.pokemon_1,
+            R.drawable.pokemon_2,
+            R.drawable.pokemon_3,
+            R.drawable.pokemon_4,
+            R.drawable.pokemon_5,
+            R.drawable.pokemon_6,
+            R.drawable.pokemon_7,
+            R.drawable.pokemon_8,
+            R.drawable.pokemon_9,
+            R.drawable.pokemon_10,
+            R.drawable.pokemon_11,
+            R.drawable.pokemon_12,
+
         )
     ),
     FRUIT(
         themeName = "Fruit",
         previewImage = R.drawable.fruit_theme,
         cardImages = listOf(
-            // your fruit images
-        )
+            R.drawable.fruit_1,
+            R.drawable.fruit_2,
+            R.drawable.fruit_3,
+            R.drawable.fruit_4,
+            R.drawable.fruit_5,
+            R.drawable.fruit_6,
+            R.drawable.fruit_7,
+            R.drawable.fruit_8,
+            R.drawable.fruit_9,
+            R.drawable.fruit_10,
+            R.drawable.fruit_11,
+            R.drawable.fruit_12,)
     ),
     HARRY_POTTER(
         themeName = "Harry Potter",
         previewImage = R.drawable.harry_potter_theme,
         cardImages = listOf(
-            // your HP images
-        )
+            R.drawable.hp_1,
+            R.drawable.hp_2,
+            R.drawable.hp_3,
+            R.drawable.hp_4,
+            R.drawable.hp_5,
+            R.drawable.hp_6,
+            R.drawable.hp_7,
+            R.drawable.hp_8,
+            R.drawable.hp_9,
+            R.drawable.hp_10,
+            R.drawable.hp_11,
+            R.drawable.hp_12, )
     ),
     F1_LOGOS(
         themeName = "F1 Team Logos",
         previewImage = R.drawable.f1_theme,
         cardImages = listOf(
-            // your F1 images
+            R.drawable.f1_1,
+            R.drawable.f1_2,
+            R.drawable.f1_3,
+            R.drawable.f1_4,
+            R.drawable.f1_5,
+            R.drawable.f1_6,
+            R.drawable.f1_7,
+            R.drawable.f1_8,
+            R.drawable.f1_9,
+            R.drawable.f1_10,
+            R.drawable.f1_11,
+            R.drawable.f1_12,
         )
 
     )

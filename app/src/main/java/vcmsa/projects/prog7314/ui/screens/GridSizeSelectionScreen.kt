@@ -121,7 +121,7 @@ fun GridSizeSelectionScreen(
 
                     // INTERMEDIATE - 3x4 (Yellow)
                     GridSizeCardStyled(
-                        gridSize = GridSize(3, 4, DifficultyLevel.INTERMEDIATE),
+                        gridSize = GridSize(4, 3, DifficultyLevel.INTERMEDIATE),
                         backgroundColor = Color(0xFFFFEB3B), // Yellow
                         labelColor = Color(0xFFFFC107), // Amber
                         difficultyLabel = "INTERMEDIATE",
@@ -137,7 +137,7 @@ fun GridSizeSelectionScreen(
                 ) {
                     // HARD - 4x5 (Orange)
                     GridSizeCardStyled(
-                        gridSize = GridSize(4, 5, DifficultyLevel.INTERMEDIATE),
+                        gridSize = GridSize(5, 4, DifficultyLevel.INTERMEDIATE),
                         backgroundColor = Color(0xFFFF9800), // Orange
                         labelColor = Color(0xFFF57C00), // Dark Orange
                         difficultyLabel = "HARD",
@@ -147,7 +147,7 @@ fun GridSizeSelectionScreen(
 
                     // EXPERT - 4x6 (Red)
                     GridSizeCardStyled(
-                        gridSize = GridSize(4, 6, DifficultyLevel.EXPERT),
+                        gridSize = GridSize(6, 4, DifficultyLevel.EXPERT),
                         backgroundColor = Color(0xFFF44336), // Red
                         labelColor = Color(0xFFE91E63), // Pink-Red
                         difficultyLabel = "EXPERT",

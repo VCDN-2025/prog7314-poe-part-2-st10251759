@@ -217,6 +217,7 @@ fun MemoryMatchMadnessApp() {
     // Adventure Mode navigation states
     var showThemeSelection by remember { mutableStateOf(false) }
     var showGridSelection by remember { mutableStateOf(false) }
+    var showGameplay by remember { mutableStateOf(false) } // NEW STATE
     var selectedTheme by remember { mutableStateOf<GameTheme?>(null) }
     var selectedGridSize by remember { mutableStateOf<GridSize?>(null) }
 
@@ -321,17 +322,38 @@ fun MemoryMatchMadnessApp() {
                 onGridSizeSelected = { gridSize ->
                     selectedGridSize = gridSize
                     showGridSelection = false
-                    // TODO: Navigate to Gameplay Screen
-                    // For now, go back to main menu
-                    Log.d("MainActivity", "Selected Theme: ${selectedTheme?.themeName}")
-                    Log.d("MainActivity", "Selected Grid: ${gridSize.gridLabel}")
-                    showMainMenu = true
+                    showGameplay = true  // CHANGED: Navigate to gameplay instead of main menu
                 },
                 onBackClick = {
                     showGridSelection = false
                     showThemeSelection = true
                 }
             )
+        }
+
+        // NEW: Gameplay Screen - ADD THIS BEFORE showMainMenu
+        showGameplay -> {
+            val theme = selectedTheme
+            val gridSize = selectedGridSize
+
+            if (theme != null && gridSize != null) {
+                GameplayScreen(
+                    theme = theme,
+                    gridSize = gridSize,
+                    onBackClick = {
+                        showGameplay = false
+                        showMainMenu = true
+                    },
+                    onGameComplete = {
+                        // TODO: Show completion popup with statistics
+                        showGameplay = false
+                        showMainMenu = true
+                    }
+                )
+            } else {
+                // Fallback if theme or gridSize is null
+                Text("Error: Theme or Grid Size not selected")
+            }
         }
 
         showMainMenu -> {
