@@ -104,7 +104,7 @@ fun LoginScreen(
                         val userEmail = authResult.user?.email ?: ""
                         val username = authResult.user?.displayName ?: userEmail.substringBefore("@")
 
-                        val userRepo = RepositoryProvider.getUserProfileRepository(context)
+                        val userRepo = RepositoryProvider.getUserProfileRepository()
 
                         // Check if user profile exists
                         val existingProfile = userRepo.getUserProfile(userId)
@@ -307,7 +307,7 @@ fun LoginScreen(
                                                 val userEmail = result.user?.email ?: ""
                                                 val username = userEmail.substringBefore("@")
 
-                                                val userRepo = RepositoryProvider.getUserProfileRepository(context)
+                                                val userRepo = RepositoryProvider.getUserProfileRepository()
 
                                                 // Check if user profile exists
                                                 val existingProfile = userRepo.getUserProfile(userId)

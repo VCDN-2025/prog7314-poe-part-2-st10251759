@@ -3,7 +3,8 @@ package vcmsa.projects.prog7314.data.api
 import retrofit2.Response
 import retrofit2.http.*
 
-// Data models for API requests/responses
+// ===== EXISTING DATA MODELS =====
+
 data class UserProfileRequest(
     val userId: String,
     val username: String,
@@ -58,28 +59,32 @@ data class GameResultRequest(
 
 data class GameResultResponse(
     val success: Boolean,
-    val gameId: String?,
-    val message: String? = null
+    val gameId: String? = null,
+    val message: String? = null,
+    val newBest: Boolean = false,
+    val data: GameResultData? = null
+)
+
+data class GameResultData(
+    val gameId: String,
+    val userId: String? = null,
+    val gameMode: String? = null,
+    val theme: String? = null,
+    val gridSize: String? = null,
+    val difficulty: String? = null,
+    val score: Int? = null,
+    val timeTaken: Int? = null,
+    val moves: Int? = null,
+    val accuracy: Float? = null,
+    val completedAt: Long? = null,
+    val isWin: Boolean? = null,
+    val previousBest: Int? = null,
+    val newBest: Int? = null
 )
 
 data class GamesListResponse(
     val success: Boolean,
     val data: List<GameResultData>?
-)
-
-data class GameResultData(
-    val gameId: String,
-    val userId: String,
-    val gameMode: String,
-    val theme: String,
-    val gridSize: String,
-    val difficulty: String,
-    val score: Int,
-    val timeTaken: Int,
-    val moves: Int,
-    val accuracy: Float,
-    val completedAt: Long,
-    val isWin: Boolean
 )
 
 data class AchievementRequest(
@@ -135,11 +140,147 @@ data class LeaderboardEntry(
     val completedAt: Long
 )
 
+// Registration
+data class RegisterRequest(
+    val email: String,
+    val password: String,
+    val username: String
+)
+
+data class RegisterResponse(
+    val success: Boolean,
+    val userId: String?,
+    val email: String?,
+    val username: String?,
+    val customToken: String?,
+    val message: String?,
+    val error: String?
+)
+
+// Login
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
+data class LoginResponse(
+    val success: Boolean,
+    val userId: String?,
+    val email: String?,
+    val username: String?,
+    val customToken: String?,
+    val message: String?,
+    val error: String?
+)
+
+data class UserInfoResponse(
+    val success: Boolean,
+    val data: UserInfoData?,
+    val error: String?
+)
+
+data class UserInfoData(
+    val userId: String,
+    val email: String,
+    val username: String,
+    val emailVerified: Boolean,
+    val createdAt: String,
+    val lastSignIn: String
+)
+
+data class ResetPasswordRequest(
+    val email: String
+)
+
+data class ResetPasswordResponse(
+    val success: Boolean,
+    val resetLink: String?,
+    val message: String?,
+    val error: String?
+)
+
+// ===== NEW ARCADE & LEVEL DATA MODELS =====
+
+data class LevelResultRequest(
+    val userId: String,
+    val levelNumber: Int,
+    val stars: Int,
+    val score: Int,
+    val time: Int,
+    val moves: Int,
+    val difficulty: String,
+    val theme: String,
+    val gridSize: String,
+    val completedAt: Long = System.currentTimeMillis()
+)
+
+data class ArcadeResultRequest(
+    val userId: String,
+    val sessionId: String,
+    val score: Int,
+    val time: Int,
+    val moves: Int,
+    val bonus: Int,
+    val stars: Int,
+    val theme: String,
+    val gridSize: String,
+    val difficulty: String,
+    val completedAt: Long = System.currentTimeMillis()
+)
+
+data class LevelProgressResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val data: LevelProgressData? = null
+)
+
+data class LevelProgressData(
+    val levels: List<LevelProgressItem>,
+    val totalStars: Int,
+    val completedCount: Int
+)
+
+data class LevelProgressItem(
+    val levelNumber: Int,
+    val stars: Int,
+    val bestScore: Int,
+    val bestTime: Int,
+    val isUnlocked: Boolean,
+    val isCompleted: Boolean
+)
+
+data class ThemesResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val data: List<ThemeItem>? = null
+)
+
+data class ThemeItem(
+    val id: String,
+    val displayName: String,
+    val previewImageUrl: String? = null,
+    val cardImageUrls: List<String>? = null
+)
+
+// ===== API SERVICE INTERFACE =====
+
 interface ApiService {
 
     // ===== AUTH ENDPOINTS =====
     @POST("api/auth/verify")
     suspend fun verifyToken(@Body request: AuthVerifyRequest): Response<AuthVerifyResponse>
+
+    @POST("api/auth/register")
+    suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
+
+    @POST("api/auth/login")
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @GET("api/auth/user/{userId}")
+    suspend fun getUserInfo(@Path("userId") userId: String): Response<UserInfoResponse>
+
+    @POST("api/auth/reset-password")
+    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ResetPasswordResponse>
 
     // ===== USER ENDPOINTS =====
     @GET("api/users/{userId}")
@@ -175,91 +316,31 @@ interface ApiService {
         @Query("mode") mode: String = "ARCADE",
         @Query("limit") limit: Int = 10
     ): Response<LeaderboardResponse>
-// Add to existing ApiService interface
 
-    // Registration
-    data class RegisterRequest(
-        val email: String,
-        val password: String,
-        val username: String
-    )
-
-    data class RegisterResponse(
-        val success: Boolean,
-        val userId: String?,
-        val email: String?,
-        val username: String?,
-        val customToken: String?,
-        val message: String?,
-        val error: String?
-    )
-
-    // Login
-    data class LoginRequest(
-        val email: String,
-        val password: String
-    )
-
-    data class LoginResponse(
-        val success: Boolean,
-        val userId: String?,
-        val email: String?,
-        val username: String?,
-        val customToken: String?,
-        val message: String?,
-        val error: String?
-    )
-
-    interface ApiService {
-
-        // ... existing endpoints ...
-
-        // Registration endpoint
-        @POST("api/auth/register")
-        suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
-
-        // Login endpoint (get custom token)
-        @POST("api/auth/login")
-        suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
-
-        // Get user info
-        @GET("api/auth/user/{userId}")
-        suspend fun getUserInfo(@Path("userId") userId: String): Response<UserInfoResponse>
-
-        // Request password reset
-        @POST("api/auth/reset-password")
-        suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<ResetPasswordResponse>
-    }
-
-    data class UserInfoResponse(
-        val success: Boolean,
-        val data: UserInfoData?,
-        val error: String?
-    )
-
-    data class UserInfoData(
-        val userId: String,
-        val email: String,
-        val username: String,
-        val emailVerified: Boolean,
-        val createdAt: String,
-        val lastSignIn: String
-    )
-
-    data class ResetPasswordRequest(
-        val email: String
-    )
-
-    data class ResetPasswordResponse(
-        val success: Boolean,
-        val resetLink: String?,
-        val message: String?,
-        val error: String?
-    )
     // ===== ACHIEVEMENT ENDPOINTS =====
     @GET("api/achievements/user/{userId}")
     suspend fun getUserAchievements(@Path("userId") userId: String): Response<AchievementsListResponse>
 
     @POST("api/achievements/unlock")
     suspend fun unlockAchievement(@Body achievement: AchievementRequest): Response<AchievementResponse>
+
+    // ===== NEW: ARCADE & LEVEL ENDPOINTS =====
+
+    @POST("api/games/level-result")
+    suspend fun submitLevelResult(
+        @Body request: LevelResultRequest
+    ): Response<GameResultResponse>
+
+    @POST("api/games/arcade-result")
+    suspend fun submitArcadeResult(
+        @Body request: ArcadeResultRequest
+    ): Response<GameResultResponse>
+
+    @GET("api/user/{userId}/level-progress")
+    suspend fun getUserLevelProgress(
+        @Path("userId") userId: String
+    ): Response<LevelProgressResponse>
+
+    @GET("api/themes")
+    suspend fun getThemes(): Response<ThemesResponse>
 }

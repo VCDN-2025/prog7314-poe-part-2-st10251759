@@ -62,7 +62,7 @@ fun RegisterScreen(
                         val userEmail = authResult.user?.email ?: ""
                         val username = authResult.user?.displayName ?: userEmail.substringBefore("@")
 
-                        val userRepo = RepositoryProvider.getUserProfileRepository(context)
+                        val userRepo = RepositoryProvider.getUserProfileRepository()
 
                         // Check if user profile exists
                         val existingProfile = userRepo.getUserProfile(userId)
@@ -238,7 +238,7 @@ fun RegisterScreen(
                                                 val userEmail = result.user?.email ?: ""
                                                 val username = userEmail.substringBefore("@")
 
-                                                val userRepo = RepositoryProvider.getUserProfileRepository(context)
+                                                val userRepo = RepositoryProvider.getUserProfileRepository()
 
                                                 // Create new profile for registered user
                                                 userRepo.createNewUserProfile(

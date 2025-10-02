@@ -3,62 +3,47 @@ package vcmsa.projects.prog7314.data.repository
 import android.content.Context
 import vcmsa.projects.prog7314.data.AppDatabase
 
+/**
+ * Centralized repository provider for dependency injection
+ */
 object RepositoryProvider {
 
-    @Volatile
-    private var userProfileRepository: UserProfileRepository? = null
+    private var database: AppDatabase? = null
 
-    @Volatile
-    private var gameResultRepository: GameResultRepository? = null
-
-    @Volatile
-    private var achievementRepository: AchievementRepository? = null
-
-    /**
-     * Get UserProfileRepository instance
-     */
-    fun getUserProfileRepository(context: Context): UserProfileRepository {
-        return userProfileRepository ?: synchronized(this) {
-            val instance = UserProfileRepository(
-                AppDatabase.getDatabase(context).userProfileDao()
-            )
-            userProfileRepository = instance
-            instance
+    fun initialize(context: Context) {
+        if (database == null) {
+            database = AppDatabase.getDatabase(context.applicationContext)
         }
     }
 
-    /**
-     * Get GameResultRepository instance
-     */
-    fun getGameResultRepository(context: Context): GameResultRepository {
-        return gameResultRepository ?: synchronized(this) {
-            val instance = GameResultRepository(
-                AppDatabase.getDatabase(context).gameResultDao()
-            )
-            gameResultRepository = instance
-            instance
-        }
+    // FIXED: No parameter needed
+    fun getUserProfileRepository(): UserProfileRepository {
+        return UserProfileRepository(requireDatabase().userProfileDao())
     }
 
-    /**
-     * Get AchievementRepository instance
-     */
-    fun getAchievementRepository(context: Context): AchievementRepository {
-        return achievementRepository ?: synchronized(this) {
-            val instance = AchievementRepository(
-                AppDatabase.getDatabase(context).achievementDao()
-            )
-            achievementRepository = instance
-            instance
-        }
+    fun getGameResultRepository(): GameResultRepository {
+        return GameResultRepository(requireDatabase().gameResultDao())
     }
 
-    /**
-     * Clear all repository instances (for testing/logout)
-     */
-    fun clearInstances() {
-        userProfileRepository = null
-        gameResultRepository = null
-        achievementRepository = null
+    fun getAchievementRepository(): AchievementRepository {
+        return AchievementRepository(requireDatabase().achievementDao())
+    }
+
+    fun getLevelRepository(): LevelRepository {
+        return LevelRepository(requireDatabase().levelProgressDao())
+    }
+
+    fun getArcadeRepository(): ArcadeRepository {
+        return ArcadeRepository(requireDatabase().arcadeSessionDao())
+    }
+
+    fun getApiRepository(): ApiRepository {
+        return ApiRepository()
+    }
+
+    private fun requireDatabase(): AppDatabase {
+        return database ?: throw IllegalStateException(
+            "RepositoryProvider must be initialized before use"
+        )
     }
 }

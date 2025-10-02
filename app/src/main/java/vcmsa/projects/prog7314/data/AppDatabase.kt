@@ -4,28 +4,30 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import vcmsa.projects.prog7314.data.dao.AchievementDao
-import vcmsa.projects.prog7314.data.dao.GameResultDao
-import vcmsa.projects.prog7314.data.dao.UserProfileDao
-import vcmsa.projects.prog7314.data.entities.AchievementEntity
-import vcmsa.projects.prog7314.data.entities.GameResultEntity
-import vcmsa.projects.prog7314.data.entities.UserProfileEntity
+import vcmsa.projects.prog7314.data.dao.*
+import vcmsa.projects.prog7314.data.entities.*
 
 @Database(
     entities = [
         UserProfileEntity::class,
         GameResultEntity::class,
-        AchievementEntity::class
+        AchievementEntity::class,
+        LevelProgressEntity::class,
+        ArcadeSessionEntity::class
     ],
-    version = 1,
+    version = 2, // Incremented since schema changed
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
-    // DAOs
+    // Existing DAOs
     abstract fun userProfileDao(): UserProfileDao
     abstract fun gameResultDao(): GameResultDao
     abstract fun achievementDao(): AchievementDao
+
+    // Newly added DAOs
+    abstract fun levelProgressDao(): LevelProgressDao
+    abstract fun arcadeSessionDao(): ArcadeSessionDao
 
     companion object {
         @Volatile
@@ -43,7 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .fallbackToDestructiveMigration() // For development - removes this in production
+                    .fallbackToDestructiveMigration() // For dev - use proper migration in production
                     .build()
 
                 INSTANCE = instance

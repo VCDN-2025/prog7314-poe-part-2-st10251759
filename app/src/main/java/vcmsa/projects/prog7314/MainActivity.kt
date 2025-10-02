@@ -50,6 +50,9 @@ class MainActivity : FragmentActivity() {
         // Initialize Network Manager
         NetworkManager.initialize(this)
 
+        // Initialize Repository Provider
+        RepositoryProvider.initialize(this) // FIXED: Initialize repository provider
+
         // Initialize Sync Manager
         syncManager = SyncManager(this)
         syncManager.initialize()
@@ -204,6 +207,15 @@ class MainActivity : FragmentActivity() {
     }
 }
 
+// Data class for arcade completion
+data class CompletionData(
+    val stars: Int,
+    val score: Int,
+    val time: Int,
+    val moves: Int,
+    val bonus: Int
+)
+
 @Composable
 fun MemoryMatchMadnessApp() {
     var showLoadingScreen by remember { mutableStateOf(true) }
@@ -217,9 +229,18 @@ fun MemoryMatchMadnessApp() {
     // Adventure Mode navigation states
     var showThemeSelection by remember { mutableStateOf(false) }
     var showGridSelection by remember { mutableStateOf(false) }
-    var showGameplay by remember { mutableStateOf(false) } // NEW STATE
+    var showGameplay by remember { mutableStateOf(false) }
     var selectedTheme by remember { mutableStateOf<GameTheme?>(null) }
     var selectedGridSize by remember { mutableStateOf<GridSize?>(null) }
+
+    // Arcade Mode navigation states (NEW)
+    var showArcadeMode by remember { mutableStateOf(false) }
+    var showLevelSelection by remember { mutableStateOf(false) }
+    var showArcadeGameplay by remember { mutableStateOf(false) }
+    var selectedLevel by remember { mutableStateOf(1) }
+    var isArcadeMode by remember { mutableStateOf(false) }
+    var showCompletionDialog by remember { mutableStateOf(false) }
+    var completionData by remember { mutableStateOf<CompletionData?>(null) }
 
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -303,6 +324,7 @@ fun MemoryMatchMadnessApp() {
             )
         }
 
+        // ADVENTURE MODE SCREENS
         showThemeSelection -> {
             ThemeSelectionScreen(
                 onThemeSelected = { theme ->
@@ -322,7 +344,7 @@ fun MemoryMatchMadnessApp() {
                 onGridSizeSelected = { gridSize ->
                     selectedGridSize = gridSize
                     showGridSelection = false
-                    showGameplay = true  // CHANGED: Navigate to gameplay instead of main menu
+                    showGameplay = true
                 },
                 onBackClick = {
                     showGridSelection = false
@@ -331,7 +353,6 @@ fun MemoryMatchMadnessApp() {
             )
         }
 
-        // NEW: Gameplay Screen - ADD THIS BEFORE showMainMenu
         showGameplay -> {
             val theme = selectedTheme
             val gridSize = selectedGridSize
@@ -342,11 +363,103 @@ fun MemoryMatchMadnessApp() {
                     gridSize = gridSize,
                     onBackClick = {
                         showGameplay = false
-                        showGridSelection = true // Go back to grid selection
+                        showGridSelection = true
                     },
                     onGameComplete = {
                         showGameplay = false
-                        showMainMenu = true // Return to main menu
+                        showMainMenu = true
+                    }
+                )
+            }
+        }
+
+        // ARCADE MODE SCREENS (NEW)
+        showArcadeMode -> {
+            ArcadeModeScreen(
+                onBackClick = {
+                    showArcadeMode = false
+                    showMainMenu = true
+                },
+                onPlayArcade = {
+                    // Start random arcade session (level 1-16 random)
+                    selectedLevel = (1..16).random()
+                    isArcadeMode = true
+                    showArcadeMode = false
+                    showArcadeGameplay = true
+                },
+                onLevelsClick = {
+                    showArcadeMode = false
+                    showLevelSelection = true
+                }
+            )
+        }
+
+        showLevelSelection -> {
+            LevelSelectionScreen(
+                onBackClick = {
+                    showLevelSelection = false
+                    showArcadeMode = true
+                },
+                onLevelClick = { levelNumber ->
+                    selectedLevel = levelNumber
+                    isArcadeMode = false
+                    showLevelSelection = false
+                    showArcadeGameplay = true
+                }
+            )
+        }
+
+        showArcadeGameplay -> {
+            ArcadeGameplayScreen(
+                levelNumber = selectedLevel,
+                isArcadeMode = isArcadeMode,
+                onBackClick = {
+                    showArcadeGameplay = false
+                    if (isArcadeMode) {
+                        showArcadeMode = true
+                    } else {
+                        showLevelSelection = true
+                    }
+                },
+                onGameComplete = { stars, score, time, moves, bonus ->
+                    completionData = CompletionData(stars, score, time, moves, bonus)
+                    showCompletionDialog = true
+                }
+            )
+
+            if (showCompletionDialog && completionData != null) {
+                GameCompletionDialog(
+                    isNewRecord = false, // You can implement record checking later
+                    stars = completionData!!.stars,
+                    moves = completionData!!.moves,
+                    time = completionData!!.time,
+                    bonus = completionData!!.bonus,
+                    totalScore = completionData!!.score,
+                    onReplay = {
+                        showCompletionDialog = false
+                        completionData = null
+                        // Reload same level by re-entering arcade gameplay
+                        showArcadeGameplay = false
+                        showArcadeGameplay = true
+                    },
+                    onNextLevel = if (!isArcadeMode && selectedLevel < 16) {
+                        {
+                            showCompletionDialog = false
+                            completionData = null
+                            selectedLevel++
+                            showArcadeGameplay = false
+                            showArcadeGameplay = true
+                        }
+                    } else null,
+                    onHome = {
+                        showCompletionDialog = false
+                        completionData = null
+                        showArcadeGameplay = false
+                        if (isArcadeMode) {
+                            showArcadeMode = true
+                        } else {
+                            showLevelSelection = true
+                        }
                     }
                 )
             }
@@ -359,7 +472,8 @@ fun MemoryMatchMadnessApp() {
 
             LaunchedEffect(userId) {
                 if (userId.isNotEmpty()) {
-                    val userRepo = RepositoryProvider.getUserProfileRepository(context)
+                    // FIXED: No parameter needed
+                    val userRepo = RepositoryProvider.getUserProfileRepository()
                     val profile = userRepo.getUserProfile(userId)
                     if (profile != null) {
                         Log.d("MainActivity", "✅ User profile loaded: ${profile.username}, Level ${profile.level}, XP ${profile.totalXP}")
@@ -371,7 +485,8 @@ fun MemoryMatchMadnessApp() {
             MainMenuScreen(
                 userEmail = userEmail,
                 onArcadeModeClick = {
-                    // TODO: Navigate to Arcade Mode
+                    showMainMenu = false
+                    showArcadeMode = true // UPDATED to show arcade mode
                 },
                 onAdventureModeClick = {
                     showMainMenu = false

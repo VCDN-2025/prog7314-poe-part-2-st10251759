@@ -78,9 +78,10 @@ class SyncManager(private val context: Context) {
             try {
                 Log.d(TAG, "🔄 Starting manual sync...")
 
-                val userRepo = RepositoryProvider.getUserProfileRepository(context)
-                val gameRepo = RepositoryProvider.getGameResultRepository(context)
-                val achievementRepo = RepositoryProvider.getAchievementRepository(context)
+                // FIXED: Remove context parameter
+                val userRepo = RepositoryProvider.getUserProfileRepository()
+                val gameRepo = RepositoryProvider.getGameResultRepository()
+                val achievementRepo = RepositoryProvider.getAchievementRepository()
 
                 // Get all unsynced data
                 val unsyncedProfiles = userRepo.getUnsyncedProfiles()
@@ -143,9 +144,10 @@ class SyncManager(private val context: Context) {
      * Get count of unsynced items
      */
     suspend fun getUnsyncedCounts(): SyncCounts {
-        val userRepo = RepositoryProvider.getUserProfileRepository(context)
-        val gameRepo = RepositoryProvider.getGameResultRepository(context)
-        val achievementRepo = RepositoryProvider.getAchievementRepository(context)
+        // FIXED: Remove context parameter
+        val userRepo = RepositoryProvider.getUserProfileRepository()
+        val gameRepo = RepositoryProvider.getGameResultRepository()
+        val achievementRepo = RepositoryProvider.getAchievementRepository()
 
         val profiles = userRepo.getUnsyncedProfiles().size
         val games = gameRepo.getUnsyncedGames().size
