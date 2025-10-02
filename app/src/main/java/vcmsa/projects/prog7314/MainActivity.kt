@@ -342,17 +342,13 @@ fun MemoryMatchMadnessApp() {
                     gridSize = gridSize,
                     onBackClick = {
                         showGameplay = false
-                        showMainMenu = true
+                        showGridSelection = true // Go back to grid selection
                     },
                     onGameComplete = {
-                        // TODO: Show completion popup with statistics
                         showGameplay = false
-                        showMainMenu = true
+                        showMainMenu = true // Return to main menu
                     }
                 )
-            } else {
-                // Fallback if theme or gridSize is null
-                Text("Error: Theme or Grid Size not selected")
             }
         }
 

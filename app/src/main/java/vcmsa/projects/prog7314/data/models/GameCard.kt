@@ -19,12 +19,6 @@ data class GameState(
     val isComplete: Boolean = false
 )
 
-data class GameResult(
-    val theme: GameTheme,
-    val gridSize: GridSize,
-    val moves: Int,
-    val timeInSeconds: Int,
-    val points: Int,
-    val stars: Int,
-    val bonus: Int
-)
+// Removed duplicate GameResult - now only in GameResult.kt
+
+

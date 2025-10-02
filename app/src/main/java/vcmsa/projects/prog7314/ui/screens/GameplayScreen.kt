@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -26,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameCard
+import vcmsa.projects.prog7314.data.models.GameResult
+
 import vcmsa.projects.prog7314.data.models.GameTheme
 import vcmsa.projects.prog7314.data.models.GridSize
 import vcmsa.projects.prog7314.ui.viewmodels.GameViewModel
@@ -43,17 +44,11 @@ fun GameplayScreen(
     val moves by viewModel.moves.collectAsState()
     val points by viewModel.points.collectAsState()
     val isGameComplete by viewModel.isGameComplete.collectAsState()
+    val gameResult by viewModel.gameResult.collectAsState()
 
     // Initialize game once
     LaunchedEffect(theme, gridSize) {
         viewModel.initializeGame(theme, gridSize)
-    }
-
-    // Show completion popup
-    LaunchedEffect(isGameComplete) {
-        if (isGameComplete) {
-            onGameComplete()
-        }
     }
 
     Box(
@@ -93,6 +88,26 @@ fun GameplayScreen(
                     }
                 )
             }
+        }
+
+        // Show completion popup
+        if (isGameComplete && gameResult != null) {
+            GameCompletionPopup(
+                gameResult = gameResult!!,
+                onReplay = {
+                    viewModel.resetGame()
+                },
+                onNext = {
+                    // TODO: Navigate to next level
+                    onGameComplete()
+                },
+                onHome = {
+                    onGameComplete()
+                },
+                onDismiss = {
+                    // Optional: Handle dismissal
+                }
+            )
         }
     }
 }

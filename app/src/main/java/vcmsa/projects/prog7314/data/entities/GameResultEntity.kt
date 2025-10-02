@@ -33,3 +33,5 @@ data class GameResultEntity(
     val isWin: Boolean = true,
     val isSynced: Boolean = false
 )
+
+
