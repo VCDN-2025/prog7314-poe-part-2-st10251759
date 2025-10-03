@@ -15,7 +15,6 @@ enum class GameTheme(
         R.drawable.animal_1,
             R.drawable.animal_2,
             R.drawable.animal_3,
-            R.drawable.animal_3,
             R.drawable.animal_4,
             R.drawable.animal_5,
             R.drawable.animal_6,
