@@ -262,4 +262,48 @@ class ApiRepository {
             Result.failure(e)
         }
     }
+
+    // ADD THIS METHOD TO ApiRepository CLASS
+
+    suspend fun submitMultiplayerResult(
+        userId: String,
+        theme: String,
+        player1Score: Int,
+        player2Score: Int,
+        timeTaken: Int,
+        totalMoves: Int
+    ): Result<Boolean> {
+        return try {
+            Log.d(TAG, "Submitting multiplayer result for user: $userId")
+
+            val request = MultiplayerResultRequest(
+                userId = userId,
+                theme = theme,
+                player1Score = player1Score,
+                player2Score = player2Score,
+                timeTaken = timeTaken,
+                totalMoves = totalMoves,
+                timestamp = System.currentTimeMillis().toString()
+            )
+
+            val response = apiService.submitMultiplayerResult(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                if (body.success) {
+                    Log.d(TAG, "✅ Multiplayer result submitted successfully")
+                    Result.success(true)
+                } else {
+                    Log.e(TAG, "❌ Failed to submit multiplayer result: ${body.message}")
+                    Result.failure(Exception(body.message ?: "Failed to submit result"))
+                }
+            } else {
+                Log.e(TAG, "❌ API error: ${response.code()}")
+                Result.failure(Exception("API error: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Exception submitting multiplayer result: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
 }

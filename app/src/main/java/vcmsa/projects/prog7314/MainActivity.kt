@@ -233,7 +233,7 @@ fun MemoryMatchMadnessApp() {
     var selectedTheme by remember { mutableStateOf<GameTheme?>(null) }
     var selectedGridSize by remember { mutableStateOf<GridSize?>(null) }
 
-    // Arcade Mode navigation states (NEW)
+    // Arcade Mode navigation states
     var showArcadeMode by remember { mutableStateOf(false) }
     var showLevelSelection by remember { mutableStateOf(false) }
     var showArcadeGameplay by remember { mutableStateOf(false) }
@@ -241,6 +241,10 @@ fun MemoryMatchMadnessApp() {
     var isArcadeMode by remember { mutableStateOf(false) }
     var showCompletionDialog by remember { mutableStateOf(false) }
     var completionData by remember { mutableStateOf<CompletionData?>(null) }
+
+    // Multiplayer Mode navigation states (NEW)
+    var showMultiplayerSetup by remember { mutableStateOf(false) }
+    var showMultiplayerGame by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -373,7 +377,7 @@ fun MemoryMatchMadnessApp() {
             }
         }
 
-        // ARCADE MODE SCREENS (NEW)
+        // ARCADE MODE SCREENS
         showArcadeMode -> {
             ArcadeModeScreen(
                 onBackClick = {
@@ -465,6 +469,37 @@ fun MemoryMatchMadnessApp() {
             }
         }
 
+        // MULTIPLAYER MODE SCREENS (NEW)
+        showMultiplayerSetup -> {
+            MultiplayerSetupScreen(
+                onBackClick = {
+                    showMultiplayerSetup = false
+                    showMainMenu = true
+                },
+                onThemeSelected = { theme ->
+                    selectedTheme = theme
+                    showMultiplayerSetup = false
+                    showMultiplayerGame = true
+                }
+            )
+        }
+
+        showMultiplayerGame -> {
+            selectedTheme?.let { theme ->
+                MultiplayerGameplayScreen(
+                    theme = theme,
+                    onBackClick = {
+                        showMultiplayerGame = false
+                        showMultiplayerSetup = true
+                    },
+                    onHomeClick = {
+                        showMultiplayerGame = false
+                        showMainMenu = true
+                    }
+                )
+            }
+        }
+
         showMainMenu -> {
             // Get user profile from database
             val currentUser = AuthManager.getCurrentUser()
@@ -486,14 +521,15 @@ fun MemoryMatchMadnessApp() {
                 userEmail = userEmail,
                 onArcadeModeClick = {
                     showMainMenu = false
-                    showArcadeMode = true // UPDATED to show arcade mode
+                    showArcadeMode = true
                 },
                 onAdventureModeClick = {
                     showMainMenu = false
                     showThemeSelection = true
                 },
                 onMultiplayerClick = {
-                    // TODO: Navigate to Multiplayer
+                    showMainMenu = false
+                    showMultiplayerSetup = true // UPDATED: Navigate to multiplayer setup
                 },
                 onStatisticsClick = {
                     // TODO: Navigate to Statistics

@@ -343,4 +343,33 @@ interface ApiService {
 
     @GET("api/themes")
     suspend fun getThemes(): Response<ThemesResponse>
+
+    // ===== MULTIPLAYER ENDPOINTS =====
+    @POST("api/multiplayer/result")
+    suspend fun submitMultiplayerResult(
+        @Body request: MultiplayerResultRequest
+    ): Response<MultiplayerResultResponse>
 }
+
+// ADD THESE DATA CLASSES AFTER EXISTING ONES
+
+data class MultiplayerResultRequest(
+    val userId: String,
+    val theme: String,
+    val player1Score: Int,
+    val player2Score: Int,
+    val timeTaken: Int,
+    val totalMoves: Int,
+    val timestamp: String
+)
+
+data class MultiplayerResultResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val data: MultiplayerResultData? = null
+)
+
+data class MultiplayerResultData(
+    val gameId: String,
+    val winner: String?
+)

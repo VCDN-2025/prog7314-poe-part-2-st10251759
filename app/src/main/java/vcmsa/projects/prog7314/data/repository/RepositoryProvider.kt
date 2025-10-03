@@ -16,6 +16,19 @@ object RepositoryProvider {
         }
     }
 
+    // ADD THIS NEW METHOD
+    fun getRepositories(context: Context): Repositories {
+        initialize(context)
+        return Repositories(
+            userProfileRepository = getUserProfileRepository(),
+            gameResultRepository = getGameResultRepository(),
+            achievementRepository = getAchievementRepository(),
+            levelRepository = getLevelRepository(),
+            arcadeRepository = getArcadeRepository(),
+            apiRepository = getApiRepository()
+        )
+    }
+
     // FIXED: No parameter needed
     fun getUserProfileRepository(): UserProfileRepository {
         return UserProfileRepository(requireDatabase().userProfileDao())
@@ -46,4 +59,12 @@ object RepositoryProvider {
             "RepositoryProvider must be initialized before use"
         )
     }
+    data class Repositories(
+        val userProfileRepository: UserProfileRepository,
+        val gameResultRepository: GameResultRepository,
+        val achievementRepository: AchievementRepository,
+        val levelRepository: LevelRepository,
+        val arcadeRepository: ArcadeRepository,
+        val apiRepository: ApiRepository
+    )
 }
