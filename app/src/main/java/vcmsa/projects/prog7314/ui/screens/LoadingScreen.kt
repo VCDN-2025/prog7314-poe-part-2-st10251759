@@ -5,13 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -28,30 +26,32 @@ fun LoadingScreen(
 ) {
     var progress by remember { mutableFloatStateOf(0f) }
 
-    // Simulate loading progress
     LaunchedEffect(Unit) {
         for (i in 0..100) {
             progress = i / 100f
-            delay(30) // Adjust speed as needed
+            delay(30)
         }
-        delay(500) // Small delay before transitioning
+        delay(500)
         onLoadingComplete()
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF00BCD4), // Cyan
-                        Color(0xFF0288D1)  // Blue
-                    )
-                )
-            )
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Background card pattern (optional decorative elements)
-        // You can add card shapes in the background here if needed
+        // Card background image
+        Image(
+            painter = painterResource(id = R.drawable.card_background),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // Semi-transparent overlay
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        )
 
         Column(
             modifier = Modifier
@@ -60,17 +60,17 @@ fun LoadingScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo
+            // Logo - BIGGER
             Image(
                 painter = painterResource(id = R.drawable.transparent_logo),
                 contentDescription = "Memory Match Madness Logo",
                 modifier = Modifier
-                    .size(200.dp)
-                    .padding(bottom = 32.dp),
+                    .size(280.dp)
+                    .padding(bottom = 40.dp),
                 contentScale = ContentScale.Fit
             )
 
-            // App Name (if not included in logo)
+            // App Name - KEPT SAME
             Text(
                 text = "MEMORY MATCH MADNESS",
                 fontSize = 24.sp,
@@ -88,33 +88,33 @@ fun LoadingScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Loading progress bar
+            // Loading progress bar - BIGGER
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "LOADING...",
-                    fontSize = 16.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 20.dp)
                 )
 
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier
-                        .width(200.dp)
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp)),
+                        .width(280.dp)
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(5.dp)),
                     color = Color.White,
                     trackColor = Color.White.copy(alpha = 0.3f)
                 )
 
                 Text(
                     text = "${(progress * 100).toInt()}%",
-                    fontSize = 12.sp,
+                    fontSize = 16.sp,
                     color = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 12.dp)
                 )
             }
         }

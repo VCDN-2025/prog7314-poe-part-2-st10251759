@@ -66,12 +66,14 @@ dependencies {
 
     // Gson for JSON parsing
     implementation("com.google.code.gson:gson:2.10.1")
+
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.4")
 
     // Firebase Dependencies
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // Biometric Authentication
@@ -91,6 +93,9 @@ dependencies {
 
     // WorkManager (for background sync)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     // Your existing test dependencies
     testImplementation(libs.junit)

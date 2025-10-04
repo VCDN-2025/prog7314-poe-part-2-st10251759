@@ -19,12 +19,17 @@ import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.models.GameTheme
 import vcmsa.projects.prog7314.data.models.GridSize
+import vcmsa.projects.prog7314.data.models.GameProgress
+import vcmsa.projects.prog7314.data.models.LevelData
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.GameResultRepository
 import vcmsa.projects.prog7314.data.repository.AchievementRepository
 import vcmsa.projects.prog7314.data.repository.ApiRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
+import vcmsa.projects.prog7314.data.repository.LevelRepository
 import vcmsa.projects.prog7314.data.sync.SyncManager
+import vcmsa.projects.prog7314.data.sync.FirestoreManager
+import vcmsa.projects.prog7314.data.sync.ProgressSyncHelper
 import vcmsa.projects.prog7314.ui.screens.*
 import vcmsa.projects.prog7314.ui.theme.PROG7314Theme
 import vcmsa.projects.prog7314.utils.AuthManager
@@ -35,29 +40,23 @@ import vcmsa.projects.prog7314.utils.NetworkManager
 class MainActivity : FragmentActivity() {
 
     private lateinit var syncManager: SyncManager
+    private lateinit var firestoreManager: FirestoreManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Test Firebase initialization
         FirebaseHelper.initializeFirebase()
-
-        // Initialize Google Sign-In
         AuthManager.initializeGoogleSignIn(this)
-
-        //test API
         testApiConnection()
-        // Initialize Network Manager
+
         NetworkManager.initialize(this)
+        RepositoryProvider.initialize(this)
 
-        // Initialize Repository Provider
-        RepositoryProvider.initialize(this) // FIXED: Initialize repository provider
-
-        // Initialize Sync Manager
         syncManager = SyncManager(this)
         syncManager.initialize()
 
-        // TEST DATABASE AND REPOSITORIES
+        firestoreManager = FirestoreManager()
+
         testDatabase()
 
         enableEdgeToEdge()
@@ -75,17 +74,70 @@ class MainActivity : FragmentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Cleanup resources
         NetworkManager.cleanup()
         syncManager.cleanup()
+    }
+
+    fun testFirestore() {
+        lifecycleScope.launch {
+            try {
+                Log.d("FirestoreTest", "========== TESTING FIRESTORE ==========")
+
+                val currentUser = AuthManager.getCurrentUser()
+                val userId = currentUser?.uid ?: "unknown"
+                Log.d("FirestoreTest", "Current user ID: $userId")
+
+                val testProgress = GameProgress(
+                    userId = userId,
+                    currentLevel = 3,
+                    levelProgress = mapOf(
+                        1 to LevelData(1, stars = 3, bestScore = 1500, bestTime = 45, bestMoves = 20, isUnlocked = true, isCompleted = true, timesPlayed = 2),
+                        2 to LevelData(2, stars = 2, bestScore = 1200, bestTime = 60, bestMoves = 25, isUnlocked = true, isCompleted = true, timesPlayed = 1),
+                        3 to LevelData(3, stars = 0, bestScore = 0, bestTime = 0, bestMoves = 0, isUnlocked = true, isCompleted = false, timesPlayed = 0)
+                    ),
+                    unlockedCategories = listOf("Animals", "Fruits"),
+                    totalGamesPlayed = 3,
+                    gamesWon = 2
+                )
+
+                val saveResult = firestoreManager.saveGameProgress(testProgress)
+                if (saveResult.isSuccess) {
+                    Log.d("FirestoreTest", "✅ SAVE SUCCESS: Progress saved to Firestore!")
+                    Log.d("FirestoreTest", "   Current Level: ${testProgress.currentLevel}")
+                    Log.d("FirestoreTest", "   Levels Tracked: ${testProgress.levelProgress.size}")
+                } else {
+                    Log.e("FirestoreTest", "❌ SAVE FAILED: ${saveResult.exceptionOrNull()?.message}")
+                }
+
+                val loadResult = firestoreManager.loadGameProgress()
+                if (loadResult.isSuccess) {
+                    val loadedProgress = loadResult.getOrNull()
+                    if (loadedProgress != null) {
+                        Log.d("FirestoreTest", "✅ LOAD SUCCESS: Data retrieved!")
+                        Log.d("FirestoreTest", "   Current Level: ${loadedProgress.currentLevel}")
+                        Log.d("FirestoreTest", "   Levels: ${loadedProgress.levelProgress.size}")
+                        loadedProgress.levelProgress.forEach { (level, data) ->
+                            Log.d("FirestoreTest", "   Level $level: ${data.stars}★ Score:${data.bestScore} Completed:${data.isCompleted}")
+                        }
+                    } else {
+                        Log.d("FirestoreTest", "ℹ️ No saved progress found")
+                    }
+                } else {
+                    Log.e("FirestoreTest", "❌ LOAD FAILED: ${loadResult.exceptionOrNull()?.message}")
+                }
+
+                Log.d("FirestoreTest", "========== FIRESTORE TEST COMPLETE ==========")
+
+            } catch (e: Exception) {
+                Log.e("FirestoreTest", "❌ Firestore test error: ${e.message}", e)
+            }
+        }
     }
 
     private fun testApiConnection() {
         lifecycleScope.launch {
             try {
                 val apiRepo = ApiRepository()
-
-                // Test token verification
                 val tokenResult = apiRepo.verifyFirebaseToken()
                 if (tokenResult.isSuccess) {
                     Log.d("MainActivity", "✅ API Connection Successful!")
@@ -93,7 +145,6 @@ class MainActivity : FragmentActivity() {
                 } else {
                     Log.e("MainActivity", "❌ API Connection Failed: ${tokenResult.exceptionOrNull()?.message}")
                 }
-
             } catch (e: Exception) {
                 Log.e("MainActivity", "❌ API Test Error: ${e.message}", e)
             }
@@ -104,15 +155,11 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch {
             try {
                 val db = AppDatabase.getDatabase(applicationContext)
-
-                // Initialize repositories
                 val userRepo = UserProfileRepository(db.userProfileDao())
                 val gameRepo = GameResultRepository(db.gameResultDao())
                 val achievementRepo = AchievementRepository(db.achievementDao())
 
                 Log.d("DatabaseTest", "========== TESTING REPOSITORIES ==========")
-
-                // ===== TEST 1: USER PROFILE =====
                 Log.d("DatabaseTest", "\n--- Test 1: User Profile ---")
 
                 val userId = "test_user_123"
@@ -126,12 +173,10 @@ class MainActivity : FragmentActivity() {
                 val user = userRepo.getUserProfile(userId)
                 Log.d("DatabaseTest", "✅ User retrieved: ${user?.username}, Level ${user?.level}")
 
-                // Update XP and Level
                 userRepo.updateXPAndLevel(userId, 250, 3)
                 val updatedUser = userRepo.getUserProfile(userId)
                 Log.d("DatabaseTest", "✅ Updated XP: ${updatedUser?.totalXP}, Level: ${updatedUser?.level}")
 
-                // ===== TEST 2: GAME RESULTS =====
                 Log.d("DatabaseTest", "\n--- Test 2: Game Results ---")
 
                 val gameId = gameRepo.createGameResult(
@@ -152,7 +197,6 @@ class MainActivity : FragmentActivity() {
                 val winRate = gameRepo.getWinRate(userId)
                 Log.d("DatabaseTest", "✅ Total games: $totalGames, Win rate: $winRate%")
 
-                // ===== TEST 3: ACHIEVEMENTS =====
                 Log.d("DatabaseTest", "\n--- Test 3: Achievements ---")
 
                 val firstWin = achievementRepo.checkFirstWinAchievement(userId, true)
@@ -164,7 +208,6 @@ class MainActivity : FragmentActivity() {
                 val unlockedCount = achievementRepo.getUnlockedCount(userId)
                 Log.d("DatabaseTest", "✅ Total unlocked achievements: $unlockedCount")
 
-                // ===== TEST 4: STATISTICS =====
                 Log.d("DatabaseTest", "\n--- Test 4: Statistics ---")
 
                 val avgScore = gameRepo.getAverageScore(userId)
@@ -175,7 +218,6 @@ class MainActivity : FragmentActivity() {
                 Log.d("DatabaseTest", "✅ Best Score: $bestScore")
                 Log.d("DatabaseTest", "✅ Average Time: ${avgTime}s")
 
-                // ===== TEST 5: SYNC STATUS =====
                 Log.d("DatabaseTest", "\n--- Test 5: Sync Status ---")
 
                 val unsyncedGames = gameRepo.getUnsyncedGamesForUser(userId)
@@ -184,14 +226,12 @@ class MainActivity : FragmentActivity() {
                 Log.d("DatabaseTest", "✅ Unsynced games: ${unsyncedGames.size}")
                 Log.d("DatabaseTest", "✅ Unsynced achievements: ${unsyncedAchievements.size}")
 
-                // ===== TEST 6: SYNC MANAGER =====
                 Log.d("DatabaseTest", "\n--- Test 6: Sync Manager ---")
 
                 val unsyncedCounts = syncManager.getUnsyncedCounts()
                 Log.d("DatabaseTest", "✅ Total unsynced items: ${unsyncedCounts.total}")
                 Log.d("DatabaseTest", "✅ Network status: ${NetworkManager.getConnectionStatus()}")
 
-                // Test manual sync
                 if (NetworkManager.isNetworkAvailable()) {
                     Log.d("DatabaseTest", "Testing manual sync...")
                     val syncSuccess = syncManager.performManualSync()
@@ -207,7 +247,6 @@ class MainActivity : FragmentActivity() {
     }
 }
 
-// Data class for arcade completion
 data class CompletionData(
     val stars: Int,
     val score: Int,
@@ -226,14 +265,12 @@ fun MemoryMatchMadnessApp() {
     var showBiometricDialog by remember { mutableStateOf(false) }
     var userEmail by remember { mutableStateOf("") }
 
-    // Adventure Mode navigation states
     var showThemeSelection by remember { mutableStateOf(false) }
     var showGridSelection by remember { mutableStateOf(false) }
     var showGameplay by remember { mutableStateOf(false) }
     var selectedTheme by remember { mutableStateOf<GameTheme?>(null) }
     var selectedGridSize by remember { mutableStateOf<GridSize?>(null) }
 
-    // Arcade Mode navigation states
     var showArcadeMode by remember { mutableStateOf(false) }
     var showLevelSelection by remember { mutableStateOf(false) }
     var showArcadeGameplay by remember { mutableStateOf(false) }
@@ -242,7 +279,6 @@ fun MemoryMatchMadnessApp() {
     var showCompletionDialog by remember { mutableStateOf(false) }
     var completionData by remember { mutableStateOf<CompletionData?>(null) }
 
-    // Multiplayer Mode navigation states (NEW)
     var showMultiplayerSetup by remember { mutableStateOf(false) }
     var showMultiplayerGame by remember { mutableStateOf(false) }
 
@@ -250,10 +286,7 @@ fun MemoryMatchMadnessApp() {
     val activity = context as? FragmentActivity
     val coroutineScope = rememberCoroutineScope()
 
-    // Check if biometric is available
     val isBiometricAvailable = remember { BiometricHelper.isBiometricAvailable(context) }
-
-    // Monitor network and sync status
     val isOnline by NetworkManager.isOnline.collectAsState()
     val connectionStatus = NetworkManager.getConnectionStatus()
 
@@ -273,7 +306,22 @@ fun MemoryMatchMadnessApp() {
                     userEmail = AuthManager.getCurrentUser()?.email ?: ""
                     showLoginScreen = false
 
-                    // Check if we should show biometric setup dialog
+                    val userId = AuthManager.getCurrentUser()?.uid
+                    if (userId != null) {
+                        coroutineScope.launch {
+                            val db = AppDatabase.getDatabase(context)
+                            val levelRepo = LevelRepository(db.levelProgressDao())
+                            val syncHelper = ProgressSyncHelper(levelRepo, FirestoreManager())
+
+                            val success = syncHelper.loadProgressFromCloud(userId)
+                            if (success) {
+                                Log.d("MainActivity", "✅ Progress loaded from cloud")
+                            } else {
+                                Log.e("MainActivity", "❌ Failed to load progress")
+                            }
+                        }
+                    }
+
                     if (isBiometricAvailable &&
                         !BiometricHelper.isBiometricEnabled(context) &&
                         !AuthManager.hasSavedCredentials(context)) {
@@ -286,9 +334,7 @@ fun MemoryMatchMadnessApp() {
                     showLoginScreen = false
                     showRegisterScreen = true
                 },
-                onForgotPassword = {
-                    // TODO: Handle forgot password
-                }
+                onForgotPassword = {}
             )
         }
 
@@ -298,7 +344,6 @@ fun MemoryMatchMadnessApp() {
                     userEmail = AuthManager.getCurrentUser()?.email ?: ""
                     showRegisterScreen = false
 
-                    // Check if we should show biometric setup dialog
                     if (isBiometricAvailable &&
                         !BiometricHelper.isBiometricEnabled(context)) {
                         showBiometricDialog = true
@@ -319,16 +364,16 @@ fun MemoryMatchMadnessApp() {
                     showSettingsScreen = false
                     showMainMenu = true
                 },
-                onEditProfile = {
-                    // TODO: Navigate to Edit Profile
-                },
-                onChangePassword = {
-                    // TODO: Navigate to Change Password
+                onEditProfile = {},
+                onChangePassword = {},
+                onLogout = {
+                    showSettingsScreen = false
+                    showLoginScreen = true
+                    userEmail = ""
                 }
             )
         }
 
-        // ADVENTURE MODE SCREENS
         showThemeSelection -> {
             ThemeSelectionScreen(
                 onThemeSelected = { theme ->
@@ -377,7 +422,6 @@ fun MemoryMatchMadnessApp() {
             }
         }
 
-        // ARCADE MODE SCREENS
         showArcadeMode -> {
             ArcadeModeScreen(
                 onBackClick = {
@@ -385,7 +429,6 @@ fun MemoryMatchMadnessApp() {
                     showMainMenu = true
                 },
                 onPlayArcade = {
-                    // Start random arcade session (level 1-16 random)
                     selectedLevel = (1..16).random()
                     isArcadeMode = true
                     showArcadeMode = false
@@ -433,7 +476,7 @@ fun MemoryMatchMadnessApp() {
 
             if (showCompletionDialog && completionData != null) {
                 GameCompletionDialog(
-                    isNewRecord = false, // You can implement record checking later
+                    isNewRecord = false,
                     stars = completionData!!.stars,
                     moves = completionData!!.moves,
                     time = completionData!!.time,
@@ -442,7 +485,6 @@ fun MemoryMatchMadnessApp() {
                     onReplay = {
                         showCompletionDialog = false
                         completionData = null
-                        // Reload same level by re-entering arcade gameplay
                         showArcadeGameplay = false
                         showArcadeGameplay = true
                     },
@@ -469,7 +511,6 @@ fun MemoryMatchMadnessApp() {
             }
         }
 
-        // MULTIPLAYER MODE SCREENS (NEW)
         showMultiplayerSetup -> {
             MultiplayerSetupScreen(
                 onBackClick = {
@@ -501,13 +542,11 @@ fun MemoryMatchMadnessApp() {
         }
 
         showMainMenu -> {
-            // Get user profile from database
             val currentUser = AuthManager.getCurrentUser()
             val userId = currentUser?.uid ?: ""
 
             LaunchedEffect(userId) {
                 if (userId.isNotEmpty()) {
-                    // FIXED: No parameter needed
                     val userRepo = RepositoryProvider.getUserProfileRepository()
                     val profile = userRepo.getUserProfile(userId)
                     if (profile != null) {
@@ -529,23 +568,18 @@ fun MemoryMatchMadnessApp() {
                 },
                 onMultiplayerClick = {
                     showMainMenu = false
-                    showMultiplayerSetup = true // UPDATED: Navigate to multiplayer setup
+                    showMultiplayerSetup = true
                 },
-                onStatisticsClick = {
-                    // TODO: Navigate to Statistics
-                },
+                onStatisticsClick = {},
                 onSettingsClick = {
                     showMainMenu = false
                     showSettingsScreen = true
                 },
-                onProfileClick = {
-                    // TODO: Navigate to Profile
-                }
+                onProfileClick = {}
             )
         }
 
         else -> {
-            // Fallback screen
             Text(
                 text = "Authentication Successful! Game Screen Coming Soon...",
                 modifier = Modifier.fillMaxSize()
@@ -553,7 +587,6 @@ fun MemoryMatchMadnessApp() {
         }
     }
 
-    // Biometric Setup Dialog
     if (showBiometricDialog && activity != null) {
         AlertDialog(
             onDismissRequest = {
@@ -569,27 +602,22 @@ fun MemoryMatchMadnessApp() {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // Show biometric prompt to confirm setup
                         BiometricHelper.showBiometricPrompt(
                             activity = activity,
                             title = "Setup Fingerprint",
                             subtitle = "Scan your fingerprint to enable quick login",
                             negativeButtonText = "Cancel",
                             onSuccess = {
-                                // Save biometric preference and credentials
                                 BiometricHelper.setBiometricEnabled(context, true)
                                 AuthManager.saveBiometricCredentials(context)
-
                                 showBiometricDialog = false
                                 showMainMenu = true
                             },
                             onError = { error ->
-                                // Handle error, still go to main menu
                                 showBiometricDialog = false
                                 showMainMenu = true
                             },
                             onFailed = {
-                                // Authentication failed, still go to main menu
                                 showBiometricDialog = false
                                 showMainMenu = true
                             }

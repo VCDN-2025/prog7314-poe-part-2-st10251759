@@ -11,9 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.data.AppDatabase
-import vcmsa.projects.prog7314.data.models.GameTheme // FIXED: Import GameTheme enum
+import vcmsa.projects.prog7314.data.models.GameTheme
+import vcmsa.projects.prog7314.data.models.GameProgress
+import vcmsa.projects.prog7314.data.models.LevelData
 import vcmsa.projects.prog7314.data.repository.ArcadeRepository
 import vcmsa.projects.prog7314.data.repository.LevelRepository
+import vcmsa.projects.prog7314.data.sync.FirestoreManager
 import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.game.GameEngine
 import vcmsa.projects.prog7314.utils.AuthManager
@@ -23,6 +26,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
 
     private val levelRepository: LevelRepository
     private val arcadeRepository: ArcadeRepository
+    private val firestoreManager = FirestoreManager()
 
     private var gameEngine: GameEngine? = null
     private var timerJob: Job? = null
@@ -60,9 +64,6 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         arcadeRepository = ArcadeRepository(database.arcadeSessionDao())
     }
 
-    /**
-     * Initialize game with level or arcade mode
-     */
     fun initializeGame(levelNumber: Int, arcadeMode: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -71,20 +72,14 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 currentLevelNumber = levelNumber
                 isArcade = arcadeMode
 
-                // Get level configuration
                 val config = GameConfig.getLevelConfig(levelNumber)
-
-                // FIXED: GameTheme is an enum, use .entries or .values()
                 val randomTheme = GameTheme.entries.random()
 
-                // FIXED: Use themeName instead of name or displayName
                 Log.d(TAG, "Theme: ${randomTheme.themeName}, Grid: ${config.gridRows}x${config.gridColumns}")
 
-                // Initialize game engine
                 gameEngine = GameEngine(randomTheme, config)
                 val cards = gameEngine!!.initializeCards()
 
-                // Update UI state
                 _gameState.value = gameEngine!!.getGameState()
                 _timeElapsed.value = 0
                 _timeRemaining.value = config.timeLimit
@@ -92,7 +87,6 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 _score.value = 0
                 _isGameComplete.value = false
 
-                // Start timer
                 startTimer(config.timeLimit)
 
                 Log.d(TAG, "✅ Game initialized with ${cards.size} cards")
@@ -102,9 +96,6 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    /**
-     * Handle card click
-     */
     fun onCardClick(cardId: Int) {
         viewModelScope.launch {
             try {
@@ -113,23 +104,19 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 val (success, result) = engine.flipCard(cardId)
 
                 if (success) {
-                    // Update UI state immediately
                     updateGameState()
 
                     when (result) {
                         GameEngine.FlipResult.MATCH -> {
-                            // Match found - clear after short delay
                             delay(500)
                             engine.clearMatchedCards()
                             updateGameState()
 
-                            // Check if game is complete
                             if (engine.isGameComplete) {
                                 onGameComplete()
                             }
                         }
                         GameEngine.FlipResult.NO_MATCH -> {
-                            // No match - flip back after delay
                             delay(1000)
                             engine.resetFlippedCards()
                             updateGameState()
@@ -145,9 +132,6 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    /**
-     * Update game state from engine
-     */
     private fun updateGameState() {
         val engine = gameEngine ?: return
         val state = engine.getGameState()
@@ -157,9 +141,6 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         _score.value = state.score
     }
 
-    /**
-     * Start game timer
-     */
     private fun startTimer(timeLimit: Int) {
         timerJob?.cancel()
 
@@ -172,7 +153,6 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                     val remaining = timeLimit - _timeElapsed.value
                     _timeRemaining.value = remaining.coerceAtLeast(0)
 
-                    // Check time limit
                     if (remaining <= 0) {
                         onGameComplete()
                         break
@@ -182,25 +162,21 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    /**
-     * Handle game completion
-     */
     private suspend fun onGameComplete() {
         try {
             Log.d(TAG, "Game complete!")
             timerJob?.cancel()
             _isGameComplete.value = true
 
-            // FIXED: AuthManager is an object
             val userId = AuthManager.getCurrentUser()?.uid ?: return
             val finalScore = getFinalScore()
             val config = GameConfig.getLevelConfig(currentLevelNumber)
 
             if (isArcade) {
-                // Save arcade session
+                // Save arcade session to RoomDB
                 arcadeRepository.saveArcadeSession(
                     userId = userId,
-                    theme = "Random", // You can track actual theme if needed
+                    theme = "Random",
                     gridSize = "${config.gridRows}x${config.gridColumns}",
                     difficulty = config.difficulty.displayName,
                     score = finalScore.finalScore,
@@ -209,9 +185,9 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                     bonus = finalScore.timeBonus,
                     stars = finalScore.stars
                 )
-                Log.d(TAG, "✅ Arcade session saved")
+                Log.d(TAG, "✅ Arcade session saved to RoomDB")
             } else {
-                // Complete level and unlock next
+                // Complete level in RoomDB and unlock next
                 levelRepository.completeLevelAndUnlockNext(
                     userId = userId,
                     levelNumber = currentLevelNumber,
@@ -220,16 +196,66 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                     time = _timeElapsed.value,
                     moves = finalScore.moves
                 )
-                Log.d(TAG, "✅ Level $currentLevelNumber completed")
+                Log.d(TAG, "✅ Level $currentLevelNumber completed in RoomDB")
+
+                // NOW SAVE TO FIRESTORE
+                syncProgressToFirestore(userId)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error completing game: ${e.message}", e)
         }
     }
 
-    /**
-     * Get final score calculation
-     */
+    private suspend fun syncProgressToFirestore(userId: String) {
+        try {
+            Log.d(TAG, "🔄 Syncing progress to Firestore...")
+
+            // Get all level progress from RoomDB
+            val allLevels = levelRepository.getAllLevelsProgress(userId)
+
+            // Convert to LevelData map
+            val levelProgressMap = allLevels.associate { level ->
+                level.levelNumber to LevelData(
+                    levelNumber = level.levelNumber,
+                    stars = level.stars,
+                    bestScore = level.bestScore,
+                    bestTime = level.bestTime,
+                    bestMoves = level.bestMoves,
+                    isUnlocked = level.isUnlocked,
+                    isCompleted = level.isCompleted,
+                    timesPlayed = level.timesPlayed
+                )
+            }
+
+            // Find highest unlocked level
+            val currentLevel = allLevels.filter { it.isUnlocked }.maxOfOrNull { it.levelNumber } ?: 1
+
+            // Count completed levels
+            val completedCount = allLevels.count { it.isCompleted }
+
+            // Create GameProgress object
+            val gameProgress = GameProgress(
+                userId = userId,
+                currentLevel = currentLevel,
+                levelProgress = levelProgressMap,
+                unlockedCategories = listOf("Animals", "Fruits"),
+                totalGamesPlayed = allLevels.sumOf { it.timesPlayed },
+                gamesWon = completedCount
+            )
+
+            // Save to Firestore
+            val result = firestoreManager.saveGameProgress(gameProgress)
+            if (result.isSuccess) {
+                Log.d(TAG, "✅ Progress synced to Firestore! Level: $currentLevel, Completed: $completedCount")
+            } else {
+                Log.e(TAG, "❌ Firestore sync failed: ${result.exceptionOrNull()?.message}")
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error syncing to Firestore: ${e.message}", e)
+        }
+    }
+
     fun getFinalScore(): GameEngine.FinalScore {
         val engine = gameEngine ?: return GameEngine.FinalScore(0, 0, 0, 0, 0, 0)
         val config = GameConfig.getLevelConfig(currentLevelNumber)
