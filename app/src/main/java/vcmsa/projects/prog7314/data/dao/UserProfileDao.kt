@@ -43,6 +43,19 @@ interface UserProfileDao {
     @Query("UPDATE user_profile SET isSynced = 1 WHERE userId = :userId")
     suspend fun markAsSynced(userId: String)
 
+    // UPDATE AVATAR (NEW METHOD)
+    @Query("""
+        UPDATE user_profile 
+        SET avatarBase64 = :avatarBase64,
+            lastUpdated = :timestamp
+        WHERE userId = :userId
+    """)
+    suspend fun updateAvatar(
+        userId: String,
+        avatarBase64: String?,
+        timestamp: Long = System.currentTimeMillis()
+    )
+
     // UPDATE STATS
     @Query("""
         UPDATE user_profile 

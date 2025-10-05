@@ -1,6 +1,8 @@
 package vcmsa.projects.prog7314.ui.screens
 
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -29,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.data.models.CardBackground
 import vcmsa.projects.prog7314.data.repository.CardBackgroundRepository
@@ -58,20 +60,28 @@ fun SettingsScreen(
         userEmail.substring(0, minOf(2, userEmail.length)).uppercase()
     } else "U"
 
-    var profileImageUrl by remember { mutableStateOf<String?>(null) }
+    var profileImageBase64 by remember { mutableStateOf<String?>(null) }
     var isUploadingImage by remember { mutableStateOf(false) }
 
     // Card Background State
     val selectedCardBackground by cardBackgroundViewModel.selectedCardBackground.collectAsState()
 
     LaunchedEffect(Unit) {
-        val result = ProfileImageHelper.loadProfileImageUri()
+        // Try to load from local prefs first (faster)
+        val localImage = ProfileImageHelper.loadFromLocalPrefs(context)
+        if (localImage != null) {
+            profileImageBase64 = localImage
+        }
+
+        // Then load from Firestore (authoritative source)
+        val result = ProfileImageHelper.loadProfileImageBase64()
         if (result.isSuccess) {
-            val uri = result.getOrNull()
-            if (uri != null) {
-                profileImageUrl = uri
+            val base64 = result.getOrNull()
+            if (base64 != null) {
+                profileImageBase64 = base64
             }
         }
+
         // Load card background
         cardBackgroundViewModel.loadCardBackground()
     }
@@ -85,11 +95,11 @@ fun SettingsScreen(
             isUploadingImage = true
 
             coroutineScope.launch {
-                Log.d("SettingsScreen", "Calling ProfileImageHelper.saveProfileImage...")
+                Log.d("SettingsScreen", "Compressing and saving image...")
                 val result = ProfileImageHelper.saveProfileImage(context, it)
                 if (result.isSuccess) {
-                    profileImageUrl = result.getOrNull()
-                    Log.d("SettingsScreen", "✅ Image saved: $profileImageUrl")
+                    profileImageBase64 = result.getOrNull()
+                    Log.d("SettingsScreen", "✅ Image saved")
                 } else {
                     Log.e("SettingsScreen", "❌ Image save failed: ${result.exceptionOrNull()?.message}")
                 }
@@ -161,13 +171,34 @@ fun SettingsScreen(
                             .clickable { imagePickerLauncher.launch("image/*") },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (profileImageUrl != null) {
-                            AsyncImage(
-                                model = profileImageUrl,
-                                contentDescription = "Profile Picture",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
+                        if (profileImageBase64 != null) {
+                            // Decode Base64 to Bitmap and display
+                            val bitmap = remember(profileImageBase64) {
+                                try {
+                                    val decodedBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
+                                    BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                                } catch (e: Exception) {
+                                    Log.e("SettingsScreen", "Error decoding image", e)
+                                    null
+                                }
+                            }
+
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = "Profile Picture",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                // Fallback to initials if decode fails
+                                Text(
+                                    text = userInitials,
+                                    fontSize = 48.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
                         } else {
                             Text(
                                 text = userInitials,
@@ -370,7 +401,6 @@ fun SettingsScreen(
             onConfirm = {
                 SettingsManager.resetToDefaults(context)
                 BiometricHelper.setBiometricEnabled(context, false)
-                // Reset card background to default
                 cardBackgroundViewModel.setCardBackground(CardBackground.DEFAULT)
                 biometricEnabled = false
                 showResetDialog = false
@@ -404,6 +434,7 @@ fun SettingsScreen(
     }
 }
 
+// All the other composable functions remain the same...
 @Composable
 fun SectionHeader(title: String) {
     Text(
@@ -467,7 +498,6 @@ fun SettingsToggleCard(title: String, subtitle: String, checked: Boolean, onChec
     }
 }
 
-// NEW Card Background Dialog
 @Composable
 fun NewCardBackgroundDialog(
     currentBackground: CardBackground,

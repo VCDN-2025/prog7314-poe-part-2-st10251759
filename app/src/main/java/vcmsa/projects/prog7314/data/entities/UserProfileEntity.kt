@@ -9,7 +9,7 @@ data class UserProfileEntity(
     val userId: String,
     val username: String,
     val email: String,
-    val avatarUrl: String? = null,
+    val avatarBase64: String? = null, // Changed from avatarUrl to avatarBase64
     val totalXP: Int = 0,
     val level: Int = 1,
     val totalGamesPlayed: Int = 0,

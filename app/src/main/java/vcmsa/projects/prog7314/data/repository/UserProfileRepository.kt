@@ -162,8 +162,7 @@ class UserProfileRepository(
             false
         }
     }
-
-    // ===== HELPER FUNCTIONS =====
+// ===== HELPER FUNCTIONS =====
 
     /**
      * Create a new user profile with defaults
@@ -172,13 +171,13 @@ class UserProfileRepository(
         userId: String,
         username: String,
         email: String,
-        avatarUrl: String? = null
+        avatarBase64: String? = null
     ): Boolean {
         val newProfile = UserProfileEntity(
             userId = userId,
             username = username,
             email = email,
-            avatarUrl = avatarUrl,
+            avatarBase64 = avatarBase64,
             totalXP = 0,
             level = 1,
             totalGamesPlayed = 0,
@@ -194,7 +193,6 @@ class UserProfileRepository(
 
         return saveUserProfile(newProfile)
     }
-
     /**
      * Calculate and update win rate
      */

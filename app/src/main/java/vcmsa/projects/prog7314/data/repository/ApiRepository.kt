@@ -61,7 +61,7 @@ class ApiRepository {
                 userId = userProfile.userId,
                 username = userProfile.username,
                 email = userProfile.email,
-                avatarUrl = userProfile.avatarUrl,
+                avatarUrl = userProfile.avatarBase64,
                 totalXP = userProfile.totalXP,
                 level = userProfile.level,
                 totalGamesPlayed = userProfile.totalGamesPlayed,
