@@ -204,19 +204,21 @@ class GameViewModel : ViewModel() {
 
     /**
      * Complete the game and calculate results
+     * FIXED: Now stores time in milliseconds in GameResult for consistency
      */
     private fun completeGame() {
         stopTimer()
         _isGameComplete.value = true
 
-        val timeTaken = (_timeElapsed.value / 1000).toLong()
+        val timeInMilliseconds = _timeElapsed.value  // Keep as milliseconds
+        val timeInSeconds = (timeInMilliseconds / 1000).toLong()
         val moves = _moves.value
         val points = _points.value
 
         // Calculate stars (1-3)
         val stars = when {
-            moves <= currentGridSize.totalCards && timeTaken <= 30 -> 3
-            moves <= currentGridSize.totalCards * 1.5 && timeTaken <= 60 -> 2
+            moves <= currentGridSize.totalCards && timeInSeconds <= 30 -> 3
+            moves <= currentGridSize.totalCards * 1.5 && timeInSeconds <= 60 -> 2
             else -> 1
         }
 
@@ -227,10 +229,9 @@ class GameViewModel : ViewModel() {
             theme = currentTheme,
             gridSize = currentGridSize,
             moves = moves,
-            timeTaken = timeTaken,
+            timeTaken = timeInMilliseconds,  // FIXED: Store milliseconds instead of seconds
             points = points + bonus,
             stars = stars,
-
             bonus = bonus
         )
     }

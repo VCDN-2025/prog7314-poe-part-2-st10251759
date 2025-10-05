@@ -224,12 +224,7 @@ fun CompletionCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Replay Button
-                CircularActionButton(
-                    icon = Icons.Default.Refresh,
-                    backgroundColor = Color(0xFFFF9800),
-                    onClick = onReplay
-                )
+
 
                 // Next Level Button (if available)
                 if (onNextLevel != null) {
