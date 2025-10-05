@@ -42,24 +42,6 @@ jobs:
 
         run: chmod +x ./gradlew
  
-      - name: Cache Gradle packages
-
-        uses: actions/cache@v4
-
-        with:
-
-          path: |
-
-            ~/.gradle/caches
-
-            ~/.gradle/wrapper
-
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
-          restore-keys: |
-
-            ${{ runner.os }}-gradle-
- 
       - name: Build with Gradle
 
         run: ./gradlew build --stacktrace
@@ -68,47 +50,13 @@ jobs:
 
         run: ./gradlew testDebugUnitTest --stacktrace
  
-      - name: Generate test report
+      - name: Display test results
 
         if: always()
 
-        run: ./gradlew testDebugUnitTest
- 
-      - name: Upload test results
+        run: |
 
-        if: always()
+          echo "Test Results:"
 
-        uses: actions/upload-artifact@v4
-
-        with:
-
-          name: test-results
-
-          path: app/build/reports/tests/testDebugUnitTest/
- 
-      - name: Upload build artifacts
-
-        if: success()
-
-        uses: actions/upload-artifact@v4
-
-        with:
-
-          name: app-debug
-
-          path: app/build/outputs/apk/debug/*.apk
- 
-      - name: Test Report
-
-        uses: dorny/test-reporter@v1
-
-        if: always()
-
-        with:
-
-          name: Unit Test Results
-
-          path: app/build/test-results/testDebugUnitTest/*.xml
-
-          reporter: java-junit
+          cat app/build/test-results/testDebugUnitTest/*.xml || echo "No test results found"
  
