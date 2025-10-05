@@ -15,7 +15,6 @@ import vcmsa.projects.prog7314.utils.AuthManager
 
 class LevelSelectionViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "LevelSelectionViewModel"
-
     private val levelRepository: LevelRepository
 
     private val _levelsProgress = MutableStateFlow<List<LevelProgressEntity>>(emptyList())
@@ -30,7 +29,6 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
     init {
         val database = AppDatabase.getDatabase(application)
         levelRepository = LevelRepository(database.levelProgressDao())
-
         loadLevelsProgress()
     }
 
@@ -38,40 +36,56 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
      * Load levels progress for current user
      */
     private fun loadLevelsProgress() {
+        val userId = AuthManager.getCurrentUser()?.uid
+
+        if (userId == null) {
+            Log.e(TAG, "No user ID found")
+            _levelsProgress.value = emptyList()
+            _completedCount.value = 0
+            return
+        }
+
+        // Initialize levels in a separate coroutine
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                // FIXED: Get userId properly
-                val userId = AuthManager.getCurrentUser()?.uid
+                Log.d(TAG, "Loading levels for user: $userId")
 
-                if (userId != null) {
-                    Log.d(TAG, "Loading levels for user: $userId")
-
-                    // Initialize levels if not exists
-                    val existingLevels = levelRepository.getAllLevelsProgress(userId)
-                    if (existingLevels.isEmpty()) {
-                        Log.d(TAG, "No levels found, initializing...")
-                        levelRepository.initializeLevelsForUser(userId)
-                    }
-
-                    // Collect levels progress
-                    levelRepository.getAllLevelsProgressFlow(userId).collect { levels ->
-                        _levelsProgress.value = levels
-                        Log.d(TAG, "✅ Loaded ${levels.size} levels")
-                    }
-
-                    // Collect completed count
-                    levelRepository.getCompletedLevelsCountFlow(userId).collect { count ->
-                        _completedCount.value = count
-                        Log.d(TAG, "Completed levels: $count")
-                    }
-                } else {
-                    Log.e(TAG, "No user ID found")
+                // Initialize levels if not exists
+                val existingLevels = levelRepository.getAllLevelsProgress(userId)
+                if (existingLevels.isEmpty()) {
+                    Log.d(TAG, "No levels found, initializing...")
+                    levelRepository.initializeLevelsForUser(userId)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading levels: ${e.message}", e)
+                Log.e(TAG, "Error initializing levels: ${e.message}", e)
             } finally {
                 _isLoading.value = false
+            }
+        }
+
+        // FIXED: Launch separate coroutines for each Flow collection
+        // Collect levels progress
+        viewModelScope.launch {
+            try {
+                levelRepository.getAllLevelsProgressFlow(userId).collect { levels ->
+                    _levelsProgress.value = levels
+                    Log.d(TAG, "✅ Loaded ${levels.size} levels")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error collecting levels flow: ${e.message}", e)
+            }
+        }
+
+        // Collect completed count in a separate coroutine
+        viewModelScope.launch {
+            try {
+                levelRepository.getCompletedLevelsCountFlow(userId).collect { count ->
+                    _completedCount.value = count
+                    Log.d(TAG, "✅ Completed levels updated: $count")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error collecting completed count flow: ${e.message}", e)
             }
         }
     }
