@@ -210,7 +210,7 @@ fun PlayerInfoCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -219,7 +219,7 @@ fun PlayerInfoCard(
                     .size(32.dp)
                     .background(playerColor, RoundedCornerShape(16.dp))
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = playerName,
                 fontSize = 14.sp,

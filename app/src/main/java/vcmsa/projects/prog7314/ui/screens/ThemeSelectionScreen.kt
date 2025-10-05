@@ -7,17 +7,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
@@ -34,8 +34,8 @@ fun ThemeSelectionScreen(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF00BCD4), // Cyan
-                        Color(0xFF0288D1)  // Blue
+                        Color(0xFF00BCD4),
+                        Color(0xFF0288D1)
                     )
                 )
             )
@@ -45,49 +45,40 @@ fun ThemeSelectionScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header
+            // Back button - matching other screens
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.Start
             ) {
-                IconButton(onClick = onBackClick) {
-                    Text(
-                        text = "←",
-                        fontSize = 32.sp,
-                        color = Color.White
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF4A90E2)
                     )
                 }
             }
 
-            // Title
+            // Logo replacing the text
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "MEMORY",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFEB3B), // Yellow
-                    modifier = Modifier.padding(top = 8.dp)
+                Image(
+                    painter = painterResource(id = R.drawable.transparent_logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(140.dp)
+                        .padding(bottom = 16.dp),
+                    contentScale = ContentScale.Fit
                 )
-                Text(
-                    text = "MATCH",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFEB3B)
-                )
-                Text(
-                    text = "MADNESS",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFEB3B),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "CHOOSE THEME",

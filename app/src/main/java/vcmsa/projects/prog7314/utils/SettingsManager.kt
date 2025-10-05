@@ -18,6 +18,7 @@ object SettingsManager {
     private const val KEY_BACKGROUND_MUSIC = "background_music_enabled"
     private const val KEY_CARD_BACKGROUND = "card_background_theme"
     private const val KEY_HIGH_CONTRAST = "high_contrast_mode"
+    private const val KEY_PROFILE_IMAGE_URI = "profile_image_uri"
 
     // Default values
     private const val DEFAULT_LANGUAGE = "en"
@@ -34,6 +35,22 @@ object SettingsManager {
      */
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    // ===== PROFILE IMAGE SETTINGS =====
+
+    fun setProfileImageUri(context: Context, uriString: String?) {
+        getPreferences(context).edit().putString(KEY_PROFILE_IMAGE_URI, uriString).apply()
+        Log.d(TAG, "Profile image URI saved: $uriString")
+    }
+
+    fun getProfileImageUri(context: Context): String? {
+        return getPreferences(context).getString(KEY_PROFILE_IMAGE_URI, null)
+    }
+
+    fun clearProfileImage(context: Context) {
+        getPreferences(context).edit().remove(KEY_PROFILE_IMAGE_URI).apply()
+        Log.d(TAG, "Profile image cleared")
     }
 
     // ===== LANGUAGE SETTINGS =====
@@ -130,6 +147,7 @@ object SettingsManager {
             putBoolean(KEY_BACKGROUND_MUSIC, DEFAULT_BACKGROUND_MUSIC)
             putString(KEY_CARD_BACKGROUND, DEFAULT_CARD_BACKGROUND)
             putBoolean(KEY_HIGH_CONTRAST, DEFAULT_HIGH_CONTRAST)
+            // Note: We don't clear profile image on reset
             apply()
         }
         Log.d(TAG, "Settings reset to defaults")
@@ -150,7 +168,8 @@ object SettingsManager {
             "background_music" to isBackgroundMusicEnabled(context),
             "card_background" to getCardBackground(context),
             "high_contrast" to isHighContrastMode(context),
-            "biometric_enabled" to BiometricHelper.isBiometricEnabled(context)
+            "biometric_enabled" to BiometricHelper.isBiometricEnabled(context),
+            "profile_image_uri" to getProfileImageUri(context)
         )
     }
 

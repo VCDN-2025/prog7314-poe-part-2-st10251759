@@ -1,9 +1,9 @@
 package vcmsa.projects.prog7314.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,8 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.BiometricHelper
+import vcmsa.projects.prog7314.utils.ProfileImageHelper
 import vcmsa.projects.prog7314.utils.SettingsManager
 
 @Composable
@@ -40,8 +42,8 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val activity = context as? FragmentActivity
+    val coroutineScope = rememberCoroutineScope()
 
-    // GET REAL USER DATA
     val currentUser = AuthManager.getCurrentUser()
     val userEmail = currentUser?.email ?: ""
     val userName = currentUser?.displayName ?: userEmail.substringBefore("@")
@@ -49,12 +51,41 @@ fun SettingsScreen(
         userEmail.substring(0, minOf(2, userEmail.length)).uppercase()
     } else "U"
 
-    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
+    var profileImageUrl by remember { mutableStateOf<String?>(null) }
+    var isUploadingImage by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val result = ProfileImageHelper.loadProfileImageUri()
+        if (result.isSuccess) {
+            val uri = result.getOrNull()
+            if (uri != null) {
+                profileImageUrl = uri
+            }
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        profileImageUri = uri
+        Log.d("SettingsScreen", "Image picker returned: $uri")
+        uri?.let {
+            Log.d("SettingsScreen", "Starting upload...")
+            isUploadingImage = true
+
+            coroutineScope.launch {
+                Log.d("SettingsScreen", "Calling ProfileImageHelper.saveProfileImage...")
+                val result = ProfileImageHelper.saveProfileImage(context, it)
+                if (result.isSuccess) {
+                    profileImageUrl = result.getOrNull()
+                    Log.d("SettingsScreen", "✅ Image saved: $profileImageUrl")
+                } else {
+                    Log.e("SettingsScreen", "❌ Image save failed: ${result.exceptionOrNull()?.message}")
+                }
+                isUploadingImage = false
+            }
+        } ?: run {
+            Log.d("SettingsScreen", "No image selected (uri was null)")
+        }
     }
 
     var cardBackground by remember { mutableStateOf(SettingsManager.getCardBackground(context)) }
@@ -80,7 +111,6 @@ fun SettingsScreen(
             )
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,14 +135,12 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
-                // PROFILE SECTION - CENTERED DESIGN
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Profile Picture
                     Box(
                         modifier = Modifier
                             .size(120.dp)
@@ -122,9 +150,9 @@ fun SettingsScreen(
                             .clickable { imagePickerLauncher.launch("image/*") },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (profileImageUri != null) {
+                        if (profileImageUrl != null) {
                             AsyncImage(
-                                model = profileImageUri,
+                                model = profileImageUrl,
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
@@ -134,6 +162,13 @@ fun SettingsScreen(
                                 text = userInitials,
                                 fontSize = 48.sp,
                                 fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        if (isUploadingImage) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(40.dp),
                                 color = Color.White
                             )
                         }
@@ -155,14 +190,13 @@ fun SettingsScreen(
                     )
 
                     Text(
-                        text = "Tap photo to change",
+                        text = if (isUploadingImage) "Saving..." else "Tap photo to change",
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.6f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
 
-                // ACCOUNT SECTION
                 SectionHeader("ACCOUNT")
 
                 SettingsCard(
@@ -186,7 +220,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // APPEARANCE
                 SectionHeader("APPEARANCE")
 
                 SettingsCard(
@@ -197,7 +230,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // LANGUAGE (GREYED OUT)
                 SectionHeader("LANGUAGE")
 
                 SettingsCardDisabled(
@@ -207,7 +239,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // NOTIFICATIONS (GREYED OUT)
                 SectionHeader("NOTIFICATIONS")
 
                 SettingsCardDisabled(
@@ -217,7 +248,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // BIOMETRIC
                 if (isBiometricAvailable) {
                     SectionHeader("BIOMETRIC & SECURITY")
 
@@ -251,7 +281,6 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // AUDIO (GREYED OUT)
                 SectionHeader("AUDIO")
 
                 SettingsCardDisabled(
@@ -261,7 +290,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ABOUT
                 SectionHeader("ABOUT")
 
                 SettingsCard(
@@ -272,7 +300,6 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // RESET BUTTON
                 Button(
                     onClick = { showResetDialog = true },
                     modifier = Modifier
@@ -290,7 +317,6 @@ fun SettingsScreen(
         }
     }
 
-    // Dialogs
     if (showCardBackgroundDialog) {
         CardBackgroundDialog(
             currentBackground = cardBackground,

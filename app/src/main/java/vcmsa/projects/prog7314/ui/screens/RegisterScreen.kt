@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -45,34 +46,24 @@ fun RegisterScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Google Sign-In launcher
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
             val account = task.getResult(ApiException::class.java)
-            // Sign in with Firebase using the Google account
             coroutineScope.launch {
                 isLoading = true
                 when (val authResult = AuthManager.signInWithGoogle(account)) {
                     is AuthResult.Success -> {
-                        // Save user profile to database
                         val userId = authResult.user?.uid ?: ""
                         val userEmail = authResult.user?.email ?: ""
                         val username = authResult.user?.displayName ?: userEmail.substringBefore("@")
 
                         val userRepo = RepositoryProvider.getUserProfileRepository()
-
-                        // Check if user profile exists
                         val existingProfile = userRepo.getUserProfile(userId)
                         if (existingProfile == null) {
-                            // Create new profile
-                            userRepo.createNewUserProfile(
-                                userId = userId,
-                                username = username,
-                                email = userEmail
-                            )
+                            userRepo.createNewUserProfile(userId, username, userEmail)
                             Log.d("RegisterScreen", "✅ New Google user profile created in database")
                         }
 
@@ -96,10 +87,7 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF00BCD4), // Cyan
-                        Color(0xFF0288D1)  // Blue
-                    )
+                    colors = listOf(Color(0xFF00BCD4), Color(0xFF0288D1))
                 )
             )
     ) {
@@ -110,31 +98,37 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo
             Image(
                 painter = painterResource(id = R.drawable.transparent_logo),
                 contentDescription = "Memory Match Madness Logo",
-                modifier = Modifier
-                    .size(120.dp)
-                    .padding(bottom = 16.dp),
+                modifier = Modifier.size(180.dp).padding(bottom = 16.dp),
                 contentScale = ContentScale.Fit
             )
 
-            Text(
-                text = "TEST YOUR MEMORY SKILLS!",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.8f),
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                repeat(3) {
+                    Text(
+                        text = "TEST YOUR MEMORY SKILLS!",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.Black,
+                        modifier = Modifier.offset(x = 1.dp, y = 1.dp)
+                    )
+                }
+                Text(
+                    text = "TEST YOUR MEMORY SKILLS!",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+            }
 
-            // Register Form Card
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.9f)
-                ),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
@@ -149,67 +143,42 @@ fun RegisterScreen(
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
 
-                    // Error Message
                     if (errorMessage.isNotEmpty()) {
-                        Text(
-                            text = errorMessage,
-                            color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                        Text(errorMessage, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(bottom = 16.dp))
                     }
 
-                    // Email Field
                     OutlinedTextField(
                         value = email,
-                        onValueChange = {
-                            email = it
-                            errorMessage = ""
-                        },
+                        onValueChange = { email = it; errorMessage = "" },
                         label = { Text("Email Address") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
                         enabled = !isLoading
                     )
 
-                    // Password Field
                     OutlinedTextField(
                         value = password,
-                        onValueChange = {
-                            password = it
-                            errorMessage = ""
-                        },
+                        onValueChange = { password = it; errorMessage = "" },
                         label = { Text("Password") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         enabled = !isLoading
                     )
 
-                    // Confirm Password Field
                     OutlinedTextField(
                         value = confirmPassword,
-                        onValueChange = {
-                            confirmPassword = it
-                            errorMessage = ""
-                        },
+                        onValueChange = { confirmPassword = it; errorMessage = "" },
                         label = { Text("Confirm Password") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         enabled = !isLoading
                     )
 
-                    // Register Button
                     Button(
                         onClick = {
                             when {
@@ -229,23 +198,15 @@ fun RegisterScreen(
                                     isLoading = true
                                     errorMessage = ""
 
-                                    // Firebase registration
                                     coroutineScope.launch {
                                         when (val result = AuthManager.registerWithEmail(email, password)) {
                                             is AuthResult.Success -> {
-                                                // Save user profile to database
                                                 val userId = result.user?.uid ?: ""
                                                 val userEmail = result.user?.email ?: ""
                                                 val username = userEmail.substringBefore("@")
 
                                                 val userRepo = RepositoryProvider.getUserProfileRepository()
-
-                                                // Create new profile for registered user
-                                                userRepo.createNewUserProfile(
-                                                    userId = userId,
-                                                    username = username,
-                                                    email = userEmail
-                                                )
+                                                userRepo.createNewUserProfile(userId, username, userEmail)
                                                 Log.d("RegisterScreen", "✅ New user profile created in database")
 
                                                 isLoading = false
@@ -260,77 +221,42 @@ fun RegisterScreen(
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(bottom = 16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFF9800) // Orange
-                        ),
+                        modifier = Modifier.fillMaxWidth().height(50.dp).padding(bottom = 16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                         shape = RoundedCornerShape(25.dp),
                         enabled = !isLoading
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Text(
-                                text = "PLAY NOW",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Text("PLAY NOW", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
-                    Text(
-                        text = "or continue with",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                    Text("or continue with", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+
+                    Image(
+                        painter = painterResource(id = R.drawable.android_neutral),
+                        contentDescription = "Sign up with Google",
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(60.dp)
+                            .padding(bottom = 16.dp)
+                            .clickable(enabled = !isLoading) {
+                                isLoading = true
+                                val signInIntent = AuthManager.getGoogleSignInIntent()
+                                if (signInIntent != null) {
+                                    googleSignInLauncher.launch(signInIntent)
+                                } else {
+                                    isLoading = false
+                                    errorMessage = "Google Sign-In not initialized"
+                                }
+                            },
+                        contentScale = ContentScale.Fit
                     )
 
-                    // Google Sign-Up Button
-                    Button(
-                        onClick = {
-                            isLoading = true
-                            val signInIntent = AuthManager.getGoogleSignInIntent()
-                            if (signInIntent != null) {
-                                googleSignInLauncher.launch(signInIntent)
-                            } else {
-                                isLoading = false
-                                errorMessage = "Google Sign-In not initialized"
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(bottom = 16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE91E63) // Pink
-                        ),
-                        shape = RoundedCornerShape(25.dp),
-                        enabled = !isLoading
-                    ) {
-                        Text(
-                            text = "SIGN UP WITH GOOGLE",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-
-                    // Already Have Account
-                    TextButton(
-                        onClick = onNavigateToLogin,
-                        enabled = !isLoading
-                    ) {
-                        Text(
-                            text = "Already Have an Account?",
-                            color = Color(0xFF0288D1)
-                        )
+                    TextButton(onClick = onNavigateToLogin, enabled = !isLoading) {
+                        Text("Already Have an Account?", color = Color(0xFF0288D1))
                     }
                 }
             }
