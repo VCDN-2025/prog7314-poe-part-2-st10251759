@@ -10,6 +10,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
 
 object AuthManager {
@@ -130,6 +132,108 @@ object AuthManager {
         } catch (e: Exception) {
             Log.e(TAG, "Password reset error: ${e.message}", e)
             AuthResult.Error(e.message ?: "Failed to send reset email")
+        }
+    }
+
+    // ===== PROFILE & PASSWORD MANAGEMENT =====
+
+    /**
+     * Update user's display name
+     */
+    suspend fun updateDisplayName(displayName: String): AuthResult {
+        return try {
+            val user = auth.currentUser
+            if (user == null) {
+                Log.e(TAG, "Cannot update display name: No user logged in")
+                return AuthResult.Error("No user logged in")
+            }
+
+            Log.d(TAG, "Updating display name to: $displayName")
+
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(displayName)
+                .build()
+
+            user.updateProfile(profileUpdates).await()
+
+            Log.d(TAG, "Display name updated successfully")
+            AuthResult.Success(user)
+        } catch (e: Exception) {
+            Log.e(TAG, "Display name update error: ${e.message}", e)
+            AuthResult.Error(e.message ?: "Failed to update display name")
+        }
+    }
+
+    /**
+     * Reauthenticate user with email and password
+     * Required before sensitive operations like password change
+     */
+    suspend fun reauthenticateUser(email: String, password: String): AuthResult {
+        return try {
+            val user = auth.currentUser
+            if (user == null) {
+                Log.e(TAG, "Cannot reauthenticate: No user logged in")
+                return AuthResult.Error("No user logged in")
+            }
+
+            Log.d(TAG, "Reauthenticating user: $email")
+
+            val credential = EmailAuthProvider.getCredential(email, password)
+            user.reauthenticate(credential).await()
+
+            Log.d(TAG, "Reauthentication successful")
+            AuthResult.Success(user)
+        } catch (e: Exception) {
+            Log.e(TAG, "Reauthentication error: ${e.message}", e)
+            AuthResult.Error(e.message ?: "Reauthentication failed")
+        }
+    }
+
+    /**
+     * Change user's password
+     * Note: User must be reauthenticated before calling this
+     */
+    suspend fun changePassword(newPassword: String): AuthResult {
+        return try {
+            val user = auth.currentUser
+            if (user == null) {
+                Log.e(TAG, "Cannot change password: No user logged in")
+                return AuthResult.Error("No user logged in")
+            }
+
+            Log.d(TAG, "Changing password for user: ${user.email}")
+
+            user.updatePassword(newPassword).await()
+
+            Log.d(TAG, "Password changed successfully")
+            AuthResult.Success(user)
+        } catch (e: Exception) {
+            Log.e(TAG, "Password change error: ${e.message}", e)
+            AuthResult.Error(e.message ?: "Failed to change password")
+        }
+    }
+
+    /**
+     * Update user's email address (optional - use with caution)
+     * Note: User must be reauthenticated before calling this
+     */
+    suspend fun updateEmail(newEmail: String): AuthResult {
+        return try {
+            val user = auth.currentUser
+            if (user == null) {
+                Log.e(TAG, "Cannot update email: No user logged in")
+                return AuthResult.Error("No user logged in")
+            }
+
+            Log.d(TAG, "Updating email to: $newEmail")
+
+            user.updateEmail(newEmail).await()
+
+            Log.d(TAG, "Email updated successfully")
+            AuthResult.Success(user)
+        } catch (e: Exception) {
+            Log.e(TAG, "Email update error: ${e.message}", e)
+            AuthResult.Error(e.message ?: "Failed to update email")
         }
     }
 

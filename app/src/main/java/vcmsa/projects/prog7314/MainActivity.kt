@@ -45,6 +45,9 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Switch from splash theme to app theme
+        setTheme(android.R.style.Theme_Material_Light_NoActionBar)
+
         FirebaseHelper.initializeFirebase()
         AuthManager.initializeGoogleSignIn(this)
         testApiConnection()
@@ -282,6 +285,10 @@ fun MemoryMatchMadnessApp() {
     var showMultiplayerSetup by remember { mutableStateOf(false) }
     var showMultiplayerGame by remember { mutableStateOf(false) }
 
+    // NEW: Edit Profile and Change Password screens
+    var showEditProfile by remember { mutableStateOf(false) }
+    var showChangePassword by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val activity = context as? FragmentActivity
     val coroutineScope = rememberCoroutineScope()
@@ -364,12 +371,44 @@ fun MemoryMatchMadnessApp() {
                     showSettingsScreen = false
                     showMainMenu = true
                 },
-                onEditProfile = {},
-                onChangePassword = {},
+                onEditProfile = {
+                    showSettingsScreen = false
+                    showEditProfile = true
+                },
+                onChangePassword = {
+                    showSettingsScreen = false
+                    showChangePassword = true
+                },
                 onLogout = {
                     showSettingsScreen = false
                     showLoginScreen = true
                     userEmail = ""
+                }
+            )
+        }
+
+        showEditProfile -> {
+            EditProfileScreen(
+                onBackClick = {
+                    showEditProfile = false
+                    showSettingsScreen = true
+                },
+                onSaveSuccess = {
+                    showEditProfile = false
+                    showSettingsScreen = true
+                }
+            )
+        }
+
+        showChangePassword -> {
+            ChangePasswordScreen(
+                onBackClick = {
+                    showChangePassword = false
+                    showSettingsScreen = true
+                },
+                onChangeSuccess = {
+                    showChangePassword = false
+                    showSettingsScreen = true
                 }
             )
         }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -89,7 +88,7 @@ fun ArcadeGameplayScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp)
+                .padding(top = 32.dp, start = 12.dp, end = 12.dp, bottom = 12.dp)
         ) {
             // Game Header
             GameHeaderBar(
@@ -98,8 +97,7 @@ fun ArcadeGameplayScreen(
                 time = if (config.timeLimit > 0) formatTime(timeRemaining) else formatTime(timeElapsed),
                 moves = moves,
                 maxMoves = config.maxMoves,
-                onBackClick = onBackClick,
-                onPauseClick = { /* Handle pause */ }
+                onBackClick = onBackClick
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -123,7 +121,7 @@ fun ArcadeGameplayScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Cards Grid - Updated to pass cardBackgroundDrawable
+            // Cards Grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(config.gridColumns),
                 contentPadding = PaddingValues(4.dp),
@@ -157,8 +155,7 @@ fun GameHeaderBar(
     time: String,
     moves: Int,
     maxMoves: Int,
-    onBackClick: () -> Unit,
-    onPauseClick: () -> Unit
+    onBackClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -211,20 +208,6 @@ fun GameHeaderBar(
             value = "$moves",
             color = Color(0xFFFF9800)
         )
-
-        // Menu button
-        IconButton(
-            onClick = onPauseClick,
-            modifier = Modifier
-                .size(40.dp)
-                .background(Color(0xFFFFF3E0), RoundedCornerShape(8.dp))
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "Menu",
-                tint = Color(0xFFFF9800)
-            )
-        }
     }
 }
 
@@ -289,7 +272,7 @@ fun GameCardItem(
         contentAlignment = Alignment.Center
     ) {
         if (rotation <= 90f) {
-            // Card back - use selected background
+            // Card back
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -304,7 +287,6 @@ fun GameCardItem(
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // Fallback to default if no custom background is set
                     Image(
                         painter = painterResource(id = R.drawable.blue_card_background),
                         contentDescription = null,

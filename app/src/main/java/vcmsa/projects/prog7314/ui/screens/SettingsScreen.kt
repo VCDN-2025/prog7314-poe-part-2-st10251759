@@ -15,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -132,23 +134,35 @@ fun SettingsScreen(
             )
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Back button - matching arcade mode style
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.Start
             ) {
-                IconButton(onClick = onBackClick) {
-                    Text("←", fontSize = 32.sp, color = Color.White)
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF4A90E2)
+                    )
                 }
-                Text(
-                    text = "SETTINGS",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
             }
+
+            // Settings title - moved down
+            Text(
+                text = "SETTINGS",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
+            )
 
             Column(
                 modifier = Modifier

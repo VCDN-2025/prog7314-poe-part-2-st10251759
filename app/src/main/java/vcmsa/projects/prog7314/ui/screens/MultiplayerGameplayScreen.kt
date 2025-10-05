@@ -8,9 +8,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -90,7 +94,7 @@ fun MultiplayerGameplayScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Game Grid - Updated to pass cardBackgroundDrawable
+            // Game Grid
             gameState?.let { state ->
                 MultiplayerGameGrid(
                     cards = state.cards,
@@ -135,130 +139,185 @@ fun MultiplayerGameHeader(
     onPauseClick: () -> Unit,
     isPaused: Boolean
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        // Player 1 (Red)
-        PlayerScoreCard(
-            player = player1,
-            modifier = Modifier.weight(1f)
-        )
-
-        // VS + Timer + Pause
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 8.dp)
+        // Player Cards Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "VS",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF333333)
+            // Player 1 Card
+            ModernPlayerCard(
+                player = player1,
+                playerLabel = "RED",
+                modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Timer
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "⏱",
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = formatTime(timeElapsed),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF666666)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Pause Button
-            IconButton(
-                onClick = onPauseClick,
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(Color(0xFFFFC107), RoundedCornerShape(8.dp))
-            ) {
-                Text(
-                    text = if (isPaused) "▶" else "⏸",
-                    fontSize = 12.sp,
-                    color = Color.White
-                )
-            }
+            // Player 2 Card
+            ModernPlayerCard(
+                player = player2,
+                playerLabel = "BLUE",
+                modifier = Modifier.weight(1f)
+            )
         }
 
-        // Player 2 (Blue)
-        PlayerScoreCard(
-            player = player2,
-            modifier = Modifier.weight(1f)
-        )
+        // Timer and Controls Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(6.dp, RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.95f)
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // VS Badge
+                Box(
+                    modifier = Modifier
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFFE53935),
+                                    Color(0xFF1E88E5)
+                                )
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 24.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = "VS",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+
+                // Timer Display
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = "Timer",
+                        tint = Color(0xFF666666),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = formatTime(timeElapsed),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF333333)
+                    )
+                }
+
+                // Pause/Play Button
+                IconButton(
+                    onClick = onPauseClick,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Color(0xFFFFC107),
+                            RoundedCornerShape(12.dp)
+                        )
+                ) {
+                    Icon(
+                        imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                        contentDescription = if (isPaused) "Resume" else "Pause",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun PlayerScoreCard(
+fun ModernPlayerCard(
     player: vcmsa.projects.prog7314.data.models.Player,
+    playerLabel: String,
     modifier: Modifier = Modifier
 ) {
+    val isActive = player.isCurrentTurn
+
     Card(
         modifier = modifier
             .shadow(
-                elevation = if (player.isCurrentTurn) 6.dp else 2.dp,
-                shape = RoundedCornerShape(10.dp)
+                elevation = if (isActive) 8.dp else 4.dp,
+                shape = RoundedCornerShape(16.dp)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = if (player.isCurrentTurn)
-                player.color.copy(alpha = 0.15f)
-            else
+            containerColor = if (isActive)
                 Color.White
+            else
+                Color.White.copy(alpha = 0.7f)
         ),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Color Circle
             Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .background(player.color, RoundedCornerShape(12.dp))
+                    .size(40.dp)
+                    .shadow(4.dp, CircleShape)
+                    .background(player.color, CircleShape)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Player Label
             Text(
-                text = if (player.playerColor == PlayerColor.RED) "Red" else "Blue",
+                text = playerLabel,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = player.color
+                color = player.color,
+                letterSpacing = 1.sp
             )
 
+            // Score
             Text(
                 text = "${player.score}",
-                fontSize = 24.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF333333)
             )
 
-            if (player.isCurrentTurn) {
-                Text(
-                    text = "Your Turn",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = player.color
-                )
+            // Turn Indicator
+            if (isActive) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .background(
+                            player.color.copy(alpha = 0.2f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Your Turn",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = player.color
+                    )
+                }
             }
         }
     }
@@ -319,7 +378,7 @@ fun MultiplayerCardItem(
             )
     ) {
         if (rotation <= 90f) {
-            // Card back - use selected background
+            // Card back
             if (cardBackgroundDrawable != 0) {
                 Image(
                     painter = painterResource(id = cardBackgroundDrawable),
@@ -471,11 +530,11 @@ fun MultiplayerWinnerDialog(
             ) {
                 Text(
                     text = when (result.winner) {
-                        PlayerColor.RED -> "🏆 PLAYER 1 WINS! 🏆"
-                        PlayerColor.BLUE -> "🏆 PLAYER 2 WINS! 🏆"
-                        null -> "🤝 IT'S A TIE! 🤝"
+                        PlayerColor.RED -> "RED WINS!"
+                        PlayerColor.BLUE -> "BLUE WINS!"
+                        null -> "IT'S A TIE!"
                     },
-                    fontSize = 24.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = when (result.winner) {
                         PlayerColor.RED -> Color(0xFFE53935)
@@ -501,7 +560,7 @@ fun MultiplayerWinnerDialog(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Player 1",
+                            text = "Red",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF333333)
@@ -532,7 +591,7 @@ fun MultiplayerWinnerDialog(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Player 2",
+                            text = "Blue",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF333333)

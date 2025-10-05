@@ -48,7 +48,7 @@ fun LevelSelectionScreen(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF4A90E2), // Blue gradient like wireframe
+                        Color(0xFF4A90E2),
                         Color(0xFF5BA3F5)
                     )
                 )
@@ -59,11 +59,11 @@ fun LevelSelectionScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header with back button
+            // Header with back button - MOVED DOWN
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(top = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -88,12 +88,12 @@ fun LevelSelectionScreen(
                     .padding(bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo placeholder - you can add your logo image here
+                // Logo - MADE BIGGER
                 Image(
                     painter = painterResource(id = R.drawable.transparent_logo),
                     contentDescription = "Logo",
                     modifier = Modifier
-                        .height(80.dp)
+                        .height(120.dp)
                         .padding(bottom = 8.dp)
                 )
 
@@ -154,9 +154,9 @@ fun LevelCard(
     onClick: () -> Unit
 ) {
     val cardColor = when {
-        level.isCompleted -> Color(0xFFE91E63) // Pink for completed (like wireframe)
-        level.isUnlocked -> Color(0xFFE91E63) // Pink for current/unlocked
-        else -> Color(0xFF64748B) // Gray/blue for locked
+        level.isCompleted -> Color(0xFFE91E63)
+        level.isUnlocked -> Color(0xFFE91E63)
+        else -> Color(0xFF64748B)
     }
 
     val animatedScale by animateFloatAsState(

@@ -48,7 +48,7 @@ fun ArcadeModeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(top = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
                 IconButton(
