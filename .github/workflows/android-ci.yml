@@ -1,32 +1,48 @@
 name: Android CI
-
+ 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
 
+  push:
+
+    branches: [ "main" ]
+
+  pull_request:
+
+    branches: [ "main" ]
+
+  workflow_dispatch:
+ 
 jobs:
+
   build:
 
     runs-on: ubuntu-latest
-
+ 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Checkout code
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x ./gradlew
+        uses: actions/checkout@v4
+ 
+      - name: Set up JDK 17
 
-    - name: Build with Gradle
-      run: ./gradlew build
+        uses: actions/setup-java@v4
 
-    - name: Run unit tests
-      run: ./gradlew testDebugUnitTest
+        with:
+
+          distribution: 'temurin'
+
+          java-version: '17'
+ 
+      - name: Grant execute permission for gradlew
+
+        run: chmod +x ./gradlew
+ 
+      - name: Build with Gradle
+
+        run: ./gradlew build
+ 
+      - name: Run unit tests
+
+        run: ./gradlew testDebugUnitTest
+ 
