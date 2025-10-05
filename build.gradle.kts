@@ -6,3 +6,14 @@ plugins {
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply false
 }
+
+// Optional: Add allprojects configuration for consistent dependency versions
+allprojects {
+    repositories {
+        // Repositories are usually in settings.gradle.kts now
+    }
+}
+
+tasks.register("clean", Delete::class) {
+    delete(rootProject.layout.buildDirectory)
+}
