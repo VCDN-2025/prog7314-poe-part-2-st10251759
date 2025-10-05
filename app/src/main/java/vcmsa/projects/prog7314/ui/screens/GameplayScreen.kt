@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,10 +27,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameCard
 import vcmsa.projects.prog7314.data.models.GameResult
-
 import vcmsa.projects.prog7314.data.models.GameTheme
 import vcmsa.projects.prog7314.data.models.GridSize
 import vcmsa.projects.prog7314.ui.viewmodels.GameViewModel
+import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 
 @Composable
 fun GameplayScreen(
@@ -37,14 +38,19 @@ fun GameplayScreen(
     gridSize: GridSize,
     onBackClick: () -> Unit,
     onGameComplete: () -> Unit,
-    viewModel: GameViewModel = viewModel()
+    viewModel: GameViewModel = viewModel(),
+    cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val gameState by viewModel.gameState.collectAsState()
     val timeElapsed by viewModel.timeElapsed.collectAsState()
     val moves by viewModel.moves.collectAsState()
     val points by viewModel.points.collectAsState()
     val isGameComplete by viewModel.isGameComplete.collectAsState()
     val gameResult by viewModel.gameResult.collectAsState()
+
+    // Get card background drawable
+    val cardBackgroundDrawable by cardBackgroundViewModel.cardBackgroundDrawable.collectAsState()
 
     // Initialize game once
     LaunchedEffect(theme, gridSize) {
@@ -78,11 +84,12 @@ fun GameplayScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Game grid
+            // Game grid - Updated to pass cardBackgroundDrawable
             gameState?.let { state ->
                 GameGrid(
                     cards = state.cards,
                     gridColumns = gridSize.columns,
+                    cardBackgroundDrawable = cardBackgroundDrawable,
                     onCardClick = { card ->
                         viewModel.onCardClicked(card)
                     }
@@ -206,6 +213,7 @@ fun StatItem(
 fun GameGrid(
     cards: List<GameCard>,
     gridColumns: Int,
+    cardBackgroundDrawable: Int,
     onCardClick: (GameCard) -> Unit
 ) {
     LazyVerticalGrid(
@@ -218,6 +226,7 @@ fun GameGrid(
         items(cards) { card ->
             FlipCard(
                 card = card,
+                cardBackgroundDrawable = cardBackgroundDrawable,
                 onClick = { onCardClick(card) }
             )
         }
@@ -227,6 +236,7 @@ fun GameGrid(
 @Composable
 fun FlipCard(
     card: GameCard,
+    cardBackgroundDrawable: Int,
     onClick: () -> Unit
 ) {
     var rotated by remember { mutableStateOf(false) }
@@ -266,7 +276,7 @@ fun FlipCard(
             contentAlignment = Alignment.Center
         ) {
             if (animateFront) {
-                // Card back
+                // Card back - use selected background
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -280,12 +290,22 @@ fun FlipCard(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.blue_card_background),
-                        contentDescription = "Card back",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (cardBackgroundDrawable != 0) {
+                        Image(
+                            painter = painterResource(id = cardBackgroundDrawable),
+                            contentDescription = "Card back",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        // Fallback to default
+                        Image(
+                            painter = painterResource(id = R.drawable.blue_card_background),
+                            contentDescription = "Card back",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
             } else {
                 // Card front (flipped)

@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +34,7 @@ import vcmsa.projects.prog7314.data.models.GameCard
 import vcmsa.projects.prog7314.data.models.GameTheme
 import vcmsa.projects.prog7314.data.models.PlayerColor
 import vcmsa.projects.prog7314.ui.viewmodels.MultiplayerViewModel
+import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 
 
 @Composable
@@ -40,13 +42,18 @@ fun MultiplayerGameplayScreen(
     theme: GameTheme,
     onBackClick: () -> Unit,
     onHomeClick: () -> Unit,
-    viewModel: MultiplayerViewModel = viewModel()
+    viewModel: MultiplayerViewModel = viewModel(),
+    cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val gameState by viewModel.gameState.collectAsState()
     val timeElapsed by viewModel.timeElapsed.collectAsState()
     val totalMoves by viewModel.totalMoves.collectAsState()
     val isGameComplete by viewModel.isGameComplete.collectAsState()
     val isPaused by viewModel.isPaused.collectAsState()
+
+    // Get card background drawable
+    val cardBackgroundDrawable by cardBackgroundViewModel.cardBackgroundDrawable.collectAsState()
 
     // Initialize game
     LaunchedEffect(theme) {
@@ -83,10 +90,11 @@ fun MultiplayerGameplayScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Game Grid - 6x4 fixed
+            // Game Grid - Updated to pass cardBackgroundDrawable
             gameState?.let { state ->
                 MultiplayerGameGrid(
                     cards = state.cards,
+                    cardBackgroundDrawable = cardBackgroundDrawable,
                     onCardClick = { card ->
                         if (!isPaused) {
                             viewModel.onCardClick(card.id)
@@ -259,6 +267,7 @@ fun PlayerScoreCard(
 @Composable
 fun MultiplayerGameGrid(
     cards: List<GameCard>,
+    cardBackgroundDrawable: Int,
     onCardClick: (GameCard) -> Unit,
     enabled: Boolean
 ) {
@@ -274,6 +283,7 @@ fun MultiplayerGameGrid(
         ) { card ->
             MultiplayerCardItem(
                 card = card,
+                cardBackgroundDrawable = cardBackgroundDrawable,
                 onClick = {
                     if (enabled) {
                         onCardClick(card)
@@ -287,6 +297,7 @@ fun MultiplayerGameGrid(
 @Composable
 fun MultiplayerCardItem(
     card: GameCard,
+    cardBackgroundDrawable: Int,
     onClick: () -> Unit
 ) {
     val rotation by animateFloatAsState(
@@ -308,15 +319,28 @@ fun MultiplayerCardItem(
             )
     ) {
         if (rotation <= 90f) {
-            Image(
-                painter = painterResource(id = R.drawable.blue_card_background),
-                contentDescription = "Card Back",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
-                    .shadow(4.dp, RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
+            // Card back - use selected background
+            if (cardBackgroundDrawable != 0) {
+                Image(
+                    painter = painterResource(id = cardBackgroundDrawable),
+                    contentDescription = "Card Back",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
+                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.blue_card_background),
+                    contentDescription = "Card Back",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
+                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
         } else {
             Image(
                 painter = painterResource(id = card.imageResId),

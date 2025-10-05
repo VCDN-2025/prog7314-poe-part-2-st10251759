@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,13 +22,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
+import vcmsa.projects.prog7314.data.models.CardBackground
+import vcmsa.projects.prog7314.data.repository.CardBackgroundRepository
+import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.BiometricHelper
 import vcmsa.projects.prog7314.utils.ProfileImageHelper
@@ -38,7 +44,8 @@ fun SettingsScreen(
     onBackClick: () -> Unit = {},
     onEditProfile: () -> Unit = {},
     onChangePassword: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -54,6 +61,9 @@ fun SettingsScreen(
     var profileImageUrl by remember { mutableStateOf<String?>(null) }
     var isUploadingImage by remember { mutableStateOf(false) }
 
+    // Card Background State
+    val selectedCardBackground by cardBackgroundViewModel.selectedCardBackground.collectAsState()
+
     LaunchedEffect(Unit) {
         val result = ProfileImageHelper.loadProfileImageUri()
         if (result.isSuccess) {
@@ -62,6 +72,8 @@ fun SettingsScreen(
                 profileImageUrl = uri
             }
         }
+        // Load card background
+        cardBackgroundViewModel.loadCardBackground()
     }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -88,7 +100,6 @@ fun SettingsScreen(
         }
     }
 
-    var cardBackground by remember { mutableStateOf(SettingsManager.getCardBackground(context)) }
     var biometricEnabled by remember { mutableStateOf(BiometricHelper.isBiometricEnabled(context)) }
 
     var showCardBackgroundDialog by remember { mutableStateOf(false) }
@@ -224,7 +235,7 @@ fun SettingsScreen(
 
                 SettingsCard(
                     title = "Card Background",
-                    subtitle = "Change theme and colors",
+                    subtitle = selectedCardBackground.displayName,
                     onClick = { showCardBackgroundDialog = true }
                 )
 
@@ -318,11 +329,10 @@ fun SettingsScreen(
     }
 
     if (showCardBackgroundDialog) {
-        CardBackgroundDialog(
-            currentBackground = cardBackground,
+        NewCardBackgroundDialog(
+            currentBackground = selectedCardBackground,
             onBackgroundSelected = { selected ->
-                cardBackground = selected
-                SettingsManager.setCardBackground(context, selected)
+                cardBackgroundViewModel.setCardBackground(selected)
                 showCardBackgroundDialog = false
             },
             onDismiss = { showCardBackgroundDialog = false }
@@ -360,7 +370,8 @@ fun SettingsScreen(
             onConfirm = {
                 SettingsManager.resetToDefaults(context)
                 BiometricHelper.setBiometricEnabled(context, false)
-                cardBackground = SettingsManager.getCardBackground(context)
+                // Reset card background to default
+                cardBackgroundViewModel.setCardBackground(CardBackground.DEFAULT)
                 biometricEnabled = false
                 showResetDialog = false
             },
@@ -456,48 +467,102 @@ fun SettingsToggleCard(title: String, subtitle: String, checked: Boolean, onChec
     }
 }
 
+// NEW Card Background Dialog
 @Composable
-fun CardBackgroundDialog(currentBackground: String, onBackgroundSelected: (String) -> Unit, onDismiss: () -> Unit) {
+fun NewCardBackgroundDialog(
+    currentBackground: CardBackground,
+    onBackgroundSelected: (CardBackground) -> Unit,
+    onDismiss: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Card Background Theme") },
+        title = {
+            Text(
+                "Card Background Theme",
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
-            Column {
-                BackgroundOption("Blue Ocean", "blue", currentBackground == "blue") { onBackgroundSelected("blue") }
-                BackgroundOption("Green Forest", "green", currentBackground == "green") { onBackgroundSelected("green") }
-                BackgroundOption("Purple Galaxy", "purple", currentBackground == "purple") { onBackgroundSelected("purple") }
-                BackgroundOption("Orange Sunset", "orange", currentBackground == "orange") { onBackgroundSelected("orange") }
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                CardBackground.values().forEach { background ->
+                    NewBackgroundOption(
+                        cardBackground = background,
+                        isSelected = currentBackground == background,
+                        onClick = { onBackgroundSelected(background) }
+                    )
+                }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
     )
 }
 
 @Composable
-fun BackgroundOption(name: String, code: String, isSelected: Boolean, onClick: () -> Unit) {
+fun NewBackgroundOption(
+    cardBackground: CardBackground,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(32.dp).background(
-                    color = when (code) {
-                        "blue" -> Color(0xFF2196F3)
-                        "green" -> Color(0xFF4CAF50)
-                        "purple" -> Color(0xFF9C27B0)
-                        "orange" -> Color(0xFFFF9800)
-                        else -> Color.Gray
-                    },
-                    shape = RoundedCornerShape(8.dp)
-                )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Preview of card background
+            val drawableId = CardBackgroundRepository.getCardBackgroundDrawable(
+                context,
+                cardBackground
             )
+
+            if (drawableId != 0) {
+                Image(
+                    painter = painterResource(id = drawableId),
+                    contentDescription = cardBackground.displayName,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            color = Color.Gray,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                )
+            }
+
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text = name, fontSize = 16.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+            Text(
+                text = cardBackground.displayName,
+                fontSize = 16.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            )
         }
+
         if (isSelected) {
-            Text(text = "✓", fontSize = 20.sp, color = Color(0xFF4CAF50))
+            Text(
+                text = "✓",
+                fontSize = 20.sp,
+                color = Color(0xFF4CAF50),
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

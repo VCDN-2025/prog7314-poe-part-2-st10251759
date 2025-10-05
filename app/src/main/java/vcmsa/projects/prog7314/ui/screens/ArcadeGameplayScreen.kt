@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameCard
 import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.ui.viewmodels.ArcadeGameViewModel
+import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 
 @Composable
 fun ArcadeGameplayScreen(
@@ -38,8 +40,10 @@ fun ArcadeGameplayScreen(
     isArcadeMode: Boolean = false,
     onBackClick: () -> Unit,
     onGameComplete: (stars: Int, score: Int, time: Int, moves: Int, bonus: Int) -> Unit,
-    viewModel: ArcadeGameViewModel = viewModel()
+    viewModel: ArcadeGameViewModel = viewModel(),
+    cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val gameState by viewModel.gameState.collectAsState()
     val timeElapsed by viewModel.timeElapsed.collectAsState()
     val timeRemaining by viewModel.timeRemaining.collectAsState()
@@ -47,6 +51,9 @@ fun ArcadeGameplayScreen(
     val score by viewModel.score.collectAsState()
     val isGameComplete by viewModel.isGameComplete.collectAsState()
     val config = GameConfig.getLevelConfig(levelNumber)
+
+    // Get card background drawable
+    val cardBackgroundDrawable by cardBackgroundViewModel.cardBackgroundDrawable.collectAsState()
 
     // Initialize game
     LaunchedEffect(levelNumber, isArcadeMode) {
@@ -116,7 +123,7 @@ fun ArcadeGameplayScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Cards Grid - FIXED
+            // Cards Grid - Updated to pass cardBackgroundDrawable
             LazyVerticalGrid(
                 columns = GridCells.Fixed(config.gridColumns),
                 contentPadding = PaddingValues(4.dp),
@@ -126,13 +133,13 @@ fun ArcadeGameplayScreen(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                // FIXED: Pass the list directly to items()
                 items(
                     items = gameState.cards,
                     key = { card -> card.id }
                 ) { card ->
                     GameCardItem(
                         card = card,
+                        cardBackgroundDrawable = cardBackgroundDrawable,
                         onClick = {
                             viewModel.onCardClick(card.id)
                         }
@@ -248,6 +255,7 @@ fun StatBadge(
 @Composable
 fun GameCardItem(
     card: GameCard,
+    cardBackgroundDrawable: Int,
     onClick: () -> Unit
 ) {
     var isFlipping by remember { mutableStateOf(false) }
@@ -281,19 +289,29 @@ fun GameCardItem(
         contentAlignment = Alignment.Center
     ) {
         if (rotation <= 90f) {
-            // Card back
+            // Card back - use selected background
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFF4A90E2), RoundedCornerShape(12.dp))
                     .graphicsLayer { rotationY = 0f }
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.blue_card_background),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (cardBackgroundDrawable != 0) {
+                    Image(
+                        painter = painterResource(id = cardBackgroundDrawable),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // Fallback to default if no custom background is set
+                    Image(
+                        painter = painterResource(id = R.drawable.blue_card_background),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         } else {
             // Card front
