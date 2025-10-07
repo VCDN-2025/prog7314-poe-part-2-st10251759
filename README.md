@@ -830,7 +830,7 @@ jobs:
 ## 🌐 API Documentation
 
 <div align="center">
-
+![API POSTMAN TESTS](images/API TEST.png)
 ### 🔌 RESTful API Endpoints
 
 **Base URL:** `https://memory-match-maddness-api.onrender.com`
