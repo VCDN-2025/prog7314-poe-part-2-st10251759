@@ -2,7 +2,7 @@
 
 # 🧠 Memory Match Madness
 
-<img src="logo.png" alt="Memory Match Madness Logo" width="200" height="200"/>
+<img src="images/logo.png" alt="Memory Match Madness Logo" width="200" height="200"/>
 
 ### *A vibrant cognitive training game that reimagines the classic memory card match experience*
 
@@ -150,7 +150,6 @@ Secure user session handling with Firebase Auth
 
 | 🌟 Arcade Mode | 🏆 Adventure Mode | 👥 Multiplayer Mode |
 |:---:|:---:|:---:|
-| ![Arcade](placeholder-arcade.png) | ![Adventure](placeholder-adventure.png) | ![Multiplayer](placeholder-multiplayer.png) |
 | Casual randomized gameplay | Structured 16-level progression | Competitive local play |
 | Flexible endless sessions | Progressive difficulty scaling | Red vs Blue split-screen |
 | No pressure advancement | Achievement milestones | Turn-based matching |
@@ -321,7 +320,7 @@ Automatically adjusts game parameters based on player performance:
 
 <div align="center">
 
-![Multiplayer Competition](placeholder-multiplayer-action.png)
+![Multiplayer Competition](images/multiplayer.png)
 *Real-time competitive gameplay with score tracking*
 
 </div>
@@ -389,17 +388,17 @@ Automatically adjusts game parameters based on player performance:
 <table align="center">
 <tr>
 <td align="center">
-  <img src="placeholder-loading.png" width="200"/><br/>
+  <img src="images/loading.png" width="200"/><br/>
   <b>⏳ Loading Screen</b><br/>
   <sub>Initial app splash</sub>
 </td>
 <td align="center">
-  <img src="placeholder-login.png" width="200"/><br/>
+  <img src="images/login.png" width="200"/><br/>
   <b>🔑 Login Screen</b><br/>
   <sub>Secure authentication</sub>
 </td>
 <td align="center">
-  <img src="placeholder-menu.png" width="200"/><br/>
+  <img src="images/menu.png" width="200"/><br/>
   <b>🏠 Main Menu</b><br/>
   <sub>Central navigation hub</sub>
 </td>
@@ -411,17 +410,17 @@ Automatically adjusts game parameters based on player performance:
 <table align="center">
 <tr>
 <td align="center">
-  <img src="placeholder-themes.png" width="200"/><br/>
+  <img src="images/themes.png" width="200"/><br/>
   <b>🎨 Theme Selection</b><br/>
   <sub>Choose card theme</sub>
 </td>
 <td align="center">
-  <img src="placeholder-grid.png" width="200"/><br/>
+  <img src="images/grid.png" width="200"/><br/>
   <b>📏 Grid Size Selection</b><br/>
   <sub>Customize difficulty</sub>
 </td>
 <td align="center">
-  <img src="placeholder-levels.png" width="200"/><br/>
+  <img src="images/levels.png" width="200"/><br/>
   <b>🏆 Level Selection</b><br/>
   <sub>Progressive challenges</sub>
 </td>
@@ -433,17 +432,17 @@ Automatically adjusts game parameters based on player performance:
 <table align="center">
 <tr>
 <td align="center">
-  <img src="placeholder-gameplay.png" width="200"/><br/>
+  <img src="images/gameplay.png" width="200"/><br/>
   <b>🎮 Active Gameplay</b><br/>
   <sub>Card matching session</sub>
 </td>
 <td align="center">
-  <img src="placeholder-complete.png" width="200"/><br/>
+  <img src="images/complete.png" width="200"/><br/>
   <b>🎉 Completion</b><br/>
   <sub>Victory celebration</sub>
 </td>
 <td align="center">
-  <img src="placeholder-settings-detail.png" width="200"/><br/>
+  <img src="images/settings-detail.png" width="200"/><br/>
   <b>⚙️ Settings</b><br/>
   <sub>Profile management</sub>
 </td>
@@ -746,7 +745,9 @@ Then click ▶️ **Run** in Android Studio!
 
 ### 🤖 Automated Testing & Deployment Pipeline
 
-![CI/CD Pipeline](placeholder-cicd.png)
+![CI/CD Pipeline](images/cicd.png)
+![CI/CD Pipeline](images/unittest.png)
+
 
 </div>
 
@@ -1169,31 +1170,26 @@ jobs:
 <table align="center">
 <tr>
 <td align="center" width="20%">
-  <img src="https://via.placeholder.com/100" width="100" height="100" style="border-radius: 50%"/><br/>
   <b>Alyssia Sookdeo</b><br/>
   <sub>ST10266994</sub><br/>
   <a href="mailto:ST10266994@vcconnect.edu.za">📧 Email</a>
 </td>
 <td align="center" width="20%">
-  <img src="https://via.placeholder.com/100" width="100" height="100" style="border-radius: 50%"/><br/>
   <b>Arshad Bhula</b><br/>
   <sub>ST10343093</sub><br/>
   <a href="mailto:ST10343093@vcconnect.edu.za">📧 Email</a>
 </td>
 <td align="center" width="20%">
-  <img src="https://via.placeholder.com/100" width="100" height="100" style="border-radius: 50%"/><br/>
   <b>Cameron Chetty</b><br/>
   <sub>ST10251749</sub><br/>
   <a href="mailto:ST10251749@vcconnect.edu.za">📧 Email</a>
 </td>
 <td align="center" width="20%">
-  <img src="https://via.placeholder.com/100" width="100" height="100" style="border-radius: 50%"/><br/>
   <b>Jordan Gardiner</b><br/>
   <sub>ST10304100</sub><br/>
   <a href="mailto:ST10304100@vcconnect.edu.za">📧 Email</a>
 </td>
 <td align="center" width="20%">
-  <img src="https://via.placeholder.com/100" width="100" height="100" style="border-radius: 50%"/><br/>
   <b>Theshara Narain</b><br/>
   <sub>ST10252746</sub><br/>
   <a href="mailto:ST10252746@vcconnect.edu.za">📧 Email</a>
