@@ -830,8 +830,14 @@ jobs:
 ## 🌐 API Documentation
 
 <div align="center">
-![API POSTMAN TESTS](images/API TEST.png)
+
+**Postman test for our API**
+
+<img src="images/API%20TEST.png" alt="Postman collection tests for the Memory Match Madness API" width="800"/>
+
 ### 🔌 RESTful API Endpoints
+</div>
+
 
 **Base URL:** `https://memory-match-maddness-api.onrender.com`
 
