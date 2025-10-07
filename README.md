@@ -55,8 +55,6 @@
 - [🌐 API Documentation](#-api-documentation)
 - [🎨 Design Considerations](#-design-considerations)
 - [🗺️ Roadmap](#️-roadmap)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
 - [🙏 Acknowledgments](#-acknowledgments)
 
 </details>
