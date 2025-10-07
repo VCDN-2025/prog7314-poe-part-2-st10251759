@@ -210,24 +210,6 @@ Secure user session handling with Firebase Auth
 
 </div>
 
----
-
-### 📊 Progress Tracking & Analytics
-
-<div align="center">
-
-![Dashboard Screenshot](placeholder-dashboard.png)
-*Comprehensive personal dashboard showing detailed statistics*
-
-</div>
-
-#### 📈 Track Your Performance
-
-```
-📊 Performance Metrics    → Completion times, accuracy rates, win streaks
-⭐ Experience Points      → Gamified progression system
-
-```
 
 ---
 
