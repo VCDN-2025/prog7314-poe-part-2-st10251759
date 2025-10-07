@@ -327,7 +327,6 @@ Automatically adjusts game parameters based on player performance:
 #### 👥 Social Features
 
 -  **Local multiplayer** support
--  **Leaderboard** systems
 -  **Replay** functionality
 -  **Community** engagement features
 -  **Family-friendly** competition
@@ -350,7 +349,7 @@ Automatically adjusts game parameters based on player performance:
 - 📋 Planned progression
 - 🎯 Structured challenges
 - 📊 Performance tracking
-- 🏅 Achievement rewards
+- 🏅 Level Unlocking
 
 </td>
 <td>
