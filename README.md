@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧠 Memory Match Madness
+#  Memory Match Madness
 
 <img src="images/logo.png" alt="Memory Match Madness Logo" width="200" height="200"/>
 
@@ -76,7 +76,6 @@
 **🎓 Course:** BCAD Year 3  
 **📚 Module:** Programming 3D (PROG7314)  
 **📝 Assessment:** Portfolio of Evidence (POE) Part 2  
-**🏫 Institution:** The Independent Institute of Education (Pty) Ltd  
 **📅 Academic Year:** 2025
 
 </div>
@@ -95,18 +94,18 @@
 
 Our app combines **entertainment** with **measurable cognitive improvement** through:
 
-- 🎮 **Structured progression systems** for skill development
-- 📚 **Diverse themed content** for educational engagement  
-- 👥 **Social multiplayer features** for competitive motivation
-- 📴 **Offline-first architecture** ensuring uninterrupted gameplay
+-  **Structured progression systems** for skill development
+-  **Diverse themed content** for educational engagement  
+-  **Social multiplayer features** for competitive motivation
+-  **Offline-first architecture** ensuring uninterrupted gameplay
 
 ### 🎯 Target Audience
 
-- 👶 **Children** - Educational learning through themed cards
-- 🧑 **Adults** - Brain training and cognitive improvement
-- 👴 **Seniors** - Memory maintenance and mental exercise
-- 🏫 **Educators** - Classroom learning tool
-- 💊 **Therapists** - Cognitive therapy support
+-  **Children** - Educational learning through themed cards
+-  **Adults** - Brain training and cognitive improvement
+-  **Seniors** - Memory maintenance and mental exercise
+-  **Educators** - Classroom learning tool
+-  **Therapists** - Cognitive therapy support
 
 <div align="center">
 
@@ -115,7 +114,7 @@ Our app combines **entertainment** with **measurable cognitive improvement** thr
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 ### 🔐 Authentication & Security
 
@@ -157,22 +156,22 @@ Secure user session handling with Firebase Auth
 </div>
 
 #### 🌟 Arcade Mode Features
-- ✅ Randomized level configurations
-- ✅ Varied grid sizes (3×2 to 6×4)
-- ✅ Session-based metrics tracking
-- ✅ Perfect for quick mental exercise
+-  Randomized level configurations
+-  Varied grid sizes (3×2 to 6×4)
+-  Session-based metrics tracking
+-  Perfect for quick mental exercise
 
 #### 🏆 Adventure Mode Features
-- ✅ 16 unique challenging levels
-- ✅ Detailed performance metrics
-- ✅ Progressive difficulty scaling
-- ✅ Systematic skill development
+-  16 unique challenging levels
+-  Detailed performance metrics
+-  Progressive difficulty scaling
+-  Systematic skill development
 
 #### 👥 Multiplayer Mode Features
-- ✅ Real-time score tracking
-- ✅ Shared card grid for fair play
-- ✅ Local competitive gaming
-- ✅ Family-friendly fun
+-  Real-time score tracking
+-  Shared card grid for fair play
+-  Local competitive gaming
+-  Family-friendly fun
 
 ---
 
@@ -259,19 +258,19 @@ Secure user session handling with Firebase Auth
 
 #### 🔄 Smart Synchronization
 
-- ✅ **Room Database** - Local data persistence for all game modes
-- ✅ **Background Sync** - Automatic cloud synchronization on reconnection
-- ✅ **Conflict Resolution** - Intelligent merging of offline and online data
-- ✅ **WorkManager** - Scheduled background sync tasks
-- ✅ **Auto-Detection** - Automatic online/offline mode switching
+-  **Room Database** - Local data persistence for all game modes
+-  **Background Sync** - Automatic cloud synchronization on reconnection
+-  **Conflict Resolution** - Intelligent merging of offline and online data
+-  **WorkManager** - Scheduled background sync tasks
+-  **Auto-Detection** - Automatic online/offline mode switching
 
 ---
 
-## 🚀 Innovative Implementations
+##  Innovative Implementations
 
 <div align="center">
 
-### 💎 Four Core Innovations That Set Us Apart
+###  Four Core Innovations That Set Us Apart
 
 </div>
 
@@ -289,11 +288,11 @@ Secure user session handling with Firebase Auth
 
 Automatically adjusts game parameters based on player performance:
 
-- 📏 **Grid size modifications** (3×2 → 6×4)
-- ⏱️ **Time limit adjustments**
-- 🎚️ **Complexity scaling**
-- 📊 **Personalized difficulty curves**
-- 🎮 **Prevents frustration and boredom**
+-  **Grid size modifications** (3×2 → 6×4)
+-  **Time limit adjustments**
+-  **Complexity scaling**
+-  **Personalized difficulty curves**
+-  **Prevents frustration and boredom**
 
 ---
 
@@ -309,10 +308,10 @@ Automatically adjusts game parameters based on player performance:
 
 | Feature | Benefit |
 |:---|:---|
-| 📚 Cross-curricular learning | Supports multiple subjects |
-| 👶 Age-appropriate content | Suitable for all ages |
-| 🌍 Cultural awareness | Global perspective |
-| 🧠 Memory training | Familiar icons boost recall |
+|  Cross-curricular learning | Supports multiple subjects |
+|  Age-appropriate content | Suitable for all ages |
+|  Cultural awareness | Global perspective |
+|  Memory training | Familiar icons boost recall |
 
 ---
 
@@ -326,11 +325,10 @@ Automatically adjusts game parameters based on player performance:
 
 #### 👥 Social Features
 
-- ✅ **Local multiplayer** support
-- ✅ **Leaderboard** systems
-- ✅ **Replay** functionality
-- ✅ **Community** engagement features
-- ✅ **Family-friendly** competition
+-  **Local multiplayer** support
+-  **Replay** functionality
+-  **Community** engagement features
+-  **Family-friendly** competition
 
 ---
 
@@ -350,7 +348,7 @@ Automatically adjusts game parameters based on player performance:
 - 📋 Planned progression
 - 🎯 Structured challenges
 - 📊 Performance tracking
-- 🏅 Achievement rewards
+- 🏅 Level Unlocking
 
 </td>
 <td>
@@ -618,10 +616,10 @@ androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 <details>
 <summary><b>💾 4. Database Layer</b></summary>
 
-- 📊 **Firestore Database** - User profiles, game statistics, leaderboards
-- 📁 **Firebase Storage** - Themed card images and content assets
-- 📈 **Firebase Analytics** - Usage tracking and performance monitoring
-- 🎨 **Content Management** - Theme updates and asset versioning
+-  **Firestore Database** - User profiles, game statistics, leaderboards
+-  **Firebase Storage** - Themed card images and content assets
+-  **Firebase Analytics** - Usage tracking and performance monitoring
+-  **Content Management** - Theme updates and asset versioning
 
 </details>
 
@@ -642,11 +640,11 @@ androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 <td>
 
 **Required Software**
-- ✅ Android Studio Hedgehog | 2023.1.1+
-- ✅ JDK 11 or higher
-- ✅ Android SDK (API 32+)
-- ✅ Gradle 8.0+
-- ✅ Git
+-  Android Studio Hedgehog | 2023.1.1+
+-  JDK 11 or higher
+-  Android SDK (API 32+)
+-  Gradle 8.0+
+-  Git
 
 </td>
 <td>
@@ -811,9 +809,9 @@ jobs:
 <div align="center">
 
 ```
-📊 Total Test Cases: 15+
-🎯 Test Coverage: 70%+
-✅ Critical Path: 100%
+ Total Test Cases: 15+
+ Test Coverage: 70%+
+ Critical Path: 100%
 ```
 
 </div>
@@ -831,7 +829,13 @@ jobs:
 
 <div align="center">
 
+**Postman test for our API**
+
+<img src="images/API%20TEST.png" alt="Postman collection tests for the Memory Match Madness API" width="800"/>
+
 ### 🔌 RESTful API Endpoints
+</div>
+
 
 **Base URL:** `https://memory-match-maddness-api.onrender.com`
 
@@ -1012,7 +1016,7 @@ jobs:
 
 </div>
 
-### 🌈 Visual Design Principles
+###  Visual Design Principles
 
 <table>
 <tr>
@@ -1066,26 +1070,26 @@ jobs:
 </div>
 
 ```
-🔐 Data Encryption at Rest
+ Data Encryption at Rest
     ↓
-🔑 Secure Authentication (Firebase)
+ Secure Authentication (Firebase)
     ↓
-🌐 HTTPS Communication Only
+ HTTPS Communication Only
     ↓
-🎫 Token Management & Refresh
+ Token Management & Refresh
     ↓
-✅ Input Validation (Client & Server)
+ Input Validation (Client & Server)
     ↓
-👆 Biometric Hardware Encryption
+ Biometric Hardware Encryption
 ```
 
 **Security Features:**
-- ✅ Encrypted sensitive data storage
-- ✅ OAuth 2.0 authentication flow
-- ✅ Hardware-backed biometrics
-- ✅ Automatic token refresh
-- ✅ Server-side input validation
-- ✅ Complete session cleanup on logout
+-  Encrypted sensitive data storage
+-  OAuth 2.0 authentication flow
+-  Hardware-backed biometrics
+-  Automatic token refresh
+-  Server-side input validation
+-  Complete session cleanup on logout
 
 ---
 
@@ -1147,7 +1151,7 @@ jobs:
 
 ---
 
-### 🔮 Upcoming Features (v3.0)
+###  Upcoming Features (v3.0)
 
 <div align="center">
 
