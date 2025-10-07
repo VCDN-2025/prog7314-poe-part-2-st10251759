@@ -7,6 +7,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -45,6 +47,7 @@ fun RegisterScreen(
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -94,10 +97,15 @@ fun RegisterScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .verticalScroll(scrollState)
+                .padding(horizontal = 32.dp)
+                .padding(top = 32.dp, bottom = 32.dp)
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
             Image(
                 painter = painterResource(id = R.drawable.transparent_logo),
                 contentDescription = "Memory Match Madness Logo",
@@ -127,7 +135,7 @@ fun RegisterScreen(
             }
 
             Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -255,13 +263,17 @@ fun RegisterScreen(
                         contentScale = ContentScale.Fit
                     )
 
-                    TextButton(onClick = onNavigateToLogin, enabled = !isLoading) {
+                    TextButton(
+                        onClick = onNavigateToLogin,
+                        enabled = !isLoading,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
                         Text("Already Have an Account?", color = Color(0xFF0288D1))
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
