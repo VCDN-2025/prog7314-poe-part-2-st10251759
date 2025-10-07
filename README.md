@@ -115,7 +115,7 @@ Our app combines **entertainment** with **measurable cognitive improvement** thr
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 ### 🔐 Authentication & Security
 
@@ -259,19 +259,19 @@ Secure user session handling with Firebase Auth
 
 #### 🔄 Smart Synchronization
 
-- ✅ **Room Database** - Local data persistence for all game modes
-- ✅ **Background Sync** - Automatic cloud synchronization on reconnection
-- ✅ **Conflict Resolution** - Intelligent merging of offline and online data
-- ✅ **WorkManager** - Scheduled background sync tasks
-- ✅ **Auto-Detection** - Automatic online/offline mode switching
+-  **Room Database** - Local data persistence for all game modes
+-  **Background Sync** - Automatic cloud synchronization on reconnection
+-  **Conflict Resolution** - Intelligent merging of offline and online data
+-  **WorkManager** - Scheduled background sync tasks
+-  **Auto-Detection** - Automatic online/offline mode switching
 
 ---
 
-## 🚀 Innovative Implementations
+##  Innovative Implementations
 
 <div align="center">
 
-### 💎 Four Core Innovations That Set Us Apart
+###  Four Core Innovations That Set Us Apart
 
 </div>
 
@@ -289,11 +289,11 @@ Secure user session handling with Firebase Auth
 
 Automatically adjusts game parameters based on player performance:
 
-- 📏 **Grid size modifications** (3×2 → 6×4)
-- ⏱️ **Time limit adjustments**
-- 🎚️ **Complexity scaling**
-- 📊 **Personalized difficulty curves**
-- 🎮 **Prevents frustration and boredom**
+-  **Grid size modifications** (3×2 → 6×4)
+-  **Time limit adjustments**
+-  **Complexity scaling**
+-  **Personalized difficulty curves**
+-  **Prevents frustration and boredom**
 
 ---
 
@@ -309,10 +309,10 @@ Automatically adjusts game parameters based on player performance:
 
 | Feature | Benefit |
 |:---|:---|
-| 📚 Cross-curricular learning | Supports multiple subjects |
-| 👶 Age-appropriate content | Suitable for all ages |
-| 🌍 Cultural awareness | Global perspective |
-| 🧠 Memory training | Familiar icons boost recall |
+|  Cross-curricular learning | Supports multiple subjects |
+|  Age-appropriate content | Suitable for all ages |
+|  Cultural awareness | Global perspective |
+|  Memory training | Familiar icons boost recall |
 
 ---
 
@@ -326,11 +326,11 @@ Automatically adjusts game parameters based on player performance:
 
 #### 👥 Social Features
 
-- ✅ **Local multiplayer** support
-- ✅ **Leaderboard** systems
-- ✅ **Replay** functionality
-- ✅ **Community** engagement features
-- ✅ **Family-friendly** competition
+-  **Local multiplayer** support
+-  **Leaderboard** systems
+-  **Replay** functionality
+-  **Community** engagement features
+-  **Family-friendly** competition
 
 ---
 
@@ -618,10 +618,10 @@ androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 <details>
 <summary><b>💾 4. Database Layer</b></summary>
 
-- 📊 **Firestore Database** - User profiles, game statistics, leaderboards
-- 📁 **Firebase Storage** - Themed card images and content assets
-- 📈 **Firebase Analytics** - Usage tracking and performance monitoring
-- 🎨 **Content Management** - Theme updates and asset versioning
+-  **Firestore Database** - User profiles, game statistics, leaderboards
+-  **Firebase Storage** - Themed card images and content assets
+-  **Firebase Analytics** - Usage tracking and performance monitoring
+-  **Content Management** - Theme updates and asset versioning
 
 </details>
 
@@ -1018,7 +1018,7 @@ jobs:
 
 </div>
 
-### 🌈 Visual Design Principles
+###  Visual Design Principles
 
 <table>
 <tr>
@@ -1072,17 +1072,17 @@ jobs:
 </div>
 
 ```
-🔐 Data Encryption at Rest
+ Data Encryption at Rest
     ↓
-🔑 Secure Authentication (Firebase)
+ Secure Authentication (Firebase)
     ↓
-🌐 HTTPS Communication Only
+ HTTPS Communication Only
     ↓
-🎫 Token Management & Refresh
+ Token Management & Refresh
     ↓
-✅ Input Validation (Client & Server)
+ Input Validation (Client & Server)
     ↓
-👆 Biometric Hardware Encryption
+ Biometric Hardware Encryption
 ```
 
 **Security Features:**
