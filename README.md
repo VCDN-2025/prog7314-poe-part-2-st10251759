@@ -76,7 +76,6 @@
 **🎓 Course:** BCAD Year 3  
 **📚 Module:** Programming 3D (PROG7314)  
 **📝 Assessment:** Portfolio of Evidence (POE) Part 2  
-**🏫 Institution:** The Independent Institute of Education (Pty) Ltd  
 **📅 Academic Year:** 2025
 
 </div>
