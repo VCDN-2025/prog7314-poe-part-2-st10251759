@@ -319,9 +319,8 @@ Automatically adjusts game parameters based on player performance:
 ### 3️⃣ Enhanced Social Multiplayer Integration
 
 <div align="center">
-
-![Multiplayer Competition](images/multiplayer.png)
-*Real-time competitive gameplay with score tracking*
+  <img src="images/multiplayer.png" width="200"/><br/>
+  <b>⏳ *Real-time competitive gameplay with score tracking*</b><br/>
 
 </div>
 
