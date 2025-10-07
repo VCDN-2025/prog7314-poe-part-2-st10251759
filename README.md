@@ -2,7 +2,7 @@
 
 # 🧠 Memory Match Madness
 
-<img src="placeholder-logo.png" alt="Memory Match Madness Logo" width="200" height="200"/>
+<img src="logo.png" alt="Memory Match Madness Logo" width="200" height="200"/>
 
 ### *A vibrant cognitive training game that reimagines the classic memory card match experience*
 
