@@ -1293,7 +1293,11 @@ jobs:
 ###  Made  by Team J.A.C.T
 
 <p align="center">
-  <a href="#-memory-match-madness">⬆️ Back to Top</a>
+  <a href="#top" title="Back to top"
+     style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#ffffff;border-radius:9999px;text-decoration:none;font-weight:600;">
+    ⬆️ Back to top
+  </a>
 </p>
+
 
 </div>
