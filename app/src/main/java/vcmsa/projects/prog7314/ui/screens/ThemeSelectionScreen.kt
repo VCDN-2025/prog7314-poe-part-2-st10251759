@@ -16,18 +16,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameTheme
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
 
 @Composable
 fun ThemeSelectionScreen(
     onThemeSelected: (GameTheme) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -60,7 +65,7 @@ fun ThemeSelectionScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = Color(0xFF4A90E2)
                     )
                 }
@@ -81,13 +86,13 @@ fun ThemeSelectionScreen(
                 )
 
                 Text(
-                    text = "CHOOSE THEME",
+                    text = stringResource(R.string.choose_theme_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
-                    text = "SELECT YOUR FAVORITE CARD STYLE",
+                    text = stringResource(R.string.select_card_style_subtitle),
                     fontSize = 12.sp,
                     color = Color.White.copy(alpha = 0.8f),
                     modifier = Modifier.padding(bottom = 24.dp)
@@ -119,11 +124,26 @@ fun ThemeCard(
     theme: GameTheme,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable {
+                // Check if this is the first time unlocking this theme
+                val prefs = context.getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE)
+                val themeKey = "theme_unlocked_${theme.themeName.replace(" ", "_")}"
+                val hasUnlockedTheme = prefs.getBoolean(themeKey, false)
+
+                if (!hasUnlockedTheme) {
+                    // First time selecting this theme - show notification
+                    LocalNotificationManager.notifyThemeUnlocked(context, theme.themeName)
+                    prefs.edit().putBoolean(themeKey, true).apply()
+                }
+
+                onClick()
+            },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {

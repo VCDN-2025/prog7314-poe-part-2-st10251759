@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,10 +53,8 @@ fun MultiplayerGameplayScreen(
     val isGameComplete by viewModel.isGameComplete.collectAsState()
     val isPaused by viewModel.isPaused.collectAsState()
 
-    // Get card background drawable
     val cardBackgroundDrawable by cardBackgroundViewModel.cardBackgroundDrawable.collectAsState()
 
-    // Initialize game
     LaunchedEffect(theme) {
         viewModel.initializeGame(theme)
     }
@@ -77,7 +76,6 @@ fun MultiplayerGameplayScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Game Header
             gameState?.let { state ->
                 MultiplayerGameHeader(
                     player1 = state.player1,
@@ -90,7 +88,6 @@ fun MultiplayerGameplayScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Game Grid - Updated to pass cardBackgroundDrawable
             gameState?.let { state ->
                 MultiplayerGameGrid(
                     cards = state.cards,
@@ -105,7 +102,6 @@ fun MultiplayerGameplayScreen(
             }
         }
 
-        // Pause Dialog
         if (isPaused) {
             MultiplayerPauseDialog(
                 onResume = { viewModel.togglePause() },
@@ -113,7 +109,6 @@ fun MultiplayerGameplayScreen(
             )
         }
 
-        // Game Complete Dialog
         if (isGameComplete) {
             val result = viewModel.getGameResult()
             MultiplayerWinnerDialog(
@@ -144,19 +139,17 @@ fun MultiplayerGameHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Player 1 (Red)
         PlayerScoreCard(
             player = player1,
             modifier = Modifier.weight(1f)
         )
 
-        // VS + Timer + Pause
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             Text(
-                text = "VS",
+                text = stringResource(R.string.vs),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF333333)
@@ -164,7 +157,6 @@ fun MultiplayerGameHeader(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Timer
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -182,7 +174,6 @@ fun MultiplayerGameHeader(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Pause Button
             IconButton(
                 onClick = onPauseClick,
                 modifier = Modifier
@@ -197,7 +188,6 @@ fun MultiplayerGameHeader(
             }
         }
 
-        // Player 2 (Blue)
         PlayerScoreCard(
             player = player2,
             modifier = Modifier.weight(1f)
@@ -239,7 +229,7 @@ fun PlayerScoreCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = if (player.playerColor == PlayerColor.RED) "Red" else "Blue",
+                text = if (player.playerColor == PlayerColor.RED) stringResource(R.string.red) else stringResource(R.string.blue),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = player.color
@@ -254,7 +244,7 @@ fun PlayerScoreCard(
 
             if (player.isCurrentTurn) {
                 Text(
-                    text = "Your Turn",
+                    text = stringResource(R.string.your_turn),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Medium,
                     color = player.color
@@ -319,7 +309,6 @@ fun MultiplayerCardItem(
             )
     ) {
         if (rotation <= 90f) {
-            // Card back - use selected background
             if (cardBackgroundDrawable != 0) {
                 Image(
                     painter = painterResource(id = cardBackgroundDrawable),
@@ -394,7 +383,7 @@ fun MultiplayerPauseDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "PAUSED",
+                    text = stringResource(R.string.paused),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF333333)
@@ -413,7 +402,7 @@ fun MultiplayerPauseDialog(
                     shape = RoundedCornerShape(28.dp)
                 ) {
                     Text(
-                        text = "RESUME",
+                        text = stringResource(R.string.resume),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -431,12 +420,12 @@ fun MultiplayerPauseDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Home,
-                        contentDescription = "Home",
+                        contentDescription = stringResource(R.string.home),
                         tint = Color(0xFF333333)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "HOME",
+                        text = stringResource(R.string.home),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF333333)
@@ -471,9 +460,9 @@ fun MultiplayerWinnerDialog(
             ) {
                 Text(
                     text = when (result.winner) {
-                        PlayerColor.RED -> "🏆 PLAYER 1 WINS! 🏆"
-                        PlayerColor.BLUE -> "🏆 PLAYER 2 WINS! 🏆"
-                        null -> "🤝 IT'S A TIE! 🤝"
+                        PlayerColor.RED -> stringResource(R.string.player_1_wins)
+                        PlayerColor.BLUE -> stringResource(R.string.player_2_wins)
+                        null -> stringResource(R.string.its_a_tie)
                     },
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -501,7 +490,7 @@ fun MultiplayerWinnerDialog(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Player 1",
+                            text = stringResource(R.string.player_1),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF333333)
@@ -515,7 +504,7 @@ fun MultiplayerWinnerDialog(
                     }
 
                     Text(
-                        text = "VS",
+                        text = stringResource(R.string.vs),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF666666),
@@ -532,7 +521,7 @@ fun MultiplayerWinnerDialog(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Player 2",
+                            text = stringResource(R.string.player_2),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF333333)
@@ -560,9 +549,9 @@ fun MultiplayerWinnerDialog(
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) {
-                        MultiplayerStatRow("Time", formatTime(result.timeTaken))
-                        MultiplayerStatRow("Total Moves", "${result.totalMoves}")
-                        MultiplayerStatRow("Theme", result.theme.themeName)
+                        MultiplayerStatRow(stringResource(R.string.time), formatTime(result.timeTaken))
+                        MultiplayerStatRow(stringResource(R.string.total_moves), "${result.totalMoves}")
+                        MultiplayerStatRow(stringResource(R.string.theme), result.theme.themeName)
                     }
                 }
 
@@ -579,7 +568,7 @@ fun MultiplayerWinnerDialog(
                     shape = RoundedCornerShape(28.dp)
                 ) {
                     Text(
-                        text = "REMATCH",
+                        text = stringResource(R.string.rematch),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -597,12 +586,12 @@ fun MultiplayerWinnerDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Home,
-                        contentDescription = "Home",
+                        contentDescription = stringResource(R.string.home),
                         tint = Color(0xFF333333)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "HOME",
+                        text = stringResource(R.string.home),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF333333)
@@ -635,3 +624,4 @@ fun MultiplayerStatRow(label: String, value: String) {
         )
     }
 }
+

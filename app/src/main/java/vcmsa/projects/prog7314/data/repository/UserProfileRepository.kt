@@ -162,7 +162,8 @@ class UserProfileRepository(
             false
         }
     }
-// ===== HELPER FUNCTIONS =====
+
+    // ===== HELPER FUNCTIONS =====
 
     /**
      * Create a new user profile with defaults
@@ -184,6 +185,7 @@ class UserProfileRepository(
             gamesWon = 0,
             currentStreak = 0,
             bestStreak = 0,
+            lastPlayDate = 0L,
             averageCompletionTime = 0f,
             accuracyRate = 0f,
             createdAt = System.currentTimeMillis(),
@@ -193,6 +195,7 @@ class UserProfileRepository(
 
         return saveUserProfile(newProfile)
     }
+
     /**
      * Calculate and update win rate
      */
@@ -207,6 +210,98 @@ class UserProfileRepository(
         } catch (e: Exception) {
             Log.e(TAG, "Error calculating win rate: ${e.message}", e)
             0f
+        }
+    }
+
+    // ===== DAILY STREAK METHODS =====
+
+    /**
+     * Update daily streak - call this whenever user plays a game
+     */
+    suspend fun updateDailyStreak(userId: String): Boolean {
+        return try {
+            val profile = getUserProfile(userId) ?: return false
+            val currentTime = System.currentTimeMillis()
+            val lastPlayDate = profile.lastPlayDate
+
+            // Calculate hours since last play
+            val hoursSinceLastPlay = if (lastPlayDate > 0) {
+                (currentTime - lastPlayDate) / (1000 * 60 * 60)
+            } else {
+                0L
+            }
+
+            val newStreak: Int
+            val newBestStreak: Int
+
+            when {
+                // First time playing or no previous play date
+                lastPlayDate == 0L -> {
+                    newStreak = 1
+                    newBestStreak = 1
+                    Log.d(TAG, "🔥 Started new streak: Day 1")
+                }
+                // Played within 48 hours - continue streak
+                hoursSinceLastPlay < 48 -> {
+                    newStreak = profile.currentStreak + 1
+                    newBestStreak = maxOf(profile.bestStreak, newStreak)
+                    Log.d(TAG, "🔥 Streak continued! Day $newStreak")
+                }
+                // More than 48 hours - reset streak
+                else -> {
+                    newStreak = 1
+                    newBestStreak = profile.bestStreak
+                    Log.d(TAG, "💔 Streak reset. Starting fresh: Day 1")
+                }
+            }
+
+            // Update the profile with new streak data
+            userProfileDao.updateStreakAndPlayDate(
+                userId = userId,
+                currentStreak = newStreak,
+                bestStreak = newBestStreak,
+                lastPlayDate = currentTime
+            )
+
+            Log.d(TAG, "✅ Streak updated successfully")
+            true
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error updating daily streak: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * Check if user should continue streak (within 48 hours)
+     */
+    suspend fun shouldContinueStreak(userId: String): Boolean {
+        return try {
+            val profile = getUserProfile(userId) ?: return false
+            val lastPlayDate = profile.lastPlayDate
+
+            if (lastPlayDate == 0L) return false
+
+            val currentTime = System.currentTimeMillis()
+            val hoursSinceLastPlay = (currentTime - lastPlayDate) / (1000 * 60 * 60)
+
+            hoursSinceLastPlay < 48
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking streak status: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * Get current streak for user
+     */
+    suspend fun getCurrentStreak(userId: String): Int {
+        return try {
+            val profile = getUserProfile(userId)
+            profile?.currentStreak ?: 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting current streak: ${e.message}", e)
+            0
         }
     }
 }

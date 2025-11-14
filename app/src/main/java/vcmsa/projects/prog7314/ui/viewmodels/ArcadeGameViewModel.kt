@@ -16,6 +16,8 @@ import vcmsa.projects.prog7314.data.models.GameProgress
 import vcmsa.projects.prog7314.data.models.LevelData
 import vcmsa.projects.prog7314.data.repository.ArcadeRepository
 import vcmsa.projects.prog7314.data.repository.LevelRepository
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
+import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.sync.FirestoreManager
 import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.game.GameEngine
@@ -26,12 +28,14 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
 
     private val levelRepository: LevelRepository
     private val arcadeRepository: ArcadeRepository
+    private val userProfileRepository: UserProfileRepository
     private val firestoreManager = FirestoreManager()
 
     private var gameEngine: GameEngine? = null
     private var timerJob: Job? = null
     private var currentLevelNumber: Int = 1
     private var isArcade: Boolean = false
+    private var currentTheme: GameTheme? = null
 
     private val _gameState = MutableStateFlow(GameEngine.GameState(
         cards = emptyList(),
@@ -62,6 +66,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         val database = AppDatabase.getDatabase(application)
         levelRepository = LevelRepository(database.levelProgressDao())
         arcadeRepository = ArcadeRepository(database.arcadeSessionDao())
+        userProfileRepository = UserProfileRepository(database.userProfileDao())
     }
 
     fun initializeGame(levelNumber: Int, arcadeMode: Boolean = false) {
@@ -74,11 +79,12 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
 
                 val config = GameConfig.getLevelConfig(levelNumber)
                 val randomTheme = GameTheme.entries.random()
+                currentTheme = randomTheme
 
                 Log.d(TAG, "Theme: ${randomTheme.themeName}, Grid: ${config.gridRows}x${config.gridColumns}")
 
                 gameEngine = GameEngine(randomTheme, config)
-                val cards = gameEngine!!.initializeCards()
+                gameEngine!!.initializeCards()
 
                 _gameState.value = gameEngine!!.getGameState()
                 _timeElapsed.value = 0
@@ -89,7 +95,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
 
                 startTimer(config.timeLimit)
 
-                Log.d(TAG, "✅ Game initialized with ${cards.size} cards")
+                Log.d(TAG, "✅ Game initialized with ${_gameState.value.cards.size} cards")
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Error initializing game: ${e.message}", e)
             }
@@ -171,13 +177,69 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             val userId = AuthManager.getCurrentUser()?.uid ?: return
             val finalScore = getFinalScore()
             val config = GameConfig.getLevelConfig(currentLevelNumber)
+            val theme = currentTheme?.themeName ?: "Unknown"
+            val gridSize = "${config.gridRows}x${config.gridColumns}"
+
+            // ✅ ALWAYS SAVE TO GAME RESULTS (for Statistics)
+            val gameResultRepo = RepositoryProvider.getGameResultRepository()
+            gameResultRepo.createGameResult(
+                userId = userId,
+                gameMode = if (isArcade) "ARCADE" else "LEVEL",
+                theme = theme,
+                gridSize = gridSize,
+                difficulty = config.difficulty.name,
+                score = finalScore.finalScore,
+                timeTaken = _timeElapsed.value,
+                moves = finalScore.moves,
+                accuracy = calculateAccuracy(finalScore.moves, config.totalPairs),
+                isWin = finalScore.stars > 0
+            )
+            Log.d(TAG, "✅ Game result saved for statistics")
+
+            // 🔥 UPDATE DAILY STREAK
+            updateDailyStreak()
+
+            // ✅ CHECK FOR ACHIEVEMENTS
+            try {
+                val achievementRepo = RepositoryProvider.getAchievementRepository()
+
+                // Check First Win
+                val firstWin = achievementRepo.checkFirstWinAchievement(userId, finalScore.stars > 0)
+                if (firstWin) {
+                    Log.d(TAG, "🏆 First Win achievement unlocked!")
+                }
+
+                // Award Perfect Performance for 3 stars
+                if (finalScore.stars == 3) {
+                    val perfect = achievementRepo.awardAchievement(
+                        userId = userId,
+                        achievementType = "PERFECT_PERFORMANCE",
+                        name = "Perfect Performance",
+                        description = "Complete a level with 3 stars",
+                        iconName = "ic_star"
+                    )
+                    if (perfect) {
+                        Log.d(TAG, "🏆 Perfect Performance achievement unlocked!")
+                    }
+                }
+
+                // Check Speed Demon (fast completion)
+                val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, _timeElapsed.value)
+                if (speedDemon) {
+                    Log.d(TAG, "🏆 Speed Demon achievement unlocked!")
+                }
+
+                Log.d(TAG, "✅ Achievements checked")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error checking achievements: ${e.message}", e)
+            }
 
             if (isArcade) {
                 // Save arcade session to RoomDB
                 arcadeRepository.saveArcadeSession(
                     userId = userId,
-                    theme = "Random",
-                    gridSize = "${config.gridRows}x${config.gridColumns}",
+                    theme = theme,
+                    gridSize = gridSize,
                     difficulty = config.difficulty.displayName,
                     score = finalScore.finalScore,
                     timeTaken = _timeElapsed.value,
@@ -203,6 +265,36 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error completing game: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Update the user's daily streak
+     */
+    private fun updateDailyStreak() {
+        viewModelScope.launch {
+            try {
+                val userId = AuthManager.getCurrentUser()?.uid
+                if (userId != null) {
+                    val success = userProfileRepository.updateDailyStreak(userId)
+                    if (success) {
+                        Log.d(TAG, "🔥 Daily streak updated successfully!")
+                    } else {
+                        Log.w(TAG, "⚠️ Failed to update daily streak")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error updating streak: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun calculateAccuracy(moves: Int, totalPairs: Int): Float {
+        val perfectMoves = totalPairs * 2 // Minimum moves needed
+        return if (moves > 0) {
+            ((perfectMoves.toFloat() / moves.toFloat()) * 100).coerceIn(0f, 100f)
+        } else {
+            0f
         }
     }
 

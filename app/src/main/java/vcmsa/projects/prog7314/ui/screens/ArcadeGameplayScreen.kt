@@ -32,6 +32,7 @@ import vcmsa.projects.prog7314.data.models.GameCard
 import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.ui.viewmodels.ArcadeGameViewModel
 import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
 
 @Composable
 fun ArcadeGameplayScreen(
@@ -63,6 +64,56 @@ fun ArcadeGameplayScreen(
     LaunchedEffect(isGameComplete) {
         if (isGameComplete) {
             val finalScore = viewModel.getFinalScore()
+
+            // Trigger notifications
+            val prefs = context.getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE)
+            val hasCompletedFirstLevel = prefs.getBoolean("has_completed_first_level", false)
+
+            // Check if this is the first level ever completed
+            if (!hasCompletedFirstLevel) {
+                LocalNotificationManager.notifyFirstLevelCompleted(context)
+                prefs.edit().putBoolean("has_completed_first_level", true).apply()
+            }
+
+            // Check for high score
+            val previousBest = prefs.getInt("best_score_level_$levelNumber", 0)
+            if (finalScore.finalScore > previousBest && previousBest > 0) {
+                LocalNotificationManager.notifyNewHighScore(
+                    context,
+                    finalScore.finalScore,
+                    previousBest
+                )
+            }
+            // Save new best score
+            if (finalScore.finalScore > previousBest) {
+                prefs.edit().putInt("best_score_level_$levelNumber", finalScore.finalScore).apply()
+            }
+
+            // Check if next level should be unlocked
+            if (!isArcadeMode && finalScore.stars >= 1 && levelNumber < 16) {
+                val nextLevelUnlocked = prefs.getBoolean("level_${levelNumber + 1}_unlocked", false)
+                if (!nextLevelUnlocked) {
+                    LocalNotificationManager.notifyLevelUnlocked(context, levelNumber + 1)
+                    prefs.edit().putBoolean("level_${levelNumber + 1}_unlocked", true).apply()
+                }
+            }
+
+            // Check for achievement: Perfect game (3 stars)
+            if (finalScore.stars == 3) {
+                val perfectAchievement = prefs.getBoolean("achievement_perfect_level_$levelNumber", false)
+                if (!perfectAchievement) {
+                    LocalNotificationManager.notifyAchievementUnlocked(
+                        context,
+                        "Perfect Performance",
+                        "You earned 3 stars on Level $levelNumber!"
+                    )
+                    prefs.edit().putBoolean("achievement_perfect_level_$levelNumber", true).apply()
+                }
+            }
+
+            // Save last play date for streak tracking
+            LocalNotificationManager.saveLastPlayDate(context)
+
             onGameComplete(
                 finalScore.stars,
                 finalScore.finalScore,

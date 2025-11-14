@@ -1,17 +1,21 @@
 package vcmsa.projects.prog7314.ui.viewmodels
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.models.*
-import kotlin.random.Random
+import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 
-class GameViewModel : ViewModel() {
+class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _gameState = MutableStateFlow<GameState?>(null)
     val gameState: StateFlow<GameState?> = _gameState.asStateFlow()
@@ -38,6 +42,14 @@ class GameViewModel : ViewModel() {
 
     private lateinit var currentTheme: GameTheme
     private lateinit var currentGridSize: GridSize
+
+    // Repository for updating streak
+    private val userProfileRepository: UserProfileRepository
+
+    init {
+        val database = AppDatabase.getDatabase(application)
+        userProfileRepository = UserProfileRepository(database.userProfileDao())
+    }
 
     /**
      * Initialize a new game with theme and grid size
@@ -204,13 +216,13 @@ class GameViewModel : ViewModel() {
 
     /**
      * Complete the game and calculate results
-     * FIXED: Now stores time in milliseconds in GameResult for consistency
+     * UPDATED: Now also updates daily streak
      */
     private fun completeGame() {
         stopTimer()
         _isGameComplete.value = true
 
-        val timeInMilliseconds = _timeElapsed.value  // Keep as milliseconds
+        val timeInMilliseconds = _timeElapsed.value
         val timeInSeconds = (timeInMilliseconds / 1000).toLong()
         val moves = _moves.value
         val points = _points.value
@@ -229,11 +241,35 @@ class GameViewModel : ViewModel() {
             theme = currentTheme,
             gridSize = currentGridSize,
             moves = moves,
-            timeTaken = timeInMilliseconds,  // FIXED: Store milliseconds instead of seconds
+            timeTaken = timeInMilliseconds,
             points = points + bonus,
             stars = stars,
             bonus = bonus
         )
+
+        // 🔥 UPDATE DAILY STREAK
+        updateDailyStreak()
+    }
+
+    /**
+     * Update the user's daily streak
+     */
+    private fun updateDailyStreak() {
+        viewModelScope.launch {
+            try {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    val success = userProfileRepository.updateDailyStreak(userId)
+                    if (success) {
+                        Log.d("GameViewModel", "🔥 Daily streak updated successfully!")
+                    } else {
+                        Log.w("GameViewModel", "⚠️ Failed to update daily streak")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("GameViewModel", "❌ Error updating streak: ${e.message}", e)
+            }
+        }
     }
 
     /**

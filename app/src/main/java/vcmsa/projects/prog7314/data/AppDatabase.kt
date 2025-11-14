@@ -15,7 +15,7 @@ import vcmsa.projects.prog7314.data.entities.*
         LevelProgressEntity::class,
         ArcadeSessionEntity::class
     ],
-    version = 2, // Incremented since schema changed
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

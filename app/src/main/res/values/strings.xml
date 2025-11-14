@@ -1,3 +1,314 @@
 <resources>
-    <string name="app_name">PROG7314</string>
+    <!-- App Name -->
+    <string name="app_name">Memory Match Madness</string>
+
+    <!-- Main Menu -->
+    <string name="main_menu_title">MEMORY MATCH MADNESS</string>
+    <string name="arcade_mode">Arcade Mode</string>
+    <string name="adventure_mode">Adventure Mode</string>
+    <string name="multiplayer">Multiplayer</string>
+    <string name="statistics">Statistics</string>
+    <string name="settings">Settings</string>
+    <string name="profile">Profile</string>
+
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email">Email Address</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="username">Username</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="logout">Logout</string>
+
+    <!-- Game UI -->
+    <string name="level">Level</string>
+    <string name="score">Score</string>
+    <string name="points">POINTS</string>
+    <string name="time">TIME</string>
+    <string name="moves">MOVES</string>
+    <string name="stars">Stars</string>
+    <string name="best_score">Best Score</string>
+
+    <!-- Buttons -->
+    <string name="play">Play</string>
+    <string name="back">Back</string>
+    <string name="continue_game">Continue</string>
+    <string name="quit">Quit</string>
+    <string name="replay">Replay</string>
+    <string name="next_level">Next Level</string>
+    <string name="home">Home</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Theme Selection -->
+    <string name="choose_theme">CHOOSE THEME</string>
+    <string name="select_card_style">SELECT YOUR FAVORITE CARD STYLE</string>
+    <string name="theme_animals">Animals</string>
+    <string name="theme_fruits">Fruits</string>
+    <string name="theme_pokemon">Pokémon</string>
+    <string name="theme_harry_potter">Harry Potter</string>
+    <string name="theme_f1">Formula 1</string>
+
+    <!-- Grid Selection -->
+    <string name="select_difficulty">SELECT DIFFICULTY</string>
+    <string name="easy">Easy</string>
+    <string name="medium">Medium</string>
+    <string name="hard">Hard</string>
+    <string name="expert">Expert</string>
+
+    <!-- Notifications -->
+    <string name="notif_achievement_unlocked">🏆 Achievement Unlocked!</string>
+    <string name="notif_level_unlocked">🆕 New Level Unlocked!</string>
+    <string name="notif_level_available">Level %1$d is now available to play!</string>
+    <string name="notif_high_score">🌟 New Personal Record!</string>
+    <string name="notif_high_score_message">You beat your best score by %1$d points! New record: %2$d</string>
+    <string name="notif_daily_streak">🔥 Keep Your Streak Going!</string>
+    <string name="notif_daily_streak_message">You\'re on a %1$d day streak! Play today to keep it alive!</string>
+    <string name="notif_first_level">🎉 First Level Completed!</string>
+    <string name="notif_first_level_message">Congratulations! You\'ve completed your first level. Keep going!</string>
+    <string name="notif_theme_unlocked">🎨 New Theme Unlocked!</string>
+    <string name="notif_theme_message">%1$s theme is now available! Try it out!</string>
+
+    <!-- Settings -->
+    <string name="language">Language</string>
+    <string name="notifications">Notifications</string>
+    <string name="sound">Sound</string>
+    <string name="music">Music</string>
+    <string name="biometric_login">Biometric Login</string>
+    <string name="daily_reminders">Daily Reminders</string>
+    <string name="achievement_notifications">Achievement Notifications</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="change_password">Change Password</string>
+
+    <!-- Game Completion -->
+    <string name="game_complete">Game Complete!</string>
+    <string name="congratulations">Congratulations!</string>
+    <string name="new_record">NEW RECORD!</string>
+    <string name="total_score">Total Score</string>
+    <string name="time_bonus">Time Bonus</string>
+
+    <!-- Achievements -->
+    <string name="achievement_perfect">Perfect Performance</string>
+    <string name="achievement_perfect_desc">You earned 3 stars on Level %1$d!</string>
+    <string name="achievement_speed_demon">Speed Demon</string>
+    <string name="achievement_first_win">First Victory</string>
+
+    <!-- Common Messages -->
+    <string name="loading">Loading…</string>
+    <string name="welcome_back">Welcome back!</string>
+    <string name="test_your_memory">Test Your Memory Skills!</string>
+    <string name="network_error">Network error. Please try again.</string>
+    <string name="success">Success!</string>
+    <string name="error">Error</string>
+
+    <!-- Multiplayer -->
+    <string name="player">Player</string>
+    <string name="player_1">Player 1</string>
+    <string name="player_2">Player 2</string>
+    <string name="your_turn">Your Turn</string>
+    <string name="waiting">Waiting…</string>
+
+    <!-- Additional Login Strings -->
+    <string name="or_continue_with">or continue with</string>
+    <string name="or_login_with_password">or login with password</string>
+    <string name="login_with_fingerprint">LOGIN WITH FINGERPRINT</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="play_now">PLAY NOW</string>
+    <string name="welcome_back_email">Welcome back, %1$s</string>
+
+    <!-- Level Selection Screen -->
+    <string name="select_level">SELECT LEVEL</string>
+    <string name="choose_your_adventure">CHOOSE YOUR ADVENTURE</string>
+    <string name="progress_levels">PROGRESS: %1$d / %2$d LEVELS</string>
+    <string name="locked">Locked</string>
+
+    <!-- Main Menu - Additional -->
+    <string name="day_streak">%1$d Day Streak</string>
+    <string name="best_days">Best: %1$d days</string>
+
+    <!-- Settings Screen -->
+    <string name="tap_photo_to_change">Tap photo to change</string>
+    <string name="saving">Saving…</string>
+    <string name="section_account">ACCOUNT</string>
+    <string name="change_name_details">Change name and details</string>
+    <string name="update_your_password">Update your password</string>
+    <string name="sign_out_account">Sign out of your account</string>
+    <string name="section_appearance">APPEARANCE</string>
+    <string name="card_background">Card Background</string>
+    <string name="section_language">LANGUAGE</string>
+    <string name="multi_language">Multi-Language</string>
+    <string name="section_notifications">NOTIFICATIONS</string>
+    <string name="coming_in_part_3">Coming in Part 3</string>
+    <string name="section_biometric_security">BIOMETRIC &amp; SECURITY</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="enable_biometric">Enable Biometric</string>
+    <string name="scan_to_enable">Scan to enable quick login</string>
+    <string name="section_audio">AUDIO</string>
+    <string name="sound_effects_music">Sound Effects &amp; Music</string>
+    <string name="section_about">ABOUT</string>
+    <string name="about_the_app">About the App</string>
+    <string name="version">Version 1.0.0</string>
+    <string name="reset_to_defaults">RESET TO DEFAULTS</string>
+    <string name="card_background_theme">Card Background Theme</string>
+    <string name="close">Close</string>
+    <string name="select_language">Select Language</string>
+    <string name="logout_question">Logout?</string>
+    <string name="logout_confirmation">Are you sure you want to logout?</string>
+    <string name="reset_question">Reset to Defaults?</string>
+    <string name="reset_confirmation">This will reset all settings to their default values. Your account and game progress will not be affected.</string>
+    <string name="reset">Reset</string>
+    <string name="about_title">About Memory Match Madness</string>
+    <string name="version_label">Version: 1.0.0</string>
+    <string name="about_description">Memory Match Madness is a fun and challenging memory card game designed to test and improve your memory skills.</string>
+    <string name="more_info_soon">More information coming soon!</string>
+    <string name="ok">OK</string>
+
+    <!-- Theme Selection Screen -->
+    <string name="choose_theme_title">CHOOSE THEME</string>
+    <string name="select_card_style_subtitle">SELECT YOUR FAVORITE CARD STYLE</string>
+
+    <!-- Grid Size Selection Screen -->
+    <string name="choose_grid_size">CHOOSE GRID SIZE</string>
+    <string name="pick_challenge_level">PICK YOUR CHALLENGE LEVEL</string>
+    <string name="beginner">BEGINNER</string>
+    <string name="intermediate">INTERMEDIATE</string>
+    <string name="cards">CARDS</string>
+
+    <!-- Gameplay Screen -->
+    <string name="points_label">Points</string>
+    <string name="time_label">Time</string>
+    <string name="moves_label">Moves</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">REGISTER</string>
+    <string name="email_address">Email Address</string>
+    <string name="password_label">Password</string>
+    <string name="confirm_password_label">Confirm Password</string>
+    <string name="please_fill_all_fields">Please fill in all fields</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="password_min_length">Password must be at least 6 characters</string>
+    <string name="enter_valid_email">Please enter a valid email address</string>
+    <string name="already_have_account">Already Have an Account?</string>
+    <string name="google_signup_failed">Google sign-up failed: %1$s</string>
+    <string name="google_signin_not_initialized">Google Sign-In not initialized</string>
+
+    <!-- Game Completion Popup -->
+    <string name="new_record_badge">NEW RECORD</string>
+    <string name="well_done">WELL DONE!</string>
+    <string name="moves_colon">MOVES:</string>
+    <string name="time_colon">TIME:</string>
+    <string name="bonus_colon">BONUS:</string>
+    <string name="total_colon">TOTAL:</string>
+    <string name="seconds_format">%1$ds</string>
+
+    <!-- Login Screen -->
+    <string name="login_title">LOGIN</string>
+    <string name="please_fill_all_login_fields">Please fill in all fields</string>
+    <string name="please_enter_valid_email_login">Please enter a valid email</string>
+    <string name="password_reset_email_sent">Password reset email sent!</string>
+    <string name="enter_email_first">Enter your email address first</string>
+    <string name="offline_login_failed">Offline login failed. Please use password.</string>
+
+    <!-- Arcade Mode Screen -->
+    <string name="arcade_mode_title">ARCADE MODE</string>
+    <string name="play_arcade">PLAY ARCADE</string>
+    <string name="random_quickplay">Random quick-play session</string>
+    <string name="levels">LEVELS</string>
+    <string name="progressive_challenges">Progressive challenges 1-16</string>
+
+    <!-- Change Password Screen -->
+    <string name="change_password_title">CHANGE PASSWORD</string>
+    <string name="enter_current_and_new">Enter your current password and choose a new one</string>
+    <string name="current_password">Current Password</string>
+    <string name="enter_current_password">Enter current password</string>
+    <string name="new_password">New Password</string>
+    <string name="enter_new_password">Enter new password</string>
+    <string name="at_least_6_characters">At least 6 characters</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="reenter_new_password">Re-enter new password</string>
+    <string name="change_password_button">CHANGE PASSWORD</string>
+    <string name="current_password_required">Current password is required</string>
+    <string name="new_password_required">New password is required</string>
+    <string name="password_min_6_chars">Password must be at least 6 characters</string>
+    <string name="new_password_different">New password must be different from current password</string>
+    <string name="please_confirm_password">Please confirm your password</string>
+    <string name="current_password_incorrect">Current password is incorrect</string>
+    <string name="password_changed_successfully">Password changed successfully!</string>
+    <string name="failed_to_change_password">Failed to change password: %1$s</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="edit_profile_title">EDIT PROFILE</string>
+    <string name="your_profile">Your Profile</string>
+    <string name="email_label">Email</string>
+    <string name="display_name">Display Name</string>
+    <string name="enter_display_name">Enter your display name</string>
+    <string name="save_changes">SAVE CHANGES</string>
+    <string name="display_name_empty">Display name cannot be empty</string>
+    <string name="display_name_min_2">Display name must be at least 2 characters</string>
+    <string name="display_name_max_30">Display name must be less than 30 characters</string>
+    <string name="display_name_invalid_chars">Only letters, numbers, spaces and underscores allowed</string>
+    <string name="profile_updated_successfully">Profile updated successfully!</string>
+    <string name="failed_to_update_profile">Failed to update profile: %1$s</string>
+
+    <!-- Game Completion Dialog -->
+    <string name="new_record_exclamation">NEW RECORD!</string>
+    <string name="well_done_exclamation">WELL DONE!</string>
+
+    <!-- Multiplayer Gameplay Screen -->
+    <string name="vs">VS</string>
+    <string name="paused">PAUSED</string>
+    <string name="resume">RESUME</string>
+    <string name="player_1_wins">🏆 PLAYER 1 WINS! 🏆</string>
+    <string name="player_2_wins">🏆 PLAYER 2 WINS! 🏆</string>
+    <string name="its_a_tie">🤝 IT\'S A TIE! 🤝</string>
+    <string name="total_moves">Total Moves</string>
+    <string name="theme">Theme</string>
+    <string name="rematch">REMATCH</string>
+    <string name="red">Red</string>
+    <string name="blue">Blue</string>
+
+    <!-- Multiplayer Setup Screen -->
+    <string name="multiplayer_title">MULTIPLAYER</string>
+    <string name="choose_theme_to_begin">Choose a theme to begin</string>
+    <string name="start_match">START MATCH</string>
+
+    <!-- Statistics Screen -->
+    <string name="your_statistics">YOUR STATISTICS</string>
+    <string name="refresh">Refresh</string>
+    <string name="overview">OVERVIEW</string>
+    <string name="games">Games</string>
+    <string name="wins">Wins</string>
+    <string name="win_rate">Win Rate</string>
+    <string name="playtime">Playtime</string>
+    <string name="total_xp">Total XP</string>
+    <string name="performance">PERFORMANCE</string>
+    <string name="achievements">ACHIEVEMENTS</string>
+    <string name="themes_modes">THEMES &amp; MODES</string>
+    <string name="recent_games">RECENT GAMES</string>
+    <string name="no_statistics_yet">No statistics yet!</string>
+    <string name="play_games_to_see_stats">Play some games to see your stats</string>
+    <string name="performance_trend">Performance Trend</string>
+    <string name="avg_score">Avg Score</string>
+    <string name="avg_time">Avg Time</string>
+    <string name="best_time">Best Time</string>
+    <string name="accuracy">Accuracy</string>
+    <string name="improving">Improving</string>
+    <string name="stable">Stable</string>
+    <string name="declining">Declining</string>
+    <string name="play_more">Play More</string>
+    <string name="achievements_unlocked">Achievements Unlocked</string>
+    <string name="percent_complete">%1$s%% Complete</string>
+    <string name="favorite">Favorite</string>
+    <string name="most_played">Most Played</string>
+    <string name="theme_statistics">Theme Statistics</string>
+    <string name="games_count">%1$d games</string>
+
+    <string name="notifications_enabled">Enabled</string>
+    <string name="notifications_disabled">Disabled</string>
+    <string name="push_notifications">Push Notifications</string>
+    <string name="receive_game_updates">Receive game updates and reminders</string>
+
 </resources>

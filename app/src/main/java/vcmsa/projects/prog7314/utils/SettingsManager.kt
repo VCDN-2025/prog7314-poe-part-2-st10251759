@@ -173,6 +173,8 @@ object SettingsManager {
         )
     }
 
+    
+
     /**
      * Log all current settings (for debugging)
      */

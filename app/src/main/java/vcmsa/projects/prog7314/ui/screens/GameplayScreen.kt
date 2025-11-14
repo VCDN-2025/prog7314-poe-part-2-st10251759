@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -162,21 +163,21 @@ fun GameHeader(
             ) {
                 // Points
                 StatItem(
-                    label = "Points",
+                    label = stringResource(R.string.points_label),
                     value = points.toString(),
                     color = Color(0xFFFFEB3B)
                 )
 
                 // Time
                 StatItem(
-                    label = "Time",
+                    label = stringResource(R.string.time_label),
                     value = time,
                     color = Color(0xFF2196F3)
                 )
 
                 // Moves
                 StatItem(
-                    label = "Moves",
+                    label = stringResource(R.string.moves_label),
                     value = moves.toString(),
                     color = Color(0xFF4CAF50)
                 )

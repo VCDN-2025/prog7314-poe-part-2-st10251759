@@ -19,12 +19,14 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
+import vcmsa.projects.prog7314.R
 
 @Composable
 fun GameCompletionDialog(
@@ -109,7 +111,7 @@ fun NewRecordBadge() {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "NEW RECORD!",
+                text = stringResource(R.string.new_record_exclamation),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White
@@ -153,7 +155,7 @@ fun CompletionCard(
         ) {
             // Title
             Text(
-                text = "WELL DONE!",
+                text = stringResource(R.string.well_done_exclamation),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
@@ -178,11 +180,23 @@ fun CompletionCard(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    StatRow(label = "MOVES:", value = moves.toString(), color = Color(0xFFFFC107))
+                    StatRow(
+                        label = stringResource(R.string.moves_colon),
+                        value = moves.toString(),
+                        color = Color(0xFFFFC107)
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    StatRow(label = "TIME:", value = formatTime(time), color = Color(0xFFFFC107))
+                    StatRow(
+                        label = stringResource(R.string.time_colon),
+                        value = formatTimeForDialog(time),
+                        color = Color(0xFFFFC107)
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    StatRow(label = "BONUS:", value = bonus.toString(), color = Color(0xFFFFC107))
+                    StatRow(
+                        label = stringResource(R.string.bonus_colon),
+                        value = bonus.toString(),
+                        color = Color(0xFFFFC107)
+                    )
                 }
             }
 
@@ -203,7 +217,7 @@ fun CompletionCard(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "TOTAL:",
+                        text = stringResource(R.string.total_colon),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1976D2)
@@ -224,7 +238,12 @@ fun CompletionCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-
+                // Replay Button
+                CircularActionButton(
+                    icon = Icons.Default.Refresh,
+                    backgroundColor = Color(0xFFFF9800),
+                    onClick = onReplay
+                )
 
                 // Next Level Button (if available)
                 if (onNextLevel != null) {
@@ -330,4 +349,10 @@ fun CircularActionButton(
             modifier = Modifier.size(32.dp)
         )
     }
+}
+
+fun formatTimeForDialog(seconds: Int): String {
+    val mins = seconds / 60
+    val secs = seconds % 60
+    return String.format("%02d:%02d", mins, secs)
 }

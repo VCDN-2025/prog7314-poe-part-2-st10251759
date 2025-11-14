@@ -94,6 +94,23 @@ interface UserProfileDao {
         timestamp: Long = System.currentTimeMillis()
     )
 
+    // UPDATE STREAK AND PLAY DATE
+    @Query("""
+        UPDATE user_profile 
+        SET currentStreak = :currentStreak,
+            bestStreak = :bestStreak,
+            lastPlayDate = :lastPlayDate,
+            lastUpdated = :timestamp
+        WHERE userId = :userId
+    """)
+    suspend fun updateStreakAndPlayDate(
+        userId: String,
+        currentStreak: Int,
+        bestStreak: Int,
+        lastPlayDate: Long,
+        timestamp: Long = System.currentTimeMillis()
+    )
+
     // DELETE ALL (for testing/reset)
     @Query("DELETE FROM user_profile")
     suspend fun deleteAll()

@@ -36,6 +36,9 @@ import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.BiometricHelper
 import vcmsa.projects.prog7314.utils.FirebaseHelper
 import vcmsa.projects.prog7314.utils.NetworkManager
+import vcmsa.projects.prog7314.utils.NotificationHelper
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
+import vcmsa.projects.prog7314.utils.LanguageManager
 
 class MainActivity : FragmentActivity() {
 
@@ -44,6 +47,9 @@ class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Language
+        LanguageManager.initializeLanguage(this)
 
         // Switch from splash theme to app theme
         setTheme(android.R.style.Theme_Material_Light_NoActionBar)
@@ -54,6 +60,12 @@ class MainActivity : FragmentActivity() {
 
         NetworkManager.initialize(this)
         RepositoryProvider.initialize(this)
+
+        // Initialize Notifications
+        NotificationHelper.initializeNotificationSettings(this)
+        NotificationHelper.requestNotificationPermission(this)
+        getFCMToken()
+        LocalNotificationManager.initialize(this)
 
         syncManager = SyncManager(this)
         syncManager.initialize()
@@ -248,6 +260,24 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
+
+    private fun getFCMToken() {
+        lifecycleScope.launch {
+            try {
+                val token = NotificationHelper.getFCMToken()
+                if (token != null) {
+                    Log.d("MainActivity", "✅ FCM Token: $token")
+                    // Subscribe to default topics
+                    NotificationHelper.subscribeToTopic("all_users")
+                    Log.d("MainActivity", "✅ Subscribed to push notifications")
+                } else {
+                    Log.e("MainActivity", "❌ Failed to get FCM token")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "❌ FCM Token Error: ${e.message}", e)
+            }
+        }
+    }
 }
 
 data class CompletionData(
@@ -288,6 +318,9 @@ fun MemoryMatchMadnessApp() {
     // NEW: Edit Profile and Change Password screens
     var showEditProfile by remember { mutableStateOf(false) }
     var showChangePassword by remember { mutableStateOf(false) }
+
+    // NEW: Statistics screen
+    var showStatistics by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -409,6 +442,15 @@ fun MemoryMatchMadnessApp() {
                 onChangeSuccess = {
                     showChangePassword = false
                     showSettingsScreen = true
+                }
+            )
+        }
+
+        showStatistics -> {
+            StatisticsScreen(
+                onBackClick = {
+                    showStatistics = false
+                    showMainMenu = true
                 }
             )
         }
@@ -609,7 +651,10 @@ fun MemoryMatchMadnessApp() {
                     showMainMenu = false
                     showMultiplayerSetup = true
                 },
-                onStatisticsClick = {},
+                onStatisticsClick = {          // ← CHANGED!
+                    showMainMenu = false
+                    showStatistics = true
+                },
                 onSettingsClick = {
                     showMainMenu = false
                     showSettingsScreen = true

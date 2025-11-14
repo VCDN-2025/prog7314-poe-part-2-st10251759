@@ -14,12 +14,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.R
+import vcmsa.projects.prog7314.data.AppDatabase
+import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 
 @Composable
 fun MainMenuScreen(
@@ -31,7 +37,33 @@ fun MainMenuScreen(
     onProfileClick: () -> Unit = {},
     userEmail: String = "user@example.com"
 ) {
-    var showComingSoonDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // State for streak data
+    var currentStreak by remember { mutableStateOf(0) }
+    var bestStreak by remember { mutableStateOf(0) }
+
+    // Load streak data when screen loads
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    val database = AppDatabase.getDatabase(context)
+                    val userProfileRepo = UserProfileRepository(database.userProfileDao())
+
+                    val profile = userProfileRepo.getUserProfile(userId)
+                    if (profile != null) {
+                        currentStreak = profile.currentStreak
+                        bestStreak = profile.bestStreak
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle error silently
+            }
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -65,14 +97,56 @@ fun MainMenuScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Bar with only Settings on the right
+            // Top Bar with Streak and Settings
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Streak Display Card
+                if (currentStreak > 0) {
+                    Card(
+                        modifier = Modifier
+                            .padding(end = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White.copy(alpha = 0.9f)
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Fire emoji
+                            Text(
+                                text = "🔥",
+                                fontSize = 28.sp
+                            )
+
+                            // Streak info
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.day_streak, currentStreak),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFF6F00)
+                                )
+                                Text(
+                                    text = stringResource(R.string.best_days, bestStreak),
+                                    fontSize = 11.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(1.dp))
+                }
+
                 // Settings Button
                 IconButton(
                     onClick = onSettingsClick,
@@ -111,7 +185,7 @@ fun MainMenuScreen(
             ) {
                 // Arcade Mode Button
                 GameModeButton3D(
-                    text = "ARCADE MODE",
+                    text = stringResource(R.string.arcade_mode).uppercase(),
                     backgroundColor = Color(0xFFFFC107),
                     shadowColor = Color(0xFFCC8800),
                     onClick = onArcadeModeClick
@@ -119,7 +193,7 @@ fun MainMenuScreen(
 
                 // Adventure Mode Button
                 GameModeButton3D(
-                    text = "ADVENTURE MODE",
+                    text = stringResource(R.string.adventure_mode).uppercase(),
                     backgroundColor = Color(0xFF2196F3),
                     shadowColor = Color(0xFF0D47A1),
                     onClick = onAdventureModeClick
@@ -127,7 +201,7 @@ fun MainMenuScreen(
 
                 // Multiplayer Button
                 GameModeButton3D(
-                    text = "MULTIPLAYER",
+                    text = stringResource(R.string.multiplayer).uppercase(),
                     backgroundColor = Color(0xFFE91E63),
                     shadowColor = Color(0xFFAD1457),
                     onClick = onMultiplayerClick
@@ -135,56 +209,21 @@ fun MainMenuScreen(
 
                 // Statistics Button
                 GameModeButton3D(
-                    text = "STATISTICS",
+                    text = stringResource(R.string.statistics).uppercase(),
                     backgroundColor = Color(0xFF9C27B0),
                     shadowColor = Color(0xFF6A1B9A),
-                    onClick = { showComingSoonDialog = true }
+                    onClick = onStatisticsClick
                 )
 
                 // Settings Button
                 GameModeButton3D(
-                    text = "⚙ SETTINGS",
+                    text = "⚙ ${stringResource(R.string.settings).uppercase()}",
                     backgroundColor = Color(0xFF8BC34A),
                     shadowColor = Color(0xFF558B2F),
                     onClick = onSettingsClick
                 )
             }
         }
-    }
-
-    // Coming Soon Dialog
-    if (showComingSoonDialog) {
-        AlertDialog(
-            onDismissRequest = { showComingSoonDialog = false },
-            title = {
-                Text(
-                    text = "Coming Soon!",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0288D1)
-                )
-            },
-            text = {
-                Text(
-                    text = "Statistics feature is coming soon. Stay tuned for detailed game stats, achievements, and progress tracking!",
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { showComingSoonDialog = false },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0288D1)
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Text("OK", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-            },
-            shape = RoundedCornerShape(20.dp),
-            containerColor = Color.White
-        )
     }
 }
 

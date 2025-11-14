@@ -16,16 +16,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.utils.AuthManager
-import vcmsa.projects.prog7314.utils.AuthResult  // <-- ADD THIS LINE
+import vcmsa.projects.prog7314.utils.AuthResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,12 +51,19 @@ fun EditProfileScreen(
     // Validation states
     var displayNameError by remember { mutableStateOf("") }
 
+    // Read string resources during composition
+    val displayNameEmptyMsg = stringResource(R.string.display_name_empty)
+    val displayNameMin2Msg = stringResource(R.string.display_name_min_2)
+    val displayNameMax30Msg = stringResource(R.string.display_name_max_30)
+    val displayNameInvalidCharsMsg = stringResource(R.string.display_name_invalid_chars)
+    val profileUpdatedMsg = stringResource(R.string.profile_updated_successfully)
+
     fun validateDisplayName(): Boolean {
         displayNameError = when {
-            displayName.isBlank() -> "Display name cannot be empty"
-            displayName.length < 2 -> "Display name must be at least 2 characters"
-            displayName.length > 30 -> "Display name must be less than 30 characters"
-            !displayName.matches(Regex("^[a-zA-Z0-9_ ]+$")) -> "Only letters, numbers, spaces and underscores allowed"
+            displayName.isBlank() -> displayNameEmptyMsg
+            displayName.length < 2 -> displayNameMin2Msg
+            displayName.length > 30 -> displayNameMax30Msg
+            !displayName.matches(Regex("^[a-zA-Z0-9_ ]+$")) -> displayNameInvalidCharsMsg
             else -> ""
         }
         return displayNameError.isEmpty()
@@ -91,18 +100,17 @@ fun EditProfileScreen(
                         }
                     }
 
-                    successMessage = "Profile updated successfully!"
+                    successMessage = profileUpdatedMsg
                     Log.d("EditProfileScreen", "✅ Profile updated")
 
-                    // Delay and navigate back
                     kotlinx.coroutines.delay(1500)
                     onSaveSuccess()
                 } else if (result is AuthResult.Error) {
-                    errorMessage = result.message
+                    errorMessage = context.getString(R.string.failed_to_update_profile, result.message)
                     Log.e("EditProfileScreen", "❌ Update failed: ${result.message}")
                 }
             } catch (e: Exception) {
-                errorMessage = "Failed to update profile: ${e.message}"
+                errorMessage = context.getString(R.string.failed_to_update_profile, e.message ?: "Unknown error")
                 Log.e("EditProfileScreen", "❌ Error: ${e.message}", e)
             } finally {
                 isLoading = false
@@ -134,7 +142,7 @@ fun EditProfileScreen(
                     Text("←", fontSize = 32.sp, color = Color.White)
                 }
                 Text(
-                    text = "EDIT PROFILE",
+                    text = stringResource(R.string.edit_profile_title),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -165,7 +173,7 @@ fun EditProfileScreen(
                             .padding(20.dp)
                     ) {
                         Text(
-                            text = "Your Profile",
+                            text = stringResource(R.string.your_profile),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0288D1)
@@ -175,7 +183,7 @@ fun EditProfileScreen(
 
                         // Email (Read-only)
                         Text(
-                            text = "Email",
+                            text = stringResource(R.string.email_label),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Gray
@@ -198,7 +206,7 @@ fun EditProfileScreen(
 
                         // Display Name (Editable)
                         Text(
-                            text = "Display Name",
+                            text = stringResource(R.string.display_name),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Gray
@@ -212,7 +220,7 @@ fun EditProfileScreen(
                                 errorMessage = ""
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("Enter your display name") },
+                            placeholder = { Text(stringResource(R.string.enter_display_name)) },
                             isError = displayNameError.isNotEmpty(),
                             supportingText = {
                                 if (displayNameError.isNotEmpty()) {
@@ -284,7 +292,7 @@ fun EditProfileScreen(
                         )
                     } else {
                         Text(
-                            text = "SAVE CHANGES",
+                            text = stringResource(R.string.save_changes),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -310,7 +318,7 @@ fun EditProfileScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "CANCEL",
+                        text = stringResource(R.string.cancel),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )

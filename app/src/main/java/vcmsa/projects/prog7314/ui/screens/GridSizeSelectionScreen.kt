@@ -14,8 +14,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
@@ -76,13 +76,11 @@ fun GridSizeSelectionScreen(
                     contentScale = ContentScale.Fit
                 )
 
-
-
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Subtitle
                 Text(
-                    text = "CHOOSE GRID SIZE",
+                    text = stringResource(R.string.choose_grid_size),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -90,7 +88,7 @@ fun GridSizeSelectionScreen(
                 )
 
                 Text(
-                    text = "PICK YOUR CHALLENGE LEVEL",
+                    text = stringResource(R.string.pick_challenge_level),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White.copy(alpha = 0.9f),
@@ -114,7 +112,7 @@ fun GridSizeSelectionScreen(
                         gridSize = GridSize(3, 2, DifficultyLevel.BEGINNER),
                         backgroundColor = Color(0xFF8BC34A), // Light Green
                         labelColor = Color(0xFF4CAF50), // Green
-                        difficultyLabel = "BEGINNER",
+                        difficultyLabel = stringResource(R.string.beginner),
                         onClick = onGridSizeSelected,
                         modifier = Modifier.weight(1f)
                     )
@@ -124,7 +122,7 @@ fun GridSizeSelectionScreen(
                         gridSize = GridSize(4, 3, DifficultyLevel.INTERMEDIATE),
                         backgroundColor = Color(0xFFFFEB3B), // Yellow
                         labelColor = Color(0xFFFFC107), // Amber
-                        difficultyLabel = "INTERMEDIATE",
+                        difficultyLabel = stringResource(R.string.intermediate),
                         onClick = onGridSizeSelected,
                         modifier = Modifier.weight(1f)
                     )
@@ -140,7 +138,7 @@ fun GridSizeSelectionScreen(
                         gridSize = GridSize(5, 4, DifficultyLevel.INTERMEDIATE),
                         backgroundColor = Color(0xFFFF9800), // Orange
                         labelColor = Color(0xFFF57C00), // Dark Orange
-                        difficultyLabel = "HARD",
+                        difficultyLabel = stringResource(R.string.hard),
                         onClick = onGridSizeSelected,
                         modifier = Modifier.weight(1f)
                     )
@@ -150,7 +148,7 @@ fun GridSizeSelectionScreen(
                         gridSize = GridSize(6, 4, DifficultyLevel.EXPERT),
                         backgroundColor = Color(0xFFF44336), // Red
                         labelColor = Color(0xFFE91E63), // Pink-Red
-                        difficultyLabel = "EXPERT",
+                        difficultyLabel = stringResource(R.string.expert),
                         onClick = onGridSizeSelected,
                         modifier = Modifier.weight(1f)
                     )
@@ -171,6 +169,8 @@ fun GridSizeCardStyled(
     onClick: (GridSize) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val cardsText = stringResource(R.string.cards)
+
     Card(
         modifier = modifier
             .height(220.dp)
@@ -248,7 +248,7 @@ fun GridSizeCardStyled(
                         letterSpacing = 1.sp
                     )
                     Text(
-                        text = "${gridSize.totalCards} CARDS",
+                        text = "${gridSize.totalCards} $cardsText",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White.copy(alpha = 0.9f),

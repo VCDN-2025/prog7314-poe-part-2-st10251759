@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,7 +66,7 @@ fun MultiplayerSetupScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = Color(0xFF4A90E2)
                     )
                 }
@@ -86,7 +87,7 @@ fun MultiplayerSetupScreen(
 
             // Title
             Text(
-                text = "MULTIPLAYER",
+                text = stringResource(R.string.multiplayer_title),
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
@@ -105,7 +106,7 @@ fun MultiplayerSetupScreen(
 
             // Subtitle
             Text(
-                text = "Choose a theme to begin",
+                text = stringResource(R.string.choose_theme_to_begin),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.White.copy(alpha = 0.9f),
@@ -121,13 +122,13 @@ fun MultiplayerSetupScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 PlayerInfoCard(
-                    playerName = "Player 1",
+                    playerName = stringResource(R.string.player_1),
                     playerColor = Color(0xFFE53935),
                     modifier = Modifier.weight(1f)
                 )
 
                 Text(
-                    text = "VS",
+                    text = stringResource(R.string.vs),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
@@ -135,7 +136,7 @@ fun MultiplayerSetupScreen(
                 )
 
                 PlayerInfoCard(
-                    playerName = "Player 2",
+                    playerName = stringResource(R.string.player_2),
                     playerColor = Color(0xFF1E88E5),
                     modifier = Modifier.weight(1f)
                 )
@@ -182,7 +183,7 @@ fun MultiplayerSetupScreen(
                 )
             ) {
                 Text(
-                    text = "START MATCH",
+                    text = stringResource(R.string.start_match),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White

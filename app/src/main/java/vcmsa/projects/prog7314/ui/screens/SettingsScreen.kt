@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,11 +36,13 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.CardBackground
 import vcmsa.projects.prog7314.data.repository.CardBackgroundRepository
 import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.BiometricHelper
+import vcmsa.projects.prog7314.utils.LanguageManager
 import vcmsa.projects.prog7314.utils.ProfileImageHelper
 import vcmsa.projects.prog7314.utils.SettingsManager
 
@@ -67,6 +70,9 @@ fun SettingsScreen(
 
     // Card Background State
     val selectedCardBackground by cardBackgroundViewModel.selectedCardBackground.collectAsState()
+
+    // Language State
+    val currentLanguage = remember { LanguageManager.getCurrentLanguage(context) }
 
     LaunchedEffect(Unit) {
         // Try to load from local prefs first (faster)
@@ -115,6 +121,7 @@ fun SettingsScreen(
     var biometricEnabled by remember { mutableStateOf(BiometricHelper.isBiometricEnabled(context)) }
 
     var showCardBackgroundDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -149,7 +156,7 @@ fun SettingsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = Color(0xFF4A90E2)
                     )
                 }
@@ -157,7 +164,7 @@ fun SettingsScreen(
 
             // Settings title - moved down
             Text(
-                text = "SETTINGS",
+                text = stringResource(R.string.settings).uppercase(),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -246,78 +253,96 @@ fun SettingsScreen(
                     )
 
                     Text(
-                        text = if (isUploadingImage) "Saving..." else "Tap photo to change",
+                        text = if (isUploadingImage) stringResource(R.string.saving) else stringResource(R.string.tap_photo_to_change),
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.6f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
 
-                SectionHeader("ACCOUNT")
+                SectionHeader(stringResource(R.string.section_account))
 
                 SettingsCard(
-                    title = "Edit Profile",
-                    subtitle = "Change name and details",
+                    title = stringResource(R.string.edit_profile),
+                    subtitle = stringResource(R.string.change_name_details),
                     onClick = onEditProfile
                 )
 
                 SettingsCard(
-                    title = "Change Password",
-                    subtitle = "Update your password",
+                    title = stringResource(R.string.change_password),
+                    subtitle = stringResource(R.string.update_your_password),
                     onClick = onChangePassword
                 )
 
                 SettingsCard(
-                    title = "Logout",
-                    subtitle = "Sign out of your account",
+                    title = stringResource(R.string.logout),
+                    subtitle = stringResource(R.string.sign_out_account),
                     onClick = { showLogoutDialog = true },
                     textColor = Color(0xFFFF5722)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                SectionHeader("APPEARANCE")
+                SectionHeader(stringResource(R.string.section_appearance))
 
                 SettingsCard(
-                    title = "Card Background",
+                    title = stringResource(R.string.card_background),
                     subtitle = selectedCardBackground.displayName,
                     onClick = { showCardBackgroundDialog = true }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                SectionHeader("LANGUAGE")
+                SectionHeader(stringResource(R.string.section_language))
 
-                SettingsCardDisabled(
-                    title = "Multi-Language",
-                    subtitle = "Coming in Part 3"
+                SettingsCard(
+                    title = stringResource(R.string.multi_language),
+                    subtitle = currentLanguage.displayName,
+                    onClick = { showLanguageDialog = true }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                SectionHeader("NOTIFICATIONS")
+                SectionHeader(stringResource(R.string.section_notifications))
 
-                SettingsCardDisabled(
-                    title = "Notifications",
-                    subtitle = "Coming in Part 3"
+                var notificationsEnabled by remember {
+                    mutableStateOf(SettingsManager.isNotificationsEnabled(context))
+                }
+
+                SettingsToggleCard(
+                    title = stringResource(R.string.push_notifications),
+                    subtitle = if (notificationsEnabled)
+                        stringResource(R.string.notifications_enabled)
+                    else
+                        stringResource(R.string.notifications_disabled),
+                    checked = notificationsEnabled,
+                    onCheckedChange = { enabled ->
+                        SettingsManager.setNotificationsEnabled(context, enabled)
+                        notificationsEnabled = enabled
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (isBiometricAvailable) {
-                    SectionHeader("BIOMETRIC & SECURITY")
+                    SectionHeader(stringResource(R.string.section_biometric_security))
+
+                    // Read strings during composition
+                    val enableBiometricText = stringResource(R.string.enable_biometric)
+                    val scanToEnableText = stringResource(R.string.scan_to_enable)
+                    val cancelText = stringResource(R.string.cancel)
 
                     SettingsToggleCard(
-                        title = "Biometric Login",
-                        subtitle = if (biometricEnabled) "Enabled" else "Disabled",
+                        title = stringResource(R.string.biometric_login),
+                        subtitle = if (biometricEnabled) stringResource(R.string.enabled) else stringResource(R.string.disabled),
                         checked = biometricEnabled,
                         onCheckedChange = { enabled ->
                             if (enabled && activity != null) {
                                 BiometricHelper.showBiometricPrompt(
                                     activity = activity,
-                                    title = "Enable Biometric",
-                                    subtitle = "Scan to enable quick login",
-                                    negativeButtonText = "Cancel",
+                                    title = enableBiometricText,
+                                    subtitle = scanToEnableText,
+                                    negativeButtonText = cancelText,
                                     onSuccess = {
                                         BiometricHelper.setBiometricEnabled(context, true)
                                         AuthManager.saveBiometricCredentials(context)
@@ -337,20 +362,13 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                SectionHeader("AUDIO")
 
-                SettingsCardDisabled(
-                    title = "Sound Effects & Music",
-                    subtitle = "Coming in Part 3"
-                )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                SectionHeader("ABOUT")
+                SectionHeader(stringResource(R.string.section_about))
 
                 SettingsCard(
-                    title = "About the App",
-                    subtitle = "Version 1.0.0",
+                    title = stringResource(R.string.about_the_app),
+                    subtitle = stringResource(R.string.version),
                     onClick = { showAboutDialog = true }
                 )
 
@@ -365,7 +383,7 @@ fun SettingsScreen(
                         containerColor = Color(0xFFFF5722)
                     )
                 ) {
-                    Text("RESET TO DEFAULTS")
+                    Text(stringResource(R.string.reset_to_defaults))
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -384,11 +402,24 @@ fun SettingsScreen(
         )
     }
 
+    if (showLanguageDialog) {
+        LanguageSelectionDialog(
+            currentLanguage = currentLanguage,
+            onLanguageSelected = { language ->
+                LanguageManager.setLanguage(context, language)
+                showLanguageDialog = false
+                // Restart activity to apply language
+                activity?.let { LanguageManager.restartActivity(it) }
+            },
+            onDismiss = { showLanguageDialog = false }
+        )
+    }
+
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Logout?", fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to logout?") },
+            title = { Text(stringResource(R.string.logout_question), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.logout_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -399,12 +430,12 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFFF5722))
                 ) {
-                    Text("Logout")
+                    Text(stringResource(R.string.logout))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -426,29 +457,28 @@ fun SettingsScreen(
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
-            title = { Text("About Memory Match Madness", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.about_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Version: 1.0.0", fontSize = 14.sp)
+                    Text(stringResource(R.string.version_label), fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Memory Match Madness is a fun and challenging memory card game designed to test and improve your memory skills.",
+                        stringResource(R.string.about_description),
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("More information coming soon!", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.more_info_soon), fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showAboutDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )
     }
 }
 
-// All the other composable functions remain the same...
 @Composable
 fun SectionHeader(title: String) {
     Text(
@@ -522,7 +552,7 @@ fun NewCardBackgroundDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Card Background Theme",
+                stringResource(R.string.card_background_theme),
                 fontWeight = FontWeight.Bold
             )
         },
@@ -541,7 +571,7 @@ fun NewCardBackgroundDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -612,13 +642,79 @@ fun NewBackgroundOption(
 }
 
 @Composable
+fun LanguageSelectionDialog(
+    currentLanguage: LanguageManager.Language,
+    onLanguageSelected: (LanguageManager.Language) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(R.string.select_language),
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                LanguageManager.getAvailableLanguages().forEach { language ->
+                    LanguageOption(
+                        language = language,
+                        isSelected = currentLanguage == language,
+                        onClick = { onLanguageSelected(language) }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@Composable
+fun LanguageOption(
+    language: LanguageManager.Language,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = language.displayName,
+            fontSize = 16.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
+
+        if (isSelected) {
+            Text(
+                text = "✓",
+                fontSize = 20.sp,
+                color = Color(0xFF4CAF50),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
 fun ResetSettingsDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Reset to Defaults?") },
-        text = { Text("This will reset all settings to their default values. Your account and game progress will not be affected.") },
-        confirmButton = { TextButton(onClick = onConfirm) { Text("Reset") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        title = { Text(stringResource(R.string.reset_question)) },
+        text = { Text(stringResource(R.string.reset_confirmation)) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.reset)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 

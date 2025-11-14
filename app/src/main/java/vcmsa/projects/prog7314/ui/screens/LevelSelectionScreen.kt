@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,7 +76,7 @@ fun LevelSelectionScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = Color(0xFF4A90E2)
                     )
                 }
@@ -98,7 +99,7 @@ fun LevelSelectionScreen(
                 )
 
                 Text(
-                    text = "SELECT LEVEL",
+                    text = stringResource(R.string.select_level),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
@@ -112,7 +113,7 @@ fun LevelSelectionScreen(
                 )
 
                 Text(
-                    text = "CHOOSE YOUR ADVENTURE",
+                    text = stringResource(R.string.choose_your_adventure),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White.copy(alpha = 0.9f),
@@ -209,7 +210,7 @@ fun LevelCard(
                 // Locked level
                 Icon(
                     imageVector = Icons.Default.Lock,
-                    contentDescription = "Locked",
+                    contentDescription = stringResource(R.string.locked),
                     tint = Color.White.copy(alpha = 0.6f),
                     modifier = Modifier.size(32.dp)
                 )
@@ -239,7 +240,7 @@ fun ProgressSection(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "PROGRESS: $completedCount / $totalLevels LEVELS",
+            text = stringResource(R.string.progress_levels, completedCount, totalLevels),
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,

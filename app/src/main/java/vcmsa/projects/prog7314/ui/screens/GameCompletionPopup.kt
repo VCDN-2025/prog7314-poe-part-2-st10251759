@@ -10,11 +10,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameResult
 
 @Composable
@@ -53,7 +55,7 @@ fun GameCompletionPopup(
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "NEW RECORD",
+                        text = stringResource(R.string.new_record_badge),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFE91E63)
@@ -78,7 +80,7 @@ fun GameCompletionPopup(
 
                 // "WELL DONE!" title
                 Text(
-                    text = "WELL DONE!",
+                    text = stringResource(R.string.well_done),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
@@ -101,9 +103,18 @@ fun GameCompletionPopup(
                             .fillMaxWidth()
                             .padding(16.dp)
                     ) {
-                        StatRow(label = "MOVES:", value = gameResult.moves.toString())
-                        StatRow(label = "TIME:", value = "${timeInSeconds}s")
-                        StatRow(label = "BONUS:", value = gameResult.points.toString())
+                        StatRow(
+                            label = stringResource(R.string.moves_colon),
+                            value = gameResult.moves.toString()
+                        )
+                        StatRow(
+                            label = stringResource(R.string.time_colon),
+                            value = stringResource(R.string.seconds_format, timeInSeconds)
+                        )
+                        StatRow(
+                            label = stringResource(R.string.bonus_colon),
+                            value = gameResult.points.toString()
+                        )
                     }
                 }
 
@@ -125,7 +136,7 @@ fun GameCompletionPopup(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "TOTAL:",
+                            text = stringResource(R.string.total_colon),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFE91E63)

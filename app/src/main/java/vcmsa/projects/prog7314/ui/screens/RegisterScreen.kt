@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -48,6 +49,13 @@ fun RegisterScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+
+    // Read string resources during composition
+    val fillAllFieldsMsg = stringResource(R.string.please_fill_all_fields)
+    val passwordsNoMatchMsg = stringResource(R.string.passwords_do_not_match)
+    val passwordMinLengthMsg = stringResource(R.string.password_min_length)
+    val validEmailMsg = stringResource(R.string.enter_valid_email)
+    val googleSigninNotInitMsg = stringResource(R.string.google_signin_not_initialized)
 
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -81,7 +89,7 @@ fun RegisterScreen(
             }
         } catch (e: ApiException) {
             isLoading = false
-            errorMessage = "Google sign-up failed: ${e.message}"
+            errorMessage = context.getString(R.string.google_signup_failed, e.message ?: "Unknown error")
         }
     }
 
@@ -119,7 +127,7 @@ fun RegisterScreen(
             ) {
                 repeat(3) {
                     Text(
-                        text = "TEST YOUR MEMORY SKILLS!",
+                        text = stringResource(R.string.test_your_memory).uppercase(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.Black,
@@ -127,7 +135,7 @@ fun RegisterScreen(
                     )
                 }
                 Text(
-                    text = "TEST YOUR MEMORY SKILLS!",
+                    text = stringResource(R.string.test_your_memory).uppercase(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
@@ -144,7 +152,7 @@ fun RegisterScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "REGISTER",
+                        text = stringResource(R.string.register_title),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0288D1),
@@ -158,7 +166,7 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it; errorMessage = "" },
-                        label = { Text("Email Address") },
+                        label = { Text(stringResource(R.string.email_address)) },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
@@ -168,7 +176,7 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it; errorMessage = "" },
-                        label = { Text("Password") },
+                        label = { Text(stringResource(R.string.password_label)) },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -179,7 +187,7 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it; errorMessage = "" },
-                        label = { Text("Confirm Password") },
+                        label = { Text(stringResource(R.string.confirm_password_label)) },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -191,16 +199,16 @@ fun RegisterScreen(
                         onClick = {
                             when {
                                 email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() -> {
-                                    errorMessage = "Please fill in all fields"
+                                    errorMessage = fillAllFieldsMsg
                                 }
                                 password != confirmPassword -> {
-                                    errorMessage = "Passwords do not match"
+                                    errorMessage = passwordsNoMatchMsg
                                 }
                                 password.length < 6 -> {
-                                    errorMessage = "Password must be at least 6 characters"
+                                    errorMessage = passwordMinLengthMsg
                                 }
                                 !email.contains("@") -> {
-                                    errorMessage = "Please enter a valid email address"
+                                    errorMessage = validEmailMsg
                                 }
                                 else -> {
                                     isLoading = true
@@ -237,15 +245,15 @@ fun RegisterScreen(
                         if (isLoading) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Text("PLAY NOW", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(stringResource(R.string.play_now), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
-                    Text("or continue with", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+                    Text(stringResource(R.string.or_continue_with), fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
 
                     Image(
                         painter = painterResource(id = R.drawable.android_neutral),
-                        contentDescription = "Sign up with Google",
+                        contentDescription = stringResource(R.string.sign_in_with_google),
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
                             .height(60.dp)
@@ -257,7 +265,7 @@ fun RegisterScreen(
                                     googleSignInLauncher.launch(signInIntent)
                                 } else {
                                     isLoading = false
-                                    errorMessage = "Google Sign-In not initialized"
+                                    errorMessage = googleSigninNotInitMsg
                                 }
                             },
                         contentScale = ContentScale.Fit
@@ -268,7 +276,7 @@ fun RegisterScreen(
                         enabled = !isLoading,
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Text("Already Have an Account?", color = Color(0xFF0288D1))
+                        Text(stringResource(R.string.already_have_account), color = Color(0xFF0288D1))
                     }
                 }
             }

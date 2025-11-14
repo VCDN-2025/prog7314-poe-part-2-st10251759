@@ -13,12 +13,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -51,6 +51,14 @@ fun LoginScreen(
     val activity = context as? FragmentActivity
     val coroutineScope = rememberCoroutineScope()
 
+    // Read string resources during composition
+    val fillAllFieldsMsg = stringResource(R.string.please_fill_all_login_fields)
+    val validEmailMsg = stringResource(R.string.please_enter_valid_email_login)
+    val passwordResetSentMsg = stringResource(R.string.password_reset_email_sent)
+    val enterEmailFirstMsg = stringResource(R.string.enter_email_first)
+    val offlineLoginFailedMsg = stringResource(R.string.offline_login_failed)
+    val googleSigninNotInitMsg = stringResource(R.string.google_signin_not_initialized)
+
     val hasSavedCredentials = remember { AuthManager.hasSavedCredentials(context) }
     val isBiometricEnabled = remember { BiometricHelper.isBiometricEnabled(context) }
     val isBiometricAvailable = remember { BiometricHelper.isBiometricAvailable(context) }
@@ -73,7 +81,7 @@ fun LoginScreen(
                         onLoginSuccess()
                     } else {
                         showBiometricPrompt = false
-                        errorMessage = "Offline login failed. Please use password."
+                        errorMessage = offlineLoginFailedMsg
                     }
                 },
                 onError = { error ->
@@ -115,7 +123,7 @@ fun LoginScreen(
             }
         } catch (e: ApiException) {
             isLoading = false
-            errorMessage = "Google sign-in failed: ${e.message}"
+            errorMessage = context.getString(R.string.google_signup_failed, e.message ?: "Unknown error")
         }
     }
 
@@ -150,7 +158,7 @@ fun LoginScreen(
             ) {
                 repeat(3) {
                     Text(
-                        text = "TEST YOUR MEMORY SKILLS!",
+                        text = stringResource(R.string.test_your_memory).uppercase(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.Black,
@@ -158,7 +166,7 @@ fun LoginScreen(
                     )
                 }
                 Text(
-                    text = "TEST YOUR MEMORY SKILLS!",
+                    text = stringResource(R.string.test_your_memory).uppercase(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
@@ -175,7 +183,7 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "LOGIN",
+                        text = stringResource(R.string.login_title),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0288D1),
@@ -185,7 +193,7 @@ fun LoginScreen(
                     if (canUseBiometricLogin) {
                         val savedEmail = AuthManager.getSavedEmail(context) ?: ""
                         Text(
-                            text = "Welcome back, $savedEmail",
+                            text = stringResource(R.string.welcome_back_email, savedEmail),
                             fontSize = 14.sp,
                             color = Color(0xFF0288D1),
                             modifier = Modifier.padding(bottom = 16.dp)
@@ -203,11 +211,21 @@ fun LoginScreen(
                                 tint = Color.White,
                                 modifier = Modifier.size(24.dp).padding(end = 8.dp)
                             )
-                            Text("LOGIN WITH FINGERPRINT", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                text = stringResource(R.string.login_with_fingerprint),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
 
                         Divider(modifier = Modifier.padding(vertical = 16.dp))
-                        Text("or login with password", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 16.dp))
+                        Text(
+                            text = stringResource(R.string.or_login_with_password),
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
                     }
 
                     if (errorMessage.isNotEmpty()) {
@@ -217,7 +235,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it; errorMessage = "" },
-                        label = { Text("Email Address") },
+                        label = { Text(stringResource(R.string.email)) },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
@@ -227,7 +245,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it; errorMessage = "" },
-                        label = { Text("Password") },
+                        label = { Text(stringResource(R.string.password)) },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -238,8 +256,8 @@ fun LoginScreen(
                     Button(
                         onClick = {
                             when {
-                                email.isEmpty() || password.isEmpty() -> errorMessage = "Please fill in all fields"
-                                !email.contains("@") -> errorMessage = "Please enter a valid email"
+                                email.isEmpty() || password.isEmpty() -> errorMessage = fillAllFieldsMsg
+                                !email.contains("@") -> errorMessage = validEmailMsg
                                 else -> {
                                     isLoading = true
                                     errorMessage = ""
@@ -272,15 +290,25 @@ fun LoginScreen(
                         if (isLoading) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Text("PLAY NOW", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                text = stringResource(R.string.play_now),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
 
-                    Text("or continue with", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+                    Text(
+                        text = stringResource(R.string.or_continue_with),
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
 
                     Image(
                         painter = painterResource(id = R.drawable.android_neutral),
-                        contentDescription = "Sign in with Google",
+                        contentDescription = stringResource(R.string.sign_in_with_google),
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
                             .height(60.dp)
@@ -292,7 +320,7 @@ fun LoginScreen(
                                     googleSignInLauncher.launch(signInIntent)
                                 } else {
                                     isLoading = false
-                                    errorMessage = "Google Sign-In not initialized"
+                                    errorMessage = googleSigninNotInitMsg
                                 }
                             },
                         contentScale = ContentScale.Fit
@@ -303,21 +331,21 @@ fun LoginScreen(
                             if (email.isNotEmpty() && email.contains("@")) {
                                 coroutineScope.launch {
                                     when (val result = AuthManager.sendPasswordResetEmail(email)) {
-                                        is AuthResult.Success -> errorMessage = "Password reset email sent!"
+                                        is AuthResult.Success -> errorMessage = passwordResetSentMsg
                                         is AuthResult.Error -> errorMessage = result.message
                                     }
                                 }
                             } else {
-                                errorMessage = "Enter your email address first"
+                                errorMessage = enterEmailFirstMsg
                             }
                         },
                         enabled = !isLoading
                     ) {
-                        Text("Forgot Password?", color = Color(0xFF0288D1))
+                        Text(stringResource(R.string.forgot_password), color = Color(0xFF0288D1))
                     }
 
                     TextButton(onClick = onNavigateToRegister, enabled = !isLoading) {
-                        Text("Create New Account", color = Color(0xFF0288D1))
+                        Text(stringResource(R.string.create_new_account), color = Color(0xFF0288D1))
                     }
                 }
             }

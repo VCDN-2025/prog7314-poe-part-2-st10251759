@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,7 +60,7 @@ fun ArcadeModeScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = Color(0xFF4A90E2)
                     )
                 }
@@ -79,7 +80,7 @@ fun ArcadeModeScreen(
 
             // Title
             Text(
-                text = "ARCADE MODE",
+                text = stringResource(R.string.arcade_mode_title),
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
@@ -97,8 +98,8 @@ fun ArcadeModeScreen(
 
             // Play Arcade Button with 3D effect
             ArcadeButton3D(
-                text = "PLAY ARCADE",
-                subtitle = "Random quick-play session",
+                text = stringResource(R.string.play_arcade),
+                subtitle = stringResource(R.string.random_quickplay),
                 backgroundColor = Color(0xFFFFC107),
                 shadowColor = Color(0xFFCC8800),
                 onClick = onPlayArcade
@@ -108,8 +109,8 @@ fun ArcadeModeScreen(
 
             // Levels Button with 3D effect
             ArcadeButton3D(
-                text = "LEVELS",
-                subtitle = "Progressive challenges 1-16",
+                text = stringResource(R.string.levels),
+                subtitle = stringResource(R.string.progressive_challenges),
                 backgroundColor = Color(0xFF9C27B0),
                 shadowColor = Color(0xFF6A1B9A),
                 onClick = onLevelsClick

@@ -16,7 +16,7 @@ object RepositoryProvider {
         }
     }
 
-    // ADD THIS NEW METHOD
+
     fun getRepositories(context: Context): Repositories {
         initialize(context)
         return Repositories(
@@ -25,11 +25,12 @@ object RepositoryProvider {
             achievementRepository = getAchievementRepository(),
             levelRepository = getLevelRepository(),
             arcadeRepository = getArcadeRepository(),
-            apiRepository = getApiRepository()
+            apiRepository = getApiRepository(),
+            analyticsRepository = getAnalyticsRepository()  // ← ADD THIS
         )
     }
 
-    // FIXED: No parameter needed
+
     fun getUserProfileRepository(): UserProfileRepository {
         return UserProfileRepository(requireDatabase().userProfileDao())
     }
@@ -54,17 +55,29 @@ object RepositoryProvider {
         return ApiRepository()
     }
 
+
+    fun getAnalyticsRepository(): AnalyticsRepository {
+        val db = requireDatabase()
+        return AnalyticsRepository(
+            gameResultDao = db.gameResultDao(),
+            achievementDao = db.achievementDao(),
+            userProfileDao = db.userProfileDao()
+        )
+    }
+
     private fun requireDatabase(): AppDatabase {
         return database ?: throw IllegalStateException(
             "RepositoryProvider must be initialized before use"
         )
     }
+
     data class Repositories(
         val userProfileRepository: UserProfileRepository,
         val gameResultRepository: GameResultRepository,
         val achievementRepository: AchievementRepository,
         val levelRepository: LevelRepository,
         val arcadeRepository: ArcadeRepository,
-        val apiRepository: ApiRepository
+        val apiRepository: ApiRepository,
+        val analyticsRepository: AnalyticsRepository  // ← ADD THIS
     )
 }

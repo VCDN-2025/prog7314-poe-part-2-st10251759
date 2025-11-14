@@ -263,8 +263,13 @@ class AchievementRepository(
             val existing = getAchievementByType(userId, achievementType)
 
             if (existing != null) {
-                // Achievement exists, unlock it
-                unlockAchievement(existing.achievementId)
+                // Achievement exists, unlock it if not already unlocked
+                if (!existing.isUnlocked) {
+                    unlockAchievement(existing.achievementId)
+                    true
+                } else {
+                    false // Already unlocked
+                }
             } else {
                 // Achievement doesn't exist, create and unlock it
                 val achievementId = createAchievement(
