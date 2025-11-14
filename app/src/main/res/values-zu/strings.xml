@@ -1,0 +1,314 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Memory Match Madness</string>
+
+    <!-- Main Menu -->
+    <string name="main_menu_title">UMDLALO WOKUQHATHANISA INKUMBULO</string>
+    <string name="arcade_mode">Imodi ye-Arcade</string>
+    <string name="adventure_mode">Imodi Yokuzilolonga</string>
+    <string name="multiplayer">Abadlali Abaningi</string>
+    <string name="statistics">Izibalo</string>
+    <string name="settings">Izilungiselelo</string>
+    <string name="profile">Iphrofayela</string>
+
+    <!-- Authentication -->
+    <string name="login">Ngena</string>
+    <string name="register">Bhalisa</string>
+    <string name="email">Ikheli Le-imeyili</string>
+    <string name="password">Iphasiwedi</string>
+    <string name="confirm_password">Qinisekisa Iphasiwedi</string>
+    <string name="username">Igama Lomsebenzisi</string>
+    <string name="sign_in_with_google">Ngena Nge-Google</string>
+    <string name="forgot_password">Ukhohlwe Iphasiwedi?</string>
+    <string name="logout">Phuma</string>
+
+    <!-- Game UI -->
+    <string name="level">Izinga</string>
+    <string name="score">Amaphuzu</string>
+    <string name="points">AMAPHUZU</string>
+    <string name="time">ISIKHATHI</string>
+    <string name="moves">IZINYATHELO</string>
+    <string name="stars">Izinkanyezi</string>
+    <string name="best_score">Amaphuzu Aphezulu</string>
+
+    <!-- Buttons -->
+    <string name="play">Dlala</string>
+    <string name="back">Buyela Emuva</string>
+    <string name="continue_game">Qhubeka</string>
+    <string name="quit">Yeka</string>
+    <string name="replay">Dlala Futhi</string>
+    <string name="next_level">Izinga Elilandelayo</string>
+    <string name="home">Ikhaya</string>
+    <string name="save">Gcina</string>
+    <string name="cancel">Khansela</string>
+
+    <!-- Theme Selection -->
+    <string name="choose_theme">KHETHA ITIMU</string>
+    <string name="select_card_style">KHETHA ISITAYELA SEKHADI LAKHO OTHANDAYO</string>
+    <string name="theme_animals">Izilwane</string>
+    <string name="theme_fruits">Izithelo</string>
+    <string name="theme_pokemon">Pokémon</string>
+    <string name="theme_harry_potter">Harry Potter</string>
+    <string name="theme_f1">Formula 1</string>
+
+    <!-- Grid Selection -->
+    <string name="select_difficulty">KHETHA UBUNZIMA</string>
+    <string name="easy">Kulula</string>
+    <string name="medium">Phakathi</string>
+    <string name="hard">Kunzima</string>
+    <string name="expert">Uchwepheshe</string>
+
+    <!-- Notifications -->
+    <string name="notif_achievement_unlocked">🏆 Impumelelo Ivuliwe!</string>
+    <string name="notif_level_unlocked">🆕 Izinga Elisha Livuliwe!</string>
+    <string name="notif_level_available">Izinga %1$d manje liyatholakala ukudlala!</string>
+    <string name="notif_high_score">🌟 Irekhodi Elisha Lomuntu Siqu!</string>
+    <string name="notif_high_score_message">Ushaye amaphuzu akho aphezulu ngamaphuzu angu-%1$d! Irekhodi elisha: %2$d</string>
+    <string name="notif_daily_streak">🔥 Gcina Umkhondo Wakho Uqhubeka!</string>
+    <string name="notif_daily_streak_message">Usemkhondweni wezinsuku ezingu-%1$d! Dlala namuhla ukuze ugcine kuphila!</string>
+    <string name="notif_first_level">🎉 Izinga Lokuqala Liqediwe!</string>
+    <string name="notif_first_level_message">Halala! Uqedile izinga lakho lokuqala. Qhubeka!</string>
+    <string name="notif_theme_unlocked">🎨 Itimu Entsha Ivuliwe!</string>
+    <string name="notif_theme_message">Itimu ye-%1$s manje iyatholakala! Yizame!</string>
+
+    <!-- Settings -->
+    <string name="language">Ulimi</string>
+    <string name="notifications">Izaziso</string>
+    <string name="sound">Umsindo</string>
+    <string name="music">Umculo</string>
+    <string name="biometric_login">Ukungena Nge-Biometric</string>
+    <string name="daily_reminders">Izikhumbuzo Zansuku Zonke</string>
+    <string name="achievement_notifications">Izaziso Zempumelelo</string>
+    <string name="edit_profile">Hlela Iphrofayela</string>
+    <string name="change_password">Shintsha Iphasiwedi</string>
+
+    <!-- Game Completion -->
+    <string name="game_complete">Umdlalo Uphelile!</string>
+    <string name="congratulations">Halala!</string>
+    <string name="new_record">IREKHODI ELISHA!</string>
+    <string name="total_score">Amaphuzu Aphelele</string>
+    <string name="time_bonus">Ibhonasi Yesikhathi</string>
+
+    <!-- Achievements -->
+    <string name="achievement_perfect">Ukusebenza Okuphelele</string>
+    <string name="achievement_perfect_desc">Uthole izinkanyezi ezi-3 Ezingeni %1$d!</string>
+    <string name="achievement_speed_demon">Idimoni Lesijubane</string>
+    <string name="achievement_first_win">Ukunqoba Kokuqala</string>
+
+    <!-- Common Messages -->
+    <string name="loading">Iyalayisha…</string>
+    <string name="welcome_back">Siyakwamukela futhi!</string>
+    <string name="test_your_memory">Hlola Amakhono Akho Enkumbulo!</string>
+    <string name="network_error">Iphutha lenethiwekhi. Sicela uzame futhi.</string>
+    <string name="success">Impumelelo!</string>
+    <string name="error">Iphutha</string>
+
+    <!-- Multiplayer -->
+    <string name="player">Umdlali</string>
+    <string name="player_1">Umdlali 1</string>
+    <string name="player_2">Umdlali 2</string>
+    <string name="your_turn">Ithuba Lakho</string>
+    <string name="waiting">Kulindile…</string>
+
+    <!-- Additional Login Strings -->
+    <string name="or_continue_with">noma qhubeka nge</string>
+    <string name="or_login_with_password">noma ngena ngephasiwedi</string>
+    <string name="login_with_fingerprint">NGENA NGEZIGXIVIZO</string>
+    <string name="create_new_account">Dala I-akhawunti Entsha</string>
+    <string name="play_now">DLALA MANJE</string>
+    <string name="welcome_back_email">Siyakwamukela futhi, %1$s</string>
+
+    <!-- Level Selection Screen -->
+    <string name="select_level">KHETHA IZINGA</string>
+    <string name="choose_your_adventure">KHETHA UKUZILOLONGA KWAKHO</string>
+    <string name="progress_levels">INQUBEKELA PHAMBILI: %1$d / %2$d AMAZINGA</string>
+    <string name="locked">Kuvalekile</string>
+
+    <!-- Main Menu - Additional -->
+    <string name="day_streak">Umkhondo Wezinsuku Ezingu-%1$d</string>
+    <string name="best_days">Okungcono Kakhulu: izinsuku ezingu-%1$d</string>
+
+    <!-- Settings Screen -->
+    <string name="tap_photo_to_change">Thepha isithombe ukuze ushintshe</string>
+    <string name="saving">Iyagcina…</string>
+    <string name="section_account">I-AKHAWUNTI</string>
+    <string name="change_name_details">Shintsha igama nemininingwane</string>
+    <string name="update_your_password">Buyekeza iphasiwedi yakho</string>
+    <string name="sign_out_account">Phuma ku-akhawunti yakho</string>
+    <string name="section_appearance">UKUBUKEKA</string>
+    <string name="card_background">Isizinda Sekhadi</string>
+    <string name="section_language">ULIMI</string>
+    <string name="multi_language">Izilimi Eziningi</string>
+    <string name="section_notifications">IZAZISO</string>
+    <string name="coming_in_part_3">Kuyeza Engxenyeni 3</string>
+    <string name="section_biometric_security">I-BIOMETRIC &amp; UKUPHEPHA</string>
+    <string name="enabled">Kunikwe Amandla</string>
+    <string name="disabled">Kukhutshaziwe</string>
+    <string name="enable_biometric">Nika Amandla I-Biometric</string>
+    <string name="scan_to_enable">Skena ukuze unike amandla ukungena ngokushesha</string>
+    <string name="section_audio">UMSINDO</string>
+    <string name="sound_effects_music">Imiphumela Yomsindo &amp; Umculo</string>
+    <string name="section_about">MAYELANA</string>
+    <string name="about_the_app">Mayelana Nohlelo Lokusebenza</string>
+    <string name="version">Inguqulo 1.0.0</string>
+    <string name="reset_to_defaults">BUYISELA KOKUZENZAKALELAYO</string>
+    <string name="card_background_theme">Itimu Yesizinda Sekhadi</string>
+    <string name="close">Vala</string>
+    <string name="select_language">Khetha Ulimi</string>
+    <string name="logout_question">Phuma?</string>
+    <string name="logout_confirmation">Uqinisekile ukuthi ufuna ukuphuma?</string>
+    <string name="reset_question">Buyisela Kokuzenzakalelayo?</string>
+    <string name="reset_confirmation">Lokhu kuzobuyisela zonke izilungiselelo kumanani azo okuzenzakalelayo. I-akhawunti yakho nenqubekela phambili yomdlalo ngeke ithinteke.</string>
+    <string name="reset">Buyisela</string>
+    <string name="about_title">Mayelana ne-Memory Match Madness</string>
+    <string name="version_label">Inguqulo: 1.0.0</string>
+    <string name="about_description">I-Memory Match Madness ngumdlalo wamakhadi enkumbulo ojabulisayo futhi oyinselele oklanyelwe ukuhlola nokuthuthukisa amakhono akho enkumbulo.</string>
+    <string name="more_info_soon">Ulwazi olwengeziwe luyeza maduze!</string>
+    <string name="ok">KULUNGILE</string>
+
+    <!-- Theme Selection Screen -->
+    <string name="choose_theme_title">KHETHA ITIMU</string>
+    <string name="select_card_style_subtitle">KHETHA ISITAYELA SEKHADI LAKHO OTHANDAYO</string>
+
+    <!-- Grid Size Selection Screen -->
+    <string name="choose_grid_size">KHETHA USAYIZI WEGRIDI</string>
+    <string name="pick_challenge_level">KHETHA IZINGA LAKHO LENSELELO</string>
+    <string name="beginner">ISIQALISI</string>
+    <string name="intermediate">PHAKATHI</string>
+    <string name="cards">AMAKHADI</string>
+
+    <!-- Gameplay Screen -->
+    <string name="points_label">Amaphuzu</string>
+    <string name="time_label">Isikhathi</string>
+    <string name="moves_label">Izinyathelo</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">BHALISA</string>
+    <string name="email_address">Ikheli Le-imeyili</string>
+    <string name="password_label">Iphasiwedi</string>
+    <string name="confirm_password_label">Qinisekisa Iphasiwedi</string>
+    <string name="please_fill_all_fields">Sicela ugcwalise zonke izinkambu</string>
+    <string name="passwords_do_not_match">Amaphasiwedi awafani</string>
+    <string name="password_min_length">Iphasiwedi kumele ibe okungenani izinhlamvu ezi-6</string>
+    <string name="enter_valid_email">Sicela ufake ikheli le-imeyili elivumelekile</string>
+    <string name="already_have_account">Usunayo I-akhawunti?</string>
+    <string name="google_signup_failed">Ukubhalisa nge-Google kuhlulekile: %1$s</string>
+    <string name="google_signin_not_initialized">Ukungena nge-Google akuqalisiwanga</string>
+
+    <!-- Game Completion Popup -->
+    <string name="new_record_badge">IREKHODI ELISHA</string>
+    <string name="well_done">WENZE KAHLE!</string>
+    <string name="moves_colon">IZINYATHELO:</string>
+    <string name="time_colon">ISIKHATHI:</string>
+    <string name="bonus_colon">IBHONASI:</string>
+    <string name="total_colon">ISAMBA:</string>
+    <string name="seconds_format">%1$ds</string>
+
+    <!-- Login Screen -->
+    <string name="login_title">NGENA</string>
+    <string name="please_fill_all_login_fields">Sicela ugcwalise zonke izinkambu</string>
+    <string name="please_enter_valid_email_login">Sicela ufake i-imeyili evumelekile</string>
+    <string name="password_reset_email_sent">I-imeyili yokuseta kabusha iphasiwedi ithunyelwe!</string>
+    <string name="enter_email_first">Faka kuqala ikheli lakho le-imeyili</string>
+    <string name="offline_login_failed">Ukungena ngaphandle kwe-inthanethi kuhlulekile. Sicela usebenzise iphasiwedi.</string>
+
+    <!-- Arcade Mode Screen -->
+    <string name="arcade_mode_title">IMODI YE-ARCADE</string>
+    <string name="play_arcade">DLALA I-ARCADE</string>
+    <string name="random_quickplay">Iseshini yokudlala ngokushesha ngokungahleliwe</string>
+    <string name="levels">AMAZINGA</string>
+    <string name="progressive_challenges">Izinselelo eziqhubekayo 1-16</string>
+
+    <!-- Change Password Screen -->
+    <string name="change_password_title">SHINTSHA IPHASIWEDI</string>
+    <string name="enter_current_and_new">Faka iphasiwedi yakho yamanje bese ukhetha entsha</string>
+    <string name="current_password">Iphasiwedi Yamanje</string>
+    <string name="enter_current_password">Faka iphasiwedi yamanje</string>
+    <string name="new_password">Iphasiwedi Entsha</string>
+    <string name="enter_new_password">Faka iphasiwedi entsha</string>
+    <string name="at_least_6_characters">Okungenani izinhlamvu ezi-6</string>
+    <string name="confirm_new_password">Qinisekisa Iphasiwedi Entsha</string>
+    <string name="reenter_new_password">Phinda ufake iphasiwedi entsha</string>
+    <string name="change_password_button">SHINTSHA IPHASIWEDI</string>
+    <string name="current_password_required">Iphasiwedi yamanje iyadingeka</string>
+    <string name="new_password_required">Iphasiwedi entsha iyadingeka</string>
+    <string name="password_min_6_chars">Iphasiwedi kumele ibe okungenani izinhlamvu ezi-6</string>
+    <string name="new_password_different">Iphasiwedi entsha kumele yehluke kweyamanje</string>
+    <string name="please_confirm_password">Sicela uqinisekise iphasiwedi yakho</string>
+    <string name="current_password_incorrect">Iphasiwedi yamanje ayilungile</string>
+    <string name="password_changed_successfully">Iphasiwedi ishintshwe ngempumelelo!</string>
+    <string name="failed_to_change_password">Yehlulekile ukushintsha iphasiwedi: %1$s</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="edit_profile_title">HLELA IPHROFAYELA</string>
+    <string name="your_profile">Iphrofayela Yakho</string>
+    <string name="email_label">I-imeyili</string>
+    <string name="display_name">Igama Lokubonisa</string>
+    <string name="enter_display_name">Faka igama lakho lokubonisa</string>
+    <string name="save_changes">GCINA IZINGUQUKO</string>
+    <string name="display_name_empty">Igama lokubonisa alikwazi ukuba neze</string>
+    <string name="display_name_min_2">Igama lokubonisa kumele libe okungenani izinhlamvu ezi-2</string>
+    <string name="display_name_max_30">Igama lokubonisa kumele lingaphansi kwezinhlamvu ezingu-30</string>
+    <string name="display_name_invalid_chars">Izinhlamvu kuphela, izinombolo, izikhala kanye nezimpawu ezingaphansi kuvunyelwe</string>
+    <string name="profile_updated_successfully">Iphrofayela ibuyekezwe ngempumelelo!</string>
+    <string name="failed_to_update_profile">Yehlulekile ukubuyekeza iphrofayela: %1$s</string>
+
+    <!-- Game Completion Dialog -->
+    <string name="new_record_exclamation">IREKHODI ELISHA!</string>
+    <string name="well_done_exclamation">WENZE KAHLE!</string>
+
+    <!-- Multiplayer Gameplay Screen -->
+    <string name="vs">VS</string>
+    <string name="paused">KUMISWE</string>
+    <string name="resume">QHUBEKA</string>
+    <string name="player_1_wins">🏆 UMDLALI 1 UYAWINA! 🏆</string>
+    <string name="player_2_wins">🏆 UMDLALI 2 UYAWINA! 🏆</string>
+    <string name="its_a_tie">🤝 KUNGUKULINGANA! 🤝</string>
+    <string name="total_moves">Izinyathelo Zonke</string>
+    <string name="theme">Itimu</string>
+    <string name="rematch">PHINDA UDLALE</string>
+    <string name="red">Bomvu</string>
+    <string name="blue">Luhlaza</string>
+
+    <!-- Multiplayer Setup Screen -->
+    <string name="multiplayer_title">ABANINGI ABADLALI</string>
+    <string name="choose_theme_to_begin">Khetha isihloko ukuze uqale</string>
+    <string name="start_match">QALA UMDLALO</string>
+
+    <!-- Statistics Screen -->
+    <string name="your_statistics">IZIBALO ZAKHO</string>
+    <string name="refresh">Vusele</string>
+    <string name="overview">UKUBUKA KONKE</string>
+    <string name="games">Imidlalo</string>
+    <string name="wins">Ukuwina</string>
+    <string name="win_rate">Isilinganiso Sokuwina</string>
+    <string name="playtime">Isikhathi Sokudlala</string>
+    <string name="total_xp">I-XP Yonke</string>
+    <string name="performance">UKUSEBENZA</string>
+    <string name="achievements">IZINTO OZIFEZILE</string>
+    <string name="themes_modes">IZIHLOKO &amp; IZINDLELA</string>
+    <string name="recent_games">IMIDLALO YAKAMUVA</string>
+    <string name="no_statistics_yet">Azikho izibalo okwamanje!</string>
+    <string name="play_games_to_see_stats">Dlala imidlalo ukuze ubone izibalo zakho</string>
+    <string name="performance_trend">Umkhuba Wokusebenza</string>
+    <string name="avg_score">Amaphuzu Avamile</string>
+    <string name="avg_time">Isikhathi Esivamile</string>
+    <string name="best_time">Isikhathi Esihle Kakhulu</string>
+    <string name="accuracy">Ukunemba</string>
+    <string name="improving">Iyathuthuka</string>
+    <string name="stable">Izinzile</string>
+    <string name="declining">Iyancipha</string>
+    <string name="play_more">Dlala Okuningi</string>
+    <string name="achievements_unlocked">Izinto Ozifezile Zivuliwe</string>
+    <string name="percent_complete">%1$s%% Kuqediwe</string>
+    <string name="favorite">Okuthandwayo</string>
+    <string name="most_played">Okudlalwe Kakhulu</string>
+    <string name="theme_statistics">Izibalo Zezihloko</string>
+    <string name="games_count">%1$d imidlalo</string>
+
+    <string name="notifications_enabled">Kunikwe Amandla</string>
+    <string name="notifications_disabled">Kukhubazekile</string>
+    <string name="push_notifications">Izaziso Zokucindezela</string>
+    <string name="receive_game_updates">Thola izibuyekezo zomdlalo nezikhumbuzo</string>
+
+</resources>

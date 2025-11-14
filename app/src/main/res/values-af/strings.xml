@@ -1,0 +1,314 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Memory Match Madness</string>
+
+    <!-- Main Menu -->
+    <string name="main_menu_title">GEHEUE OOREENKOMS WAANSIN</string>
+    <string name="arcade_mode">Arcade Modus</string>
+    <string name="adventure_mode">Avontuur Modus</string>
+    <string name="multiplayer">Multispeler</string>
+    <string name="statistics">Statistieke</string>
+    <string name="settings">Instellings</string>
+    <string name="profile">Profiel</string>
+
+    <!-- Authentication -->
+    <string name="login">Meld Aan</string>
+    <string name="register">Registreer</string>
+    <string name="email">E-posadres</string>
+    <string name="password">Wagwoord</string>
+    <string name="confirm_password">Bevestig Wagwoord</string>
+    <string name="username">Gebruikersnaam</string>
+    <string name="sign_in_with_google">Meld Aan met Google</string>
+    <string name="forgot_password">Wagwoord Vergeet?</string>
+    <string name="logout">Meld Af</string>
+
+    <!-- Game UI -->
+    <string name="level">Vlak</string>
+    <string name="score">Telling</string>
+    <string name="points">PUNTE</string>
+    <string name="time">TYD</string>
+    <string name="moves">SKUIWE</string>
+    <string name="stars">Sterre</string>
+    <string name="best_score">Beste Telling</string>
+
+    <!-- Buttons -->
+    <string name="play">Speel</string>
+    <string name="back">Terug</string>
+    <string name="continue_game">Gaan Voort</string>
+    <string name="quit">Sluit</string>
+    <string name="replay">Herspeel</string>
+    <string name="next_level">Volgende Vlak</string>
+    <string name="home">Tuis</string>
+    <string name="save">Stoor</string>
+    <string name="cancel">Kanselleer</string>
+
+    <!-- Theme Selection -->
+    <string name="choose_theme">KIES TEMA</string>
+    <string name="select_card_style">KIES JOU GUNSTELING KAARTSTYL</string>
+    <string name="theme_animals">Diere</string>
+    <string name="theme_fruits">Vrugte</string>
+    <string name="theme_pokemon">Pokémon</string>
+    <string name="theme_harry_potter">Harry Potter</string>
+    <string name="theme_f1">Formula 1</string>
+
+    <!-- Grid Selection -->
+    <string name="select_difficulty">KIES MOEILIKHEID</string>
+    <string name="easy">Maklik</string>
+    <string name="medium">Gemiddeld</string>
+    <string name="hard">Moeilik</string>
+    <string name="expert">Deskundige</string>
+
+    <!-- Notifications -->
+    <string name="notif_achievement_unlocked">🏆 Prestasie Ontsluit!</string>
+    <string name="notif_level_unlocked">🆕 Nuwe Vlak Ontsluit!</string>
+    <string name="notif_level_available">Vlak %1$d is nou beskikbaar om te speel!</string>
+    <string name="notif_high_score">🌟 Nuwe Persoonlike Rekord!</string>
+    <string name="notif_high_score_message">Jy het jou beste telling met %1$d punte geklop! Nuwe rekord: %2$d</string>
+    <string name="notif_daily_streak">🔥 Hou Jou Reeks Aan Die Gang!</string>
+    <string name="notif_daily_streak_message">Jy is op \'n %1$d dag reeks! Speel vandag om dit lewend te hou!</string>
+    <string name="notif_first_level">🎉 Eerste Vlak Voltooi!</string>
+    <string name="notif_first_level_message">Baie geluk! Jy het jou eerste vlak voltooi. Hou aan!</string>
+    <string name="notif_theme_unlocked">🎨 Nuwe Tema Ontsluit!</string>
+    <string name="notif_theme_message">%1$s tema is nou beskikbaar! Probeer dit uit!</string>
+
+    <!-- Settings -->
+    <string name="language">Taal</string>
+    <string name="notifications">Kennisgewings</string>
+    <string name="sound">Klank</string>
+    <string name="music">Musiek</string>
+    <string name="biometric_login">Biometriese Aanmelding</string>
+    <string name="daily_reminders">Daaglikse Herinneringe</string>
+    <string name="achievement_notifications">Prestasie Kennisgewings</string>
+    <string name="edit_profile">Wysig Profiel</string>
+    <string name="change_password">Verander Wagwoord</string>
+
+    <!-- Game Completion -->
+    <string name="game_complete">Speletjie Voltooi!</string>
+    <string name="congratulations">Baie Geluk!</string>
+    <string name="new_record">NUWE REKORD!</string>
+    <string name="total_score">Totale Telling</string>
+    <string name="time_bonus">Tyd Bonus</string>
+
+    <!-- Achievements -->
+    <string name="achievement_perfect">Perfekte Prestasie</string>
+    <string name="achievement_perfect_desc">Jy het 3 sterre op Vlak %1$d gekry!</string>
+    <string name="achievement_speed_demon">Spoed Duiwel</string>
+    <string name="achievement_first_win">Eerste Oorwinning</string>
+
+    <!-- Common Messages -->
+    <string name="loading">Laai…</string>
+    <string name="welcome_back">Welkom terug!</string>
+    <string name="test_your_memory">Toets Jou Geheue Vaardighede!</string>
+    <string name="network_error">Netwerk fout. Probeer asseblief weer.</string>
+    <string name="success">Sukses!</string>
+    <string name="error">Fout</string>
+
+    <!-- Multiplayer -->
+    <string name="player">Speler</string>
+    <string name="player_1">Speler 1</string>
+    <string name="player_2">Speler 2</string>
+    <string name="your_turn">Jou Beurt</string>
+    <string name="waiting">Wag…</string>
+
+    <!-- Additional Login Strings -->
+    <string name="or_continue_with">of gaan voort met</string>
+    <string name="or_login_with_password">of meld aan met wagwoord</string>
+    <string name="login_with_fingerprint">MELD AAN MET VINGERAFDRUK</string>
+    <string name="create_new_account">Skep Nuwe Rekening</string>
+    <string name="play_now">SPEEL NOU</string>
+    <string name="welcome_back_email">Welkom terug, %1$s</string>
+
+    <!-- Level Selection Screen -->
+    <string name="select_level">KIES VLAK</string>
+    <string name="choose_your_adventure">KIES JOU AVONTUUR</string>
+    <string name="progress_levels">VORDERING: %1$d / %2$d VLAKKE</string>
+    <string name="locked">Gesluit</string>
+
+    <!-- Main Menu - Additional -->
+    <string name="day_streak">%1$d Dag Reeks</string>
+    <string name="best_days">Beste: %1$d dae</string>
+
+    <!-- Settings Screen -->
+    <string name="tap_photo_to_change">Tik foto om te verander</string>
+    <string name="saving">Stoor…</string>
+    <string name="section_account">REKENING</string>
+    <string name="change_name_details">Verander naam en besonderhede</string>
+    <string name="update_your_password">Werk jou wagwoord op</string>
+    <string name="sign_out_account">Meld af van jou rekening</string>
+    <string name="section_appearance">VOORKOMS</string>
+    <string name="card_background">Kaart Agtergrond</string>
+    <string name="section_language">TAAL</string>
+    <string name="multi_language">Multi-Taal</string>
+    <string name="section_notifications">KENNISGEWINGS</string>
+    <string name="coming_in_part_3">Kom in Deel 3</string>
+    <string name="section_biometric_security">BIOMETRIES &amp; SEKURITEIT</string>
+    <string name="enabled">Geaktiveer</string>
+    <string name="disabled">Gedeaktiveer</string>
+    <string name="enable_biometric">Aktiveer Biometries</string>
+    <string name="scan_to_enable">Skandeer om vinnige aanmelding te aktiveer</string>
+    <string name="section_audio">KLANK</string>
+    <string name="sound_effects_music">Klankeffekte &amp; Musiek</string>
+    <string name="section_about">AANGAANDE</string>
+    <string name="about_the_app">Aangaande die Program</string>
+    <string name="version">Weergawe 1.0.0</string>
+    <string name="reset_to_defaults">HERSTEL NA VERSTEK</string>
+    <string name="card_background_theme">Kaart Agtergrond Tema</string>
+    <string name="close">Sluit</string>
+    <string name="select_language">Kies Taal</string>
+    <string name="logout_question">Meld Af?</string>
+    <string name="logout_confirmation">Is jy seker jy wil afmeld?</string>
+    <string name="reset_question">Herstel na Verstek?</string>
+    <string name="reset_confirmation">Dit sal alle instellings na hul verstekwaardes herstel. Jou rekening en speletjievoortgang sal nie geraak word nie.</string>
+    <string name="reset">Herstel</string>
+    <string name="about_title">Aangaande Memory Match Madness</string>
+    <string name="version_label">Weergawe: 1.0.0</string>
+    <string name="about_description">Memory Match Madness is \'n prettige en uitdagende geheue kaartspel ontwerp om jou geheue vaardighede te toets en te verbeter.</string>
+    <string name="more_info_soon">Meer inligting kom binnekort!</string>
+    <string name="ok">OK</string>
+
+    <!-- Theme Selection Screen -->
+    <string name="choose_theme_title">KIES TEMA</string>
+    <string name="select_card_style_subtitle">KIES JOU GUNSTELING KAARTSTYL</string>
+
+    <!-- Grid Size Selection Screen -->
+    <string name="choose_grid_size">KIES ROOSTER GROOTTE</string>
+    <string name="pick_challenge_level">KIES JOU UITDAGING VLAK</string>
+    <string name="beginner">BEGINNER</string>
+    <string name="intermediate">INTERMEDIÊR</string>
+    <string name="cards">KAARTE</string>
+
+    <!-- Gameplay Screen -->
+    <string name="points_label">Punte</string>
+    <string name="time_label">Tyd</string>
+    <string name="moves_label">Skuiwe</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">REGISTREER</string>
+    <string name="email_address">E-posadres</string>
+    <string name="password_label">Wagwoord</string>
+    <string name="confirm_password_label">Bevestig Wagwoord</string>
+    <string name="please_fill_all_fields">Vul asseblief alle velde in</string>
+    <string name="passwords_do_not_match">Wagwoorde stem nie ooreen nie</string>
+    <string name="password_min_length">Wagwoord moet ten minste 6 karakters wees</string>
+    <string name="enter_valid_email">Voer asseblief \'n geldige e-posadres in</string>
+    <string name="already_have_account">Het Jy Reeds \'n Rekening?</string>
+    <string name="google_signup_failed">Google registrasie het misluk: %1$s</string>
+    <string name="google_signin_not_initialized">Google Aanmelding nie geïnisialiseer nie</string>
+
+    <!-- Game Completion Popup -->
+    <string name="new_record_badge">NUWE REKORD</string>
+    <string name="well_done">GOED GEDOEN!</string>
+    <string name="moves_colon">SKUIWE:</string>
+    <string name="time_colon">TYD:</string>
+    <string name="bonus_colon">BONUS:</string>
+    <string name="total_colon">TOTAAL:</string>
+    <string name="seconds_format">%1$ds</string>
+
+    <!-- Login Screen -->
+    <string name="login_title">MELD AAN</string>
+    <string name="please_fill_all_login_fields">Vul asseblief alle velde in</string>
+    <string name="please_enter_valid_email_login">Voer asseblief \'n geldige e-pos in</string>
+    <string name="password_reset_email_sent">Wagwoord herstel e-pos gestuur!</string>
+    <string name="enter_email_first">Voer eers jou e-posadres in</string>
+    <string name="offline_login_failed">Vanlyn aanmelding het misluk. Gebruik asseblief wagwoord.</string>
+
+    <!-- Arcade Mode Screen -->
+    <string name="arcade_mode_title">ARCADE MODUS</string>
+    <string name="play_arcade">SPEEL ARCADE</string>
+    <string name="random_quickplay">Ewekansige vinnige spel sessie</string>
+    <string name="levels">VLAKKE</string>
+    <string name="progressive_challenges">Progressiewe uitdagings 1-16</string>
+
+    <!-- Change Password Screen -->
+    <string name="change_password_title">VERANDER WAGWOORD</string>
+    <string name="enter_current_and_new">Voer jou huidige wagwoord in en kies \'n nuwe een</string>
+    <string name="current_password">Huidige Wagwoord</string>
+    <string name="enter_current_password">Voer huidige wagwoord in</string>
+    <string name="new_password">Nuwe Wagwoord</string>
+    <string name="enter_new_password">Voer nuwe wagwoord in</string>
+    <string name="at_least_6_characters">Ten minste 6 karakters</string>
+    <string name="confirm_new_password">Bevestig Nuwe Wagwoord</string>
+    <string name="reenter_new_password">Voer nuwe wagwoord weer in</string>
+    <string name="change_password_button">VERANDER WAGWOORD</string>
+    <string name="current_password_required">Huidige wagwoord is vereis</string>
+    <string name="new_password_required">Nuwe wagwoord is vereis</string>
+    <string name="password_min_6_chars">Wagwoord moet ten minste 6 karakters wees</string>
+    <string name="new_password_different">Nuwe wagwoord moet anders wees as huidige wagwoord</string>
+    <string name="please_confirm_password">Bevestig asseblief jou wagwoord</string>
+    <string name="current_password_incorrect">Huidige wagwoord is verkeerd</string>
+    <string name="password_changed_successfully">Wagwoord suksesvol verander!</string>
+    <string name="failed_to_change_password">Kon nie wagwoord verander nie: %1$s</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="edit_profile_title">WYSIG PROFIEL</string>
+    <string name="your_profile">Jou Profiel</string>
+    <string name="email_label">E-pos</string>
+    <string name="display_name">Vertoonnaam</string>
+    <string name="enter_display_name">Voer jou vertoonnaam in</string>
+    <string name="save_changes">STOOR VERANDERINGE</string>
+    <string name="display_name_empty">Vertoonnaam kan nie leeg wees nie</string>
+    <string name="display_name_min_2">Vertoonnaam moet ten minste 2 karakters wees</string>
+    <string name="display_name_max_30">Vertoonnaam moet minder as 30 karakters wees</string>
+    <string name="display_name_invalid_chars">Slegs letters, nommers, spasies en onderstrepings word toegelaat</string>
+    <string name="profile_updated_successfully">Profiel suksesvol opgedateer!</string>
+    <string name="failed_to_update_profile">Kon nie profiel opdateer nie: %1$s</string>
+
+    <!-- Game Completion Dialog -->
+    <string name="new_record_exclamation">NUWE REKORD!</string>
+    <string name="well_done_exclamation">GOED GEDOEN!</string>
+
+    <!-- Multiplayer Gameplay Screen -->
+    <string name="vs">VS</string>
+    <string name="paused">GEPAUSEER</string>
+    <string name="resume">HERVAT</string>
+    <string name="player_1_wins">🏆 SPELER 1 WEN! 🏆</string>
+    <string name="player_2_wins">🏆 SPELER 2 WEN! 🏆</string>
+    <string name="its_a_tie">🤝 DIS \'N GELYKOP! 🤝</string>
+    <string name="total_moves">Totale Skuiwe</string>
+    <string name="theme">Tema</string>
+    <string name="rematch">HERWEDSTRYD</string>
+    <string name="red">Rooi</string>
+    <string name="blue">Blou</string>
+
+    <!-- Multiplayer Setup Screen -->
+    <string name="multiplayer_title">MULTISPELER</string>
+    <string name="choose_theme_to_begin">Kies \'n tema om te begin</string>
+    <string name="start_match">BEGIN WEDSTRYD</string>
+
+    <!-- Statistics Screen -->
+    <string name="your_statistics">JOU STATISTIEKE</string>
+    <string name="refresh">Verfris</string>
+    <string name="overview">OORSIG</string>
+    <string name="games">Speletjies</string>
+    <string name="wins">Oorwinnings</string>
+    <string name="win_rate">Wenkoers</string>
+    <string name="playtime">Speeltyd</string>
+    <string name="total_xp">Totale XP</string>
+    <string name="performance">PRESTASIE</string>
+    <string name="achievements">PRESTASIES</string>
+    <string name="themes_modes">TEMAS &amp; MODUS</string>
+    <string name="recent_games">ONLANGSE SPELETJIES</string>
+    <string name="no_statistics_yet">Nog geen statistieke nie!</string>
+    <string name="play_games_to_see_stats">Speel speletjies om jou statistieke te sien</string>
+    <string name="performance_trend">Prestasie Tendens</string>
+    <string name="avg_score">Gem. Telling</string>
+    <string name="avg_time">Gem. Tyd</string>
+    <string name="best_time">Beste Tyd</string>
+    <string name="accuracy">Akkuraatheid</string>
+    <string name="improving">Verbeter</string>
+    <string name="stable">Stabiel</string>
+    <string name="declining">Daal</string>
+    <string name="play_more">Speel Meer</string>
+    <string name="achievements_unlocked">Prestasies Ontsluit</string>
+    <string name="percent_complete">%1$s%% Voltooi</string>
+    <string name="favorite">Gunsteling</string>
+    <string name="most_played">Meeste Gespeel</string>
+    <string name="theme_statistics">Tema Statistieke</string>
+    <string name="games_count">%1$d speletjies</string>
+
+    <string name="notifications_enabled">Geaktiveer</string>
+    <string name="notifications_disabled">Gedeaktiveer</string>
+    <string name="push_notifications">Stoot Kennisgewings</string>
+    <string name="receive_game_updates">Ontvang spel opdaterings en herinneringe</string>
+
+</resources>
