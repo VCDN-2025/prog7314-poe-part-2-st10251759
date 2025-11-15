@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -74,7 +77,7 @@ fun MultiplayerGameplayScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 8.dp, vertical = 6.dp)
         ) {
             gameState?.let { state ->
                 MultiplayerGameHeader(
@@ -86,7 +89,7 @@ fun MultiplayerGameplayScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             gameState?.let { state ->
                 MultiplayerGameGrid(
@@ -133,62 +136,62 @@ fun MultiplayerGameHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
-            .padding(12.dp),
+            .height(48.dp)
+            .shadow(2.dp, RoundedCornerShape(24.dp))
+            .background(Color.White, RoundedCornerShape(24.dp))
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        PlayerScoreCard(
+        // Player 1 - Compact Badge Style
+        PlayerBadge(
             player = player1,
             modifier = Modifier.weight(1f)
         )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 8.dp)
+        // Center Controls - Timer & Pause
+        Row(
+            modifier = Modifier
+                .background(
+                    Color(0xFFF5F5F5),
+                    RoundedCornerShape(20.dp)
+                )
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
+            // Timer
             Text(
-                text = stringResource(R.string.vs),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold,
+                text = formatTime(timeElapsed),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF333333)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "⏱",
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = formatTime(timeElapsed),
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF666666)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            IconButton(
-                onClick = onPauseClick,
+            // Pause Button
+            Box(
                 modifier = Modifier
-                    .size(32.dp)
-                    .background(Color(0xFFFFC107), RoundedCornerShape(8.dp))
+                    .size(28.dp)
+                    .background(
+                        Color(0xFFFFC107),
+                        CircleShape
+                    )
+                    .clickable(onClick = onPauseClick),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (isPaused) "▶" else "⏸",
-                    fontSize = 12.sp,
-                    color = Color.White
+                Icon(
+                    imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                    contentDescription = if (isPaused) "Resume" else "Pause",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
 
-        PlayerScoreCard(
+        // Player 2 - Compact Badge Style
+        PlayerBadge(
             player = player2,
             modifier = Modifier.weight(1f)
         )
@@ -196,60 +199,63 @@ fun MultiplayerGameHeader(
 }
 
 @Composable
-fun PlayerScoreCard(
+fun PlayerBadge(
     player: vcmsa.projects.prog7314.data.models.Player,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    Box(
         modifier = modifier
-            .shadow(
-                elevation = if (player.isCurrentTurn) 6.dp else 2.dp,
-                shape = RoundedCornerShape(10.dp)
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (player.isCurrentTurn)
-                player.color.copy(alpha = 0.15f)
-            else
-                Color.White
-        ),
-        shape = RoundedCornerShape(10.dp)
+            .height(40.dp)
+            .background(
+                color = if (player.isCurrentTurn)
+                    player.color.copy(alpha = 0.2f)
+                else
+                    Color.Transparent,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
+            // Color Indicator with Glow Effect
             Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .background(player.color, RoundedCornerShape(12.dp))
-            )
+                    .size(20.dp)
+                    .shadow(
+                        elevation = if (player.isCurrentTurn) 4.dp else 0.dp,
+                        shape = CircleShape,
+                        spotColor = player.color
+                    )
+                    .background(
+                        player.color,
+                        CircleShape
+                    )
+            ) {
+                // Pulsing indicator for current turn
+                if (player.isCurrentTurn) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Color.White.copy(alpha = 0.3f),
+                                CircleShape
+                            )
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
-            Text(
-                text = if (player.playerColor == PlayerColor.RED) stringResource(R.string.red) else stringResource(R.string.blue),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = player.color
-            )
-
+            // Score
             Text(
                 text = "${player.score}",
-                fontSize = 24.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF333333)
             )
-
-            if (player.isCurrentTurn) {
-                Text(
-                    text = stringResource(R.string.your_turn),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = player.color
-                )
-            }
         }
     }
 }
@@ -263,9 +269,10 @@ fun MultiplayerGameGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize()
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 2.dp)
     ) {
         items(
             items = cards,
@@ -315,8 +322,8 @@ fun MultiplayerCardItem(
                     contentDescription = "Card Back",
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(8.dp))
-                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(6.dp))
+                        .shadow(2.dp, RoundedCornerShape(6.dp)),
                     contentScale = ContentScale.Crop
                 )
             } else {
@@ -325,8 +332,8 @@ fun MultiplayerCardItem(
                     contentDescription = "Card Back",
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(8.dp))
-                        .shadow(4.dp, RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(6.dp))
+                        .shadow(2.dp, RoundedCornerShape(6.dp)),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -336,8 +343,8 @@ fun MultiplayerCardItem(
                 contentDescription = "Card",
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
-                    .shadow(4.dp, RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(6.dp))
+                    .shadow(2.dp, RoundedCornerShape(6.dp))
                     .graphicsLayer {
                         rotationY = 180f
                     },
@@ -351,7 +358,7 @@ fun MultiplayerCardItem(
                     .fillMaxSize()
                     .background(
                         Color(0xFF4CAF50).copy(alpha = 0.3f),
-                        RoundedCornerShape(8.dp)
+                        RoundedCornerShape(6.dp)
                     )
                     .graphicsLayer {
                         rotationY = 180f
@@ -624,4 +631,3 @@ fun MultiplayerStatRow(label: String, value: String) {
         )
     }
 }
-
