@@ -9,6 +9,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,9 +47,11 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var showBiometricPrompt by remember { mutableStateOf(false) }
+    var loginAttempts by remember { mutableStateOf(0) }
 
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -54,22 +60,25 @@ fun LoginScreen(
     // Read string resources during composition
     val fillAllFieldsMsg = stringResource(R.string.please_fill_all_login_fields)
     val validEmailMsg = stringResource(R.string.please_enter_valid_email_login)
-    val passwordResetSentMsg = stringResource(R.string.password_reset_email_sent)
-    val enterEmailFirstMsg = stringResource(R.string.enter_email_first)
     val offlineLoginFailedMsg = stringResource(R.string.offline_login_failed)
     val googleSigninNotInitMsg = stringResource(R.string.google_signin_not_initialized)
+    val tooManyAttemptsMsg = "Too many failed login attempts. Please try again later."
+    val invalidCredentialsMsg = "Invalid email or password. Please try again."
 
-    val hasSavedCredentials = remember { AuthManager.hasSavedCredentials(context) }
-    val isBiometricEnabled = remember { BiometricHelper.isBiometricEnabled(context) }
-    val isBiometricAvailable = remember { BiometricHelper.isBiometricAvailable(context) }
+    // Check biometric availability on each composition (to handle logout case)
+    val hasSavedCredentials by remember { derivedStateOf { AuthManager.hasSavedCredentials(context) } }
+    val isBiometricEnabled by remember { derivedStateOf { BiometricHelper.isBiometricEnabled(context) } }
+    val isBiometricAvailable by remember { derivedStateOf { BiometricHelper.isBiometricAvailable(context) } }
     val canUseBiometricLogin = hasSavedCredentials && isBiometricEnabled && isBiometricAvailable
 
+    // Trigger biometric prompt when conditions are met
     LaunchedEffect(canUseBiometricLogin) {
         if (canUseBiometricLogin && activity != null && !showBiometricPrompt) {
             showBiometricPrompt = true
         }
     }
 
+    // Handle biometric authentication
     if (showBiometricPrompt && activity != null && canUseBiometricLogin) {
         LaunchedEffect(Unit) {
             BiometricHelper.showBiometricLoginPrompt(
@@ -78,6 +87,7 @@ fun LoginScreen(
                     val offlineLoginSuccess = AuthManager.performOfflineLogin(context)
                     if (offlineLoginSuccess) {
                         Log.d("LoginScreen", "✅ Offline biometric login successful")
+                        loginAttempts = 0
                         onLoginSuccess()
                     } else {
                         showBiometricPrompt = false
@@ -87,6 +97,11 @@ fun LoginScreen(
                 onError = { error ->
                     showBiometricPrompt = false
                     Log.e("LoginScreen", "Biometric error: $error")
+                    // Don't show error to user if they cancelled biometric
+                    if (!error.contains("cancelled", ignoreCase = true) &&
+                        !error.contains("canceled", ignoreCase = true)) {
+                        errorMessage = error
+                    }
                 }
             )
         }
@@ -100,6 +115,7 @@ fun LoginScreen(
             val account = task.getResult(ApiException::class.java)
             coroutineScope.launch {
                 isLoading = true
+                errorMessage = ""
                 when (val authResult = AuthManager.signInWithGoogle(account)) {
                     is AuthResult.Success -> {
                         val userId = authResult.user?.uid ?: ""
@@ -112,18 +128,25 @@ fun LoginScreen(
                             userRepo.createNewUserProfile(userId, username, userEmail)
                             Log.d("LoginScreen", "✅ New Google user profile created")
                         }
+
+                        // Save credentials for biometric login after Google sign-in
+                        AuthManager.saveBiometricCredentials(context)
+
                         isLoading = false
+                        loginAttempts = 0
                         onLoginSuccess()
                     }
                     is AuthResult.Error -> {
                         isLoading = false
-                        errorMessage = authResult.message
+                        errorMessage = "Google sign-in failed: ${authResult.message}"
+                        Log.e("LoginScreen", "Google sign-in error: ${authResult.message}")
                     }
                 }
             }
         } catch (e: ApiException) {
             isLoading = false
-            errorMessage = context.getString(R.string.google_signup_failed, e.message ?: "Unknown error")
+            errorMessage = "Google sign-in failed (${e.statusCode}): ${e.message ?: "Unknown error"}"
+            Log.e("LoginScreen", "Google API Exception: ${e.message}")
         }
     }
 
@@ -139,21 +162,25 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Logo
             Image(
                 painter = painterResource(id = R.drawable.transparent_logo),
-                contentDescription = "Logo",
-                modifier = Modifier.size(180.dp).padding(bottom = 16.dp),
+                contentDescription = "Memory Match Madness Logo",
+                modifier = Modifier
+                    .size(160.dp)
+                    .padding(bottom = 8.dp),
                 contentScale = ContentScale.Fit
             )
 
+            // Title with shadow effect
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 32.dp),
+                    .padding(bottom = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 repeat(3) {
@@ -161,7 +188,7 @@ fun LoginScreen(
                         text = stringResource(R.string.test_your_memory).uppercase(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.Black,
+                        color = Color.Black.copy(alpha = 0.3f),
                         modifier = Modifier.offset(x = 1.dp, y = 1.dp)
                     )
                 }
@@ -173,91 +200,194 @@ fun LoginScreen(
                 )
             }
 
+            // Main Card
             Card(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
-                shape = RoundedCornerShape(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Login Title
                     Text(
                         text = stringResource(R.string.login_title),
-                        fontSize = 24.sp,
+                        fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0288D1),
-                        modifier = Modifier.padding(bottom = 24.dp)
+                        modifier = Modifier.padding(bottom = 20.dp)
                     )
 
+                    // Biometric Login Section (if available)
                     if (canUseBiometricLogin) {
                         val savedEmail = AuthManager.getSavedEmail(context) ?: ""
                         Text(
                             text = stringResource(R.string.welcome_back_email, savedEmail),
                             fontSize = 14.sp,
                             color = Color(0xFF0288D1),
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(bottom = 12.dp)
                         )
 
                         Button(
                             onClick = { showBiometricPrompt = true },
-                            modifier = Modifier.fillMaxWidth().height(50.dp).padding(bottom = 16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .padding(bottom = 12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                             shape = RoundedCornerShape(25.dp)
                         ) {
                             Icon(
                                 painter = painterResource(id = android.R.drawable.ic_secure),
-                                contentDescription = "Fingerprint",
+                                contentDescription = "Biometric Login",
                                 tint = Color.White,
-                                modifier = Modifier.size(24.dp).padding(end = 8.dp)
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .padding(end = 8.dp)
                             )
                             Text(
                                 text = stringResource(R.string.login_with_fingerprint),
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
 
-                        Divider(modifier = Modifier.padding(vertical = 16.dp))
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            thickness = 1.dp,
+                            color = Color.Gray.copy(alpha = 0.3f)
+                        )
+
                         Text(
                             text = stringResource(R.string.or_login_with_password),
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(bottom = 12.dp)
                         )
                     }
 
+                    // Error Message Display
                     if (errorMessage.isNotEmpty()) {
-                        Text(errorMessage, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(bottom = 16.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFFEBEE)
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = android.R.drawable.ic_dialog_alert),
+                                    contentDescription = "Error",
+                                    tint = Color(0xFFD32F2F),
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .padding(end = 8.dp)
+                                )
+                                Text(
+                                    text = errorMessage,
+                                    color = Color(0xFFD32F2F),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
                     }
 
+                    // Email Input Field
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it; errorMessage = "" },
+                        onValueChange = {
+                            email = it
+                            errorMessage = ""
+                        },
                         label = { Text(stringResource(R.string.email)) },
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        placeholder = { Text("Enter your email address") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         singleLine = true,
-                        enabled = !isLoading
+                        enabled = !isLoading,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF0288D1),
+                            focusedLabelColor = Color(0xFF0288D1),
+                            cursorColor = Color(0xFF0288D1)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
 
+                    // Password Input Field with Visibility Toggle
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; errorMessage = "" },
+                        onValueChange = {
+                            password = it
+                            errorMessage = ""
+                        },
                         label = { Text(stringResource(R.string.password)) },
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                        visualTransformation = PasswordVisualTransformation(),
+                        placeholder = { Text("Enter your password") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        visualTransformation = if (passwordVisible)
+                            VisualTransformation.None
+                        else
+                            PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
-                        enabled = !isLoading
+                        enabled = !isLoading,
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible)
+                                        Icons.Filled.Visibility
+                                    else
+                                        Icons.Filled.VisibilityOff,
+                                    contentDescription = if (passwordVisible)
+                                        "Hide password"
+                                    else
+                                        "Show password",
+                                    tint = Color(0xFF0288D1)
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF0288D1),
+                            focusedLabelColor = Color(0xFF0288D1),
+                            cursorColor = Color(0xFF0288D1)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
 
+                    // Login Button
                     Button(
                         onClick = {
+                            // Check for too many failed attempts
+                            if (loginAttempts >= 5) {
+                                errorMessage = tooManyAttemptsMsg
+                                return@Button
+                            }
+
                             when {
-                                email.isEmpty() || password.isEmpty() -> errorMessage = fillAllFieldsMsg
-                                !email.contains("@") -> errorMessage = validEmailMsg
+                                email.isEmpty() || password.isEmpty() -> {
+                                    errorMessage = fillAllFieldsMsg
+                                }
+                                !email.contains("@") || !email.contains(".") -> {
+                                    errorMessage = validEmailMsg
+                                }
+                                password.length < 6 -> {
+                                    errorMessage = "Password must be at least 6 characters"
+                                }
                                 else -> {
                                     isLoading = true
                                     errorMessage = ""
@@ -268,53 +398,89 @@ fun LoginScreen(
                                                 val userRepo = RepositoryProvider.getUserProfileRepository()
                                                 val existingProfile = userRepo.getUserProfile(userId)
                                                 if (existingProfile == null) {
-                                                    userRepo.createNewUserProfile(userId, email.substringBefore("@"), email)
+                                                    userRepo.createNewUserProfile(
+                                                        userId,
+                                                        email.substringBefore("@"),
+                                                        email
+                                                    )
                                                 }
+
+                                                // Save credentials for biometric login
+                                                AuthManager.saveBiometricCredentials(context)
+
                                                 isLoading = false
+                                                loginAttempts = 0
                                                 onLoginSuccess()
                                             }
                                             is AuthResult.Error -> {
                                                 isLoading = false
-                                                errorMessage = result.message
+                                                loginAttempts++
+
+                                                // Provide user-friendly error messages
+                                                errorMessage = when {
+                                                    result.message.contains("password", ignoreCase = true) ||
+                                                            result.message.contains("email", ignoreCase = true) ||
+                                                            result.message.contains("credential", ignoreCase = true) ->
+                                                        invalidCredentialsMsg
+                                                    result.message.contains("network", ignoreCase = true) ->
+                                                        "Network error. Please check your connection."
+                                                    result.message.contains("disabled", ignoreCase = true) ->
+                                                        "This account has been disabled. Please contact support."
+                                                    else ->
+                                                        "Login failed: ${result.message}"
+                                                }
+
+                                                Log.e("LoginScreen", "Login failed (attempt $loginAttempts): ${result.message}")
                                             }
                                         }
                                     }
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(50.dp).padding(bottom = 16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .padding(bottom = 12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                        shape = RoundedCornerShape(25.dp),
-                        enabled = !isLoading
+                        shape = RoundedCornerShape(26.dp),
+                        enabled = !isLoading && loginAttempts < 5,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 3.dp
+                            )
                         } else {
                             Text(
                                 text = stringResource(R.string.play_now),
-                                fontSize = 16.sp,
+                                fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
                     }
 
+                    // Divider
                     Text(
                         text = stringResource(R.string.or_continue_with),
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         color = Color.Gray,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
 
+                    // Google Sign-In Button
                     Image(
                         painter = painterResource(id = R.drawable.android_neutral),
                         contentDescription = stringResource(R.string.sign_in_with_google),
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .height(60.dp)
-                            .padding(bottom = 16.dp)
+                            .fillMaxWidth(0.85f)
+                            .height(56.dp)
+                            .padding(bottom = 12.dp)
                             .clickable(enabled = !isLoading) {
                                 isLoading = true
+                                errorMessage = ""
                                 val signInIntent = AuthManager.getGoogleSignInIntent()
                                 if (signInIntent != null) {
                                     googleSignInLauncher.launch(signInIntent)
@@ -326,26 +492,17 @@ fun LoginScreen(
                         contentScale = ContentScale.Fit
                     )
 
+                    // Create New Account Button
                     TextButton(
-                        onClick = {
-                            if (email.isNotEmpty() && email.contains("@")) {
-                                coroutineScope.launch {
-                                    when (val result = AuthManager.sendPasswordResetEmail(email)) {
-                                        is AuthResult.Success -> errorMessage = passwordResetSentMsg
-                                        is AuthResult.Error -> errorMessage = result.message
-                                    }
-                                }
-                            } else {
-                                errorMessage = enterEmailFirstMsg
-                            }
-                        },
+                        onClick = onNavigateToRegister,
                         enabled = !isLoading
                     ) {
-                        Text(stringResource(R.string.forgot_password), color = Color(0xFF0288D1))
-                    }
-
-                    TextButton(onClick = onNavigateToRegister, enabled = !isLoading) {
-                        Text(stringResource(R.string.create_new_account), color = Color(0xFF0288D1))
+                        Text(
+                            text = stringResource(R.string.create_new_account),
+                            color = Color(0xFF0288D1),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
