@@ -37,6 +37,9 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
     private var isArcade: Boolean = false
     private var currentTheme: GameTheme? = null
 
+    // FIXED: Add flag to track if game has actually started
+    private var hasGameStarted: Boolean = false
+
     private val _gameState = MutableStateFlow(GameEngine.GameState(
         cards = emptyList(),
         moves = 0,
@@ -74,8 +77,13 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             try {
                 Log.d(TAG, "Initializing game - Level: $levelNumber, Arcade: $arcadeMode")
 
+                // FIXED: Reset ALL game state flags at the start
                 currentLevelNumber = levelNumber
                 isArcade = arcadeMode
+                hasGameStarted = false
+
+                // CRITICAL FIX: Reset completion state IMMEDIATELY
+                _isGameComplete.value = false
 
                 val config = GameConfig.getLevelConfig(levelNumber)
                 val randomTheme = GameTheme.entries.random()
@@ -91,11 +99,10 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 _timeRemaining.value = config.timeLimit
                 _moves.value = 0
                 _score.value = 0
-                _isGameComplete.value = false
 
                 startTimer(config.timeLimit)
 
-                Log.d(TAG, "✅ Game initialized with ${_gameState.value.cards.size} cards")
+                Log.d(TAG, "✅ Game initialized with ${_gameState.value.cards.size} cards, isComplete: ${_isGameComplete.value}")
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Error initializing game: ${e.message}", e)
             }
@@ -106,6 +113,12 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             try {
                 val engine = gameEngine ?: return@launch
+
+                // FIXED: Mark game as started on first card click
+                if (!hasGameStarted) {
+                    hasGameStarted = true
+                    Log.d(TAG, "Game started!")
+                }
 
                 val (success, result) = engine.flipCard(cardId)
 
@@ -118,7 +131,8 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                             engine.clearMatchedCards()
                             updateGameState()
 
-                            if (engine.isGameComplete) {
+                            // FIXED: Only complete if game has started
+                            if (engine.isGameComplete && hasGameStarted) {
                                 onGameComplete()
                             }
                         }
@@ -159,7 +173,8 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                     val remaining = timeLimit - _timeElapsed.value
                     _timeRemaining.value = remaining.coerceAtLeast(0)
 
-                    if (remaining <= 0) {
+                    // FIXED: Only complete if game has started
+                    if (remaining <= 0 && hasGameStarted) {
                         onGameComplete()
                         break
                     }
@@ -170,6 +185,12 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
 
     private suspend fun onGameComplete() {
         try {
+            // FIXED: Prevent multiple completion calls
+            if (_isGameComplete.value) {
+                Log.d(TAG, "Game already complete, skipping...")
+                return
+            }
+
             Log.d(TAG, "Game complete!")
             timerJob?.cancel()
             _isGameComplete.value = true

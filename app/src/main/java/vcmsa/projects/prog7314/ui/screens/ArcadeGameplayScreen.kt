@@ -3,6 +3,7 @@ package vcmsa.projects.prog7314.ui.screens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -40,10 +41,18 @@ fun ArcadeGameplayScreen(
     isArcadeMode: Boolean = false,
     onBackClick: () -> Unit,
     onGameComplete: (stars: Int, score: Int, time: Int, moves: Int, bonus: Int) -> Unit,
-    viewModel: ArcadeGameViewModel = viewModel(),
     cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
+    // CRITICAL FIX: Generate stable key only once per screen instance using remember
+    val viewModelKey = remember(levelNumber, isArcadeMode) {
+        "arcade_${levelNumber}_${isArcadeMode}_${System.currentTimeMillis()}"
+    }
+
+    // FIXED: Use the stable key
+    val viewModel: ArcadeGameViewModel = viewModel(key = viewModelKey)
+
     val gameState by viewModel.gameState.collectAsState()
     val timeElapsed by viewModel.timeElapsed.collectAsState()
     val timeRemaining by viewModel.timeRemaining.collectAsState()
@@ -55,14 +64,23 @@ fun ArcadeGameplayScreen(
     // Get card background drawable
     val cardBackgroundDrawable by cardBackgroundViewModel.cardBackgroundDrawable.collectAsState()
 
-    // Initialize game
+    // Track if we've already called the completion callback
+    var hasCalledCompletionCallback by remember { mutableStateOf(false) }
+
+    // Initialize game when level or mode changes
     LaunchedEffect(levelNumber, isArcadeMode) {
+        hasCalledCompletionCallback = false
         viewModel.initializeGame(levelNumber, isArcadeMode)
     }
 
-    // Handle game completion
-    LaunchedEffect(isGameComplete) {
-        if (isGameComplete) {
+    // Handle game completion with comprehensive checks
+    LaunchedEffect(isGameComplete, gameState.matchedPairs) {
+        if (isGameComplete &&
+            gameState.matchedPairs > 0 &&
+            gameState.cards.isNotEmpty() &&
+            !hasCalledCompletionCallback) {
+
+            hasCalledCompletionCallback = true
             val finalScore = viewModel.getFinalScore()
 
             // Trigger notifications
@@ -317,6 +335,18 @@ fun GameCardItem(
             }
             .shadow(4.dp, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
+            // FIXED: Add green border for matched cards
+            .then(
+                if (card.isMatched && rotation > 90f) {
+                    Modifier.border(
+                        width = 4.dp,
+                        color = Color(0xFF4CAF50), // Green border
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .clickable(enabled = !card.isFlipped && !card.isMatched && !isFlipping) {
                 onClick()
             },
@@ -347,11 +377,15 @@ fun GameCardItem(
                 }
             }
         } else {
-            // Card front
+            // Card front - FIXED: Add green background for matched cards
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .background(
+                        // FIXED: Light green background for matched cards
+                        if (card.isMatched) Color(0xFFE8F5E9) else Color.White,
+                        RoundedCornerShape(12.dp)
+                    )
                     .graphicsLayer { rotationY = 180f }
             ) {
                 Image(
