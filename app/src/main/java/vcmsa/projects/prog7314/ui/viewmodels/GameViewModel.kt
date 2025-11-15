@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.models.*
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
+import vcmsa.projects.prog7314.data.sync.SyncManager
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -43,22 +45,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var currentTheme: GameTheme
     private lateinit var currentGridSize: GridSize
 
-    // Repository for updating streak
     private val userProfileRepository: UserProfileRepository
+    private val syncManager: SyncManager
 
     init {
         val database = AppDatabase.getDatabase(application)
         userProfileRepository = UserProfileRepository(database.userProfileDao())
+        syncManager = SyncManager(application)
     }
 
-    /**
-     * Initialize a new game with theme and grid size
-     */
     fun initializeGame(theme: GameTheme, gridSize: GridSize) {
         currentTheme = theme
         currentGridSize = gridSize
 
-        // Generate cards
         val cards = generateCards(theme, gridSize)
 
         _gameState.value = GameState(
@@ -79,25 +78,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         startTimer()
     }
 
-    /**
-     * Generate shuffled cards for the game
-     */
     private fun generateCards(theme: GameTheme, gridSize: GridSize): List<GameCard> {
         val totalPairs = gridSize.totalCards / 2
         val availableImages = theme.cardImages
 
-        // Select random images for pairs
         val selectedImages = if (availableImages.size >= totalPairs) {
             availableImages.shuffled().take(totalPairs)
         } else {
-            // If not enough images, repeat some
             (availableImages + availableImages).shuffled().take(totalPairs)
         }
 
-        // Create pairs
         val cards = mutableListOf<GameCard>()
         selectedImages.forEachIndexed { pairId, imageResId ->
-            // First card of pair
             cards.add(
                 GameCard(
                     id = cards.size,
@@ -107,7 +99,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     isMatched = false
                 )
             )
-            // Second card of pair
             cards.add(
                 GameCard(
                     id = cards.size,
@@ -119,13 +110,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
 
-        // Shuffle cards
         return cards.shuffled()
     }
 
-    /**
-     * Handle card flip
-     */
     fun onCardClicked(card: GameCard) {
         if (isProcessing || card.isFlipped || card.isMatched) return
 
@@ -135,29 +122,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         if (cardIndex == -1) return
 
-        // Flip the card
         updatedCards[cardIndex] = updatedCards[cardIndex].copy(isFlipped = true)
         _gameState.value = currentState.copy(cards = updatedCards)
 
         when {
             firstFlippedCard == null -> {
-                // First card flipped
                 firstFlippedCard = updatedCards[cardIndex]
             }
             secondFlippedCard == null -> {
-                // Second card flipped
                 secondFlippedCard = updatedCards[cardIndex]
                 _moves.value += 1
-
-                // Check for match
                 checkForMatch()
             }
         }
     }
 
-    /**
-     * Check if two flipped cards match
-     */
     private fun checkForMatch() {
         val first = firstFlippedCard ?: return
         val second = secondFlippedCard ?: return
@@ -165,13 +144,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         isProcessing = true
 
         viewModelScope.launch {
-            delay(800) // Show cards for a moment
+            delay(800)
 
             val currentState = _gameState.value ?: return@launch
             val updatedCards = currentState.cards.toMutableList()
 
             if (first.pairId == second.pairId) {
-                // Match found!
                 updatedCards.replaceAll { card ->
                     if (card.id == first.id || card.id == second.id) {
                         card.copy(isMatched = true, isFlipped = true)
@@ -180,7 +158,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
 
-                // Update points
                 val basePoints = 100
                 val timeBonus = maxOf(0, 50 - (_timeElapsed.value.toInt() / 1000))
                 _points.value += basePoints + timeBonus
@@ -191,12 +168,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     matchedPairs = matchedPairs
                 )
 
-                // Check if game is complete
                 if (matchedPairs == currentGridSize.totalCards / 2) {
                     completeGame()
                 }
             } else {
-                // No match - flip cards back
                 delay(400)
                 updatedCards.replaceAll { card ->
                     if (card.id == first.id || card.id == second.id) {
@@ -214,10 +189,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Complete the game and calculate results
-     * UPDATED: Now also updates daily streak
-     */
     private fun completeGame() {
         stopTimer()
         _isGameComplete.value = true
@@ -227,14 +198,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val moves = _moves.value
         val points = _points.value
 
-        // Calculate stars (1-3)
         val stars = when {
             moves <= currentGridSize.totalCards && timeInSeconds <= 30 -> 3
             moves <= currentGridSize.totalCards * 1.5 && timeInSeconds <= 60 -> 2
             else -> 1
         }
 
-        // Calculate bonus
         val bonus = if (stars == 3) 500 else if (stars == 2) 200 else 0
 
         _gameResult.value = GameResult(
@@ -247,34 +216,118 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             bonus = bonus
         )
 
-        // 🔥 UPDATE DAILY STREAK
-        updateDailyStreak()
+        // 🔥 SAVE ALL DATA
+        saveGameData(stars, points + bonus, timeInSeconds.toInt(), moves)
     }
 
     /**
-     * Update the user's daily streak
+     * Save all game data to database and sync to cloud
      */
-    private fun updateDailyStreak() {
+    private fun saveGameData(stars: Int, finalScore: Int, timeTaken: Int, moves: Int) {
         viewModelScope.launch {
             try {
-                val userId = FirebaseAuth.getInstance().currentUser?.uid
-                if (userId != null) {
-                    val success = userProfileRepository.updateDailyStreak(userId)
-                    if (success) {
-                        Log.d("GameViewModel", "🔥 Daily streak updated successfully!")
-                    } else {
-                        Log.w("GameViewModel", "⚠️ Failed to update daily streak")
-                    }
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+                Log.d("GameViewModel", "💾 Saving adventure game data...")
+
+                // 1. Save game result
+                val gameResultRepo = RepositoryProvider.getGameResultRepository()
+                val gameId = gameResultRepo.createGameResult(
+                    userId = userId,
+                    gameMode = "ADVENTURE",
+                    theme = currentTheme.name,
+                    gridSize = "${currentGridSize.rows}x${currentGridSize.columns}",
+                    difficulty = "NORMAL",
+                    score = finalScore,
+                    timeTaken = timeTaken,
+                    moves = moves,
+                    accuracy = calculateAccuracy(moves),
+                    isWin = stars > 0
+                )
+                Log.d("GameViewModel", "✅ Game result saved: $gameId")
+
+                // 2. Update user profile stats
+                val userProfile = userProfileRepository.getUserProfile(userId)
+                if (userProfile != null) {
+                    userProfileRepository.updateUserStats(
+                        userId = userId,
+                        totalGames = userProfile.totalGamesPlayed + 1,
+                        gamesWon = userProfile.gamesWon + if (stars > 0) 1 else 0,
+                        currentStreak = userProfile.currentStreak,
+                        bestStreak = userProfile.bestStreak,
+                        avgTime = ((userProfile.averageCompletionTime * userProfile.totalGamesPlayed) + timeTaken) / (userProfile.totalGamesPlayed + 1),
+                        accuracy = ((userProfile.accuracyRate * userProfile.totalGamesPlayed) + calculateAccuracy(moves)) / (userProfile.totalGamesPlayed + 1)
+                    )
+                    Log.d("GameViewModel", "✅ User profile stats updated")
                 }
+
+                // 3. Update daily streak
+                userProfileRepository.updateDailyStreak(userId)
+                Log.d("GameViewModel", "🔥 Daily streak updated")
+
+                // 4. Check achievements
+                checkAchievements(userId, stars, timeTaken, moves)
+
+                // 5. 🔥 SYNC TO FIRESTORE
+                syncManager.syncToFirestore()
+                Log.d("GameViewModel", "🔄 Firestore sync initiated")
+
             } catch (e: Exception) {
-                Log.e("GameViewModel", "❌ Error updating streak: ${e.message}", e)
+                Log.e("GameViewModel", "❌ Error saving game data: ${e.message}", e)
             }
         }
     }
 
     /**
-     * Start game timer
+     * Check and award achievements
      */
+    private suspend fun checkAchievements(userId: String, stars: Int, timeTaken: Int, moves: Int) {
+        try {
+            val achievementRepo = RepositoryProvider.getAchievementRepository()
+
+            // First Win - THIS IS THE FIX!
+            val firstWin = achievementRepo.checkFirstWinAchievement(userId, stars > 0)
+            if (firstWin) Log.d("GameViewModel", "🏆 First Victory achievement!")
+
+            // Perfect Performance (3 stars)
+            if (stars == 3) {
+                val perfect = achievementRepo.awardAchievement(
+                    userId = userId,
+                    achievementType = "PERFECT_PERFORMANCE",
+                    name = "Perfect Performance",
+                    description = "Complete a level with 3 stars",
+                    iconName = "ic_star"
+                )
+                if (perfect) Log.d("GameViewModel", "🏆 Perfect Performance achievement!")
+            }
+
+            // Speed Demon
+            val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, timeTaken, 30)
+            if (speedDemon) Log.d("GameViewModel", "🏆 Speed Demon achievement!")
+
+            // Memory Guru (95%+ accuracy)
+            val accuracy = calculateAccuracy(moves)
+            val memoryGuru = achievementRepo.checkMemoryGuruAchievement(userId, accuracy, 95f)
+            if (memoryGuru) Log.d("GameViewModel", "🏆 Memory Guru achievement!")
+
+            Log.d("GameViewModel", "✅ Achievements checked")
+        } catch (e: Exception) {
+            Log.e("GameViewModel", "❌ Error checking achievements: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Calculate accuracy percentage
+     */
+    private fun calculateAccuracy(moves: Int): Float {
+        val perfectMoves = currentGridSize.totalCards
+        return if (moves > 0) {
+            ((perfectMoves.toFloat() / moves.toFloat()) * 100).coerceIn(0f, 100f)
+        } else {
+            0f
+        }
+    }
+
     private fun startTimer() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
@@ -285,16 +338,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /**
-     * Stop game timer
-     */
     private fun stopTimer() {
         timerJob?.cancel()
     }
 
-    /**
-     * Reset game
-     */
     fun resetGame() {
         initializeGame(currentTheme, currentGridSize)
     }

@@ -125,6 +125,7 @@ fun ThemeCard(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val themeName = stringResource(theme.themeNameResId)  // ✅ Get localized name
 
     Card(
         modifier = Modifier
@@ -133,12 +134,12 @@ fun ThemeCard(
             .clickable {
                 // Check if this is the first time unlocking this theme
                 val prefs = context.getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE)
-                val themeKey = "theme_unlocked_${theme.themeName.replace(" ", "_")}"
+                val themeKey = "theme_unlocked_${themeName.replace(" ", "_")}"  // ✅ Use localized name
                 val hasUnlockedTheme = prefs.getBoolean(themeKey, false)
 
                 if (!hasUnlockedTheme) {
                     // First time selecting this theme - show notification
-                    LocalNotificationManager.notifyThemeUnlocked(context, theme.themeName)
+                    LocalNotificationManager.notifyThemeUnlocked(context, themeName)  // ✅ Use localized name
                     prefs.edit().putBoolean(themeKey, true).apply()
                 }
 
@@ -153,7 +154,7 @@ fun ThemeCard(
             // Background image
             Image(
                 painter = painterResource(id = theme.previewImage),
-                contentDescription = theme.themeName,
+                contentDescription = themeName,  // ✅ Use localized name
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -174,7 +175,7 @@ fun ThemeCard(
 
             // Theme name
             Text(
-                text = theme.themeName,
+                text = themeName,  // ✅ Use localized name
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,

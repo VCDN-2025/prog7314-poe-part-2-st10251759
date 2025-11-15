@@ -237,6 +237,8 @@ fun ThemeCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val themeName = stringResource(theme.themeNameResId)  // ✅ Get localized name
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -256,7 +258,7 @@ fun ThemeCard(
         ) {
             Image(
                 painter = painterResource(id = theme.previewImage),
-                contentDescription = theme.themeName,
+                contentDescription = themeName,  // ✅ Use localized name
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(16.dp)),
@@ -277,7 +279,7 @@ fun ThemeCard(
                     .padding(8.dp)
             ) {
                 Text(
-                    text = theme.themeName,
+                    text = themeName,  // ✅ Use localized name
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,

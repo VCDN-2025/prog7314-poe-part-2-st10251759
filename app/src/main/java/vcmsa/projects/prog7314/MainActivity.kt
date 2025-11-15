@@ -41,7 +41,6 @@ import vcmsa.projects.prog7314.utils.LocalNotificationManager
 import vcmsa.projects.prog7314.utils.LanguageManager
 
 class MainActivity : FragmentActivity() {
-
     private lateinit var syncManager: SyncManager
     private lateinit var firestoreManager: FirestoreManager
 
@@ -71,6 +70,10 @@ class MainActivity : FragmentActivity() {
         syncManager.initialize()
 
         firestoreManager = FirestoreManager()
+
+        // 🔥 NEW: Sync from Firestore on app start
+        syncManager.syncFromFirestore()
+        Log.d("MainActivity", "🔄 Firestore sync initiated on app start")
 
         testDatabase()
 
@@ -154,6 +157,7 @@ class MainActivity : FragmentActivity() {
             try {
                 val apiRepo = ApiRepository()
                 val tokenResult = apiRepo.verifyFirebaseToken()
+
                 if (tokenResult.isSuccess) {
                     Log.d("MainActivity", "✅ API Connection Successful!")
                     Log.d("MainActivity", "User ID: ${tokenResult.getOrNull()?.userId}")
@@ -175,8 +179,8 @@ class MainActivity : FragmentActivity() {
                 val achievementRepo = AchievementRepository(db.achievementDao())
 
                 Log.d("DatabaseTest", "========== TESTING REPOSITORIES ==========")
-                Log.d("DatabaseTest", "\n--- Test 1: User Profile ---")
 
+                Log.d("DatabaseTest", "\n--- Test 1: User Profile ---")
                 val userId = "test_user_123"
                 val created = userRepo.createNewUserProfile(
                     userId = userId,
@@ -193,7 +197,6 @@ class MainActivity : FragmentActivity() {
                 Log.d("DatabaseTest", "✅ Updated XP: ${updatedUser?.totalXP}, Level: ${updatedUser?.level}")
 
                 Log.d("DatabaseTest", "\n--- Test 2: Game Results ---")
-
                 val gameId = gameRepo.createGameResult(
                     userId = userId,
                     gameMode = "ARCADE",
@@ -213,7 +216,6 @@ class MainActivity : FragmentActivity() {
                 Log.d("DatabaseTest", "✅ Total games: $totalGames, Win rate: $winRate%")
 
                 Log.d("DatabaseTest", "\n--- Test 3: Achievements ---")
-
                 val firstWin = achievementRepo.checkFirstWinAchievement(userId, true)
                 Log.d("DatabaseTest", "✅ First Win achievement awarded: $firstWin")
 
@@ -224,25 +226,20 @@ class MainActivity : FragmentActivity() {
                 Log.d("DatabaseTest", "✅ Total unlocked achievements: $unlockedCount")
 
                 Log.d("DatabaseTest", "\n--- Test 4: Statistics ---")
-
                 val avgScore = gameRepo.getAverageScore(userId)
                 val bestScore = gameRepo.getBestScore(userId)
                 val avgTime = gameRepo.getAverageTime(userId)
-
                 Log.d("DatabaseTest", "✅ Average Score: $avgScore")
                 Log.d("DatabaseTest", "✅ Best Score: $bestScore")
                 Log.d("DatabaseTest", "✅ Average Time: ${avgTime}s")
 
                 Log.d("DatabaseTest", "\n--- Test 5: Sync Status ---")
-
                 val unsyncedGames = gameRepo.getUnsyncedGamesForUser(userId)
                 val unsyncedAchievements = achievementRepo.getUnsyncedAchievementsForUser(userId)
-
                 Log.d("DatabaseTest", "✅ Unsynced games: ${unsyncedGames.size}")
                 Log.d("DatabaseTest", "✅ Unsynced achievements: ${unsyncedAchievements.size}")
 
                 Log.d("DatabaseTest", "\n--- Test 6: Sync Manager ---")
-
                 val unsyncedCounts = syncManager.getUnsyncedCounts()
                 Log.d("DatabaseTest", "✅ Total unsynced items: ${unsyncedCounts.total}")
                 Log.d("DatabaseTest", "✅ Network status: ${NetworkManager.getConnectionStatus()}")
@@ -297,13 +294,11 @@ fun MemoryMatchMadnessApp() {
     var showSettingsScreen by remember { mutableStateOf(false) }
     var showBiometricDialog by remember { mutableStateOf(false) }
     var userEmail by remember { mutableStateOf("") }
-
     var showThemeSelection by remember { mutableStateOf(false) }
     var showGridSelection by remember { mutableStateOf(false) }
     var showGameplay by remember { mutableStateOf(false) }
     var selectedTheme by remember { mutableStateOf<GameTheme?>(null) }
     var selectedGridSize by remember { mutableStateOf<GridSize?>(null) }
-
     var showArcadeMode by remember { mutableStateOf(false) }
     var showLevelSelection by remember { mutableStateOf(false) }
     var showArcadeGameplay by remember { mutableStateOf(false) }
@@ -312,17 +307,13 @@ fun MemoryMatchMadnessApp() {
     var showCompletionDialog by remember { mutableStateOf(false) }
     var completionData by remember { mutableStateOf<CompletionData?>(null) }
 
-    // ⭐ NEW: Game instance key to force ViewModel refresh on retry
+    // ⭐ Game instance key to force ViewModel refresh on retry (your friend's feature)
     var gameInstanceKey by remember { mutableStateOf(0) }
 
     var showMultiplayerSetup by remember { mutableStateOf(false) }
     var showMultiplayerGame by remember { mutableStateOf(false) }
-
-    // NEW: Edit Profile and Change Password screens
     var showEditProfile by remember { mutableStateOf(false) }
     var showChangePassword by remember { mutableStateOf(false) }
-
-    // NEW: Statistics screen
     var showStatistics by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -352,10 +343,15 @@ fun MemoryMatchMadnessApp() {
                     val userId = AuthManager.getCurrentUser()?.uid
                     if (userId != null) {
                         coroutineScope.launch {
+                            // 🔥 NEW: Perform full Firestore sync on login
+                            val syncManager = SyncManager(context)
+                            syncManager.performFullFirestoreSync()
+                            Log.d("MainActivity", "🔄 Full Firestore sync initiated on login")
+
+                            // Existing progress sync
                             val db = AppDatabase.getDatabase(context)
                             val levelRepo = LevelRepository(db.levelProgressDao())
                             val syncHelper = ProgressSyncHelper(levelRepo, FirestoreManager())
-
                             val success = syncHelper.loadProgressFromCloud(userId)
                             if (success) {
                                 Log.d("MainActivity", "✅ Progress loaded from cloud")
@@ -367,7 +363,8 @@ fun MemoryMatchMadnessApp() {
 
                     if (isBiometricAvailable &&
                         !BiometricHelper.isBiometricEnabled(context) &&
-                        !AuthManager.hasSavedCredentials(context)) {
+                        !AuthManager.hasSavedCredentials(context)
+                    ) {
                         showBiometricDialog = true
                     } else {
                         showMainMenu = true
@@ -388,7 +385,8 @@ fun MemoryMatchMadnessApp() {
                     showRegisterScreen = false
 
                     if (isBiometricAvailable &&
-                        !BiometricHelper.isBiometricEnabled(context)) {
+                        !BiometricHelper.isBiometricEnabled(context)
+                    ) {
                         showBiometricDialog = true
                     } else {
                         showMainMenu = true
@@ -489,7 +487,6 @@ fun MemoryMatchMadnessApp() {
         showGameplay -> {
             val theme = selectedTheme
             val gridSize = selectedGridSize
-
             if (theme != null && gridSize != null) {
                 GameplayScreen(
                     theme = theme,
@@ -638,6 +635,7 @@ fun MemoryMatchMadnessApp() {
                 if (userId.isNotEmpty()) {
                     val userRepo = RepositoryProvider.getUserProfileRepository()
                     val profile = userRepo.getUserProfile(userId)
+
                     if (profile != null) {
                         Log.d("MainActivity", "✅ User profile loaded: ${profile.username}, Level ${profile.level}, XP ${profile.totalXP}")
                         Log.d("MainActivity", "📶 Connection: $connectionStatus")
@@ -659,7 +657,7 @@ fun MemoryMatchMadnessApp() {
                     showMainMenu = false
                     showMultiplayerSetup = true
                 },
-                onStatisticsClick = {          // ← CHANGED!
+                onStatisticsClick = {
                     showMainMenu = false
                     showStatistics = true
                 },

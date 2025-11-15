@@ -311,4 +311,37 @@
     <string name="push_notifications">Stoot Kennisgewings</string>
     <string name="receive_game_updates">Ontvang spel opdaterings en herinneringe</string>
 
+    <!-- Achievements Dialog -->
+    <string name="all_achievements">Alle Prestasies</string>
+    <string name="unlocked">Ontsluit</string>
+    <string name="view_all">Bekyk Alles</string>
+    <string name="tap_to_view_all">Tik om alle prestasies te sien</string>
+
+    <!-- Achievement Names -->
+
+    <string name="achievement_perfect_performance">Perfekte Prestasie</string>
+    <string name="achievement_memory_guru">Geheue Goeroe</string>
+    <string name="achievement_champion">Kampioen</string>
+    <string name="achievement_high_scorer">Hoë Punteteller</string>
+    <string name="achievement_persistent">Volhardende Speler</string>
+    <string name="achievement_streak_master">Reeks Meester</string>
+    <string name="achievement_theme_explorer">Tema Verkenner</string>
+    <string name="achievement_arcade_master">Arcade Meester</string>
+    <string name="achievement_level_conqueror">Vlak Veroweraar</string>
+    <string name="achievement_flawless">Foutlose Oorwinning</string>
+
+    <!-- Achievement Descriptions -->
+    <string name="achievement_first_win_desc">Wen jou eerste speletjie</string>
+    <string name="achievement_speed_demon_desc">Voltooi \'n speletjie in onder 30 sekondes</string>
+    <string name="achievement_perfect_performance_desc">Voltooi \'n vlak met 3 sterre</string>
+    <string name="achievement_memory_guru_desc">Bereik 95% akkuraatheid</string>
+    <string name="achievement_champion_desc">Wen 50 speletjies</string>
+    <string name="achievement_high_scorer_desc">Behaal meer as 2000 punte in een speletjie</string>
+    <string name="achievement_persistent_desc">Speel 100 speletjies</string>
+    <string name="achievement_streak_master_desc">Handhaaf \'n 7-dag reeks</string>
+    <string name="achievement_theme_explorer_desc">Probeer al 5 temas</string>
+    <string name="achievement_arcade_master_desc">Voltooi alle arcade vlakke</string>
+    <string name="achievement_level_conqueror_desc">Voltooi alle 16 vlakke</string>
+    <string name="achievement_flawless_desc">Voltooi \'n speletjie sonder foute</string>
+
 </resources>

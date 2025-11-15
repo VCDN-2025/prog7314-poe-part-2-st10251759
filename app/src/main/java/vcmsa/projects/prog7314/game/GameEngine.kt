@@ -28,7 +28,7 @@ class GameEngine(
      * Initialize game cards
      */
     fun initializeCards(): List<GameCard> {
-        Log.d(TAG, "Initializing ${config.totalPairs} pairs for ${theme.themeName}")
+        Log.d(TAG, "Initializing ${config.totalPairs} pairs for ${theme.name}")
 
         cards.clear()
         flippedCards.clear()

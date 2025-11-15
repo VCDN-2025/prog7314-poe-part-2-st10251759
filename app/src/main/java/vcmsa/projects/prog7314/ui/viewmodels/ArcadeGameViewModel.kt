@@ -19,6 +19,7 @@ import vcmsa.projects.prog7314.data.repository.LevelRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.sync.FirestoreManager
+import vcmsa.projects.prog7314.data.sync.SyncManager
 import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.game.GameEngine
 import vcmsa.projects.prog7314.utils.AuthManager
@@ -30,6 +31,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
     private val arcadeRepository: ArcadeRepository
     private val userProfileRepository: UserProfileRepository
     private val firestoreManager = FirestoreManager()
+    private val syncManager: SyncManager
 
     private var gameEngine: GameEngine? = null
     private var timerJob: Job? = null
@@ -70,6 +72,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
         levelRepository = LevelRepository(database.levelProgressDao())
         arcadeRepository = ArcadeRepository(database.arcadeSessionDao())
         userProfileRepository = UserProfileRepository(database.userProfileDao())
+        syncManager = SyncManager(application)
     }
 
     fun initializeGame(levelNumber: Int, arcadeMode: Boolean = false) {
@@ -89,7 +92,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 val randomTheme = GameTheme.entries.random()
                 currentTheme = randomTheme
 
-                Log.d(TAG, "Theme: ${randomTheme.themeName}, Grid: ${config.gridRows}x${config.gridColumns}")
+                Log.d(TAG, "Theme: ${randomTheme.name}, Grid: ${config.gridRows}x${config.gridColumns}")  // ✅ Use enum name for logging
 
                 gameEngine = GameEngine(randomTheme, config)
                 gameEngine!!.initializeCards()
@@ -198,7 +201,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             val userId = AuthManager.getCurrentUser()?.uid ?: return
             val finalScore = getFinalScore()
             val config = GameConfig.getLevelConfig(currentLevelNumber)
-            val theme = currentTheme?.themeName ?: "Unknown"
+            val theme = currentTheme?.name ?: "Unknown"  // ✅ Use enum name for database
             val gridSize = "${config.gridRows}x${config.gridColumns}"
 
             // ✅ ALWAYS SAVE TO GAME RESULTS (for Statistics)
@@ -217,43 +220,14 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             )
             Log.d(TAG, "✅ Game result saved for statistics")
 
+            // 🔥 UPDATE USER PROFILE STATS
+            updateUserProfileStats(userId, finalScore.stars > 0)
+
             // 🔥 UPDATE DAILY STREAK
             updateDailyStreak()
 
             // ✅ CHECK FOR ACHIEVEMENTS
-            try {
-                val achievementRepo = RepositoryProvider.getAchievementRepository()
-
-                // Check First Win
-                val firstWin = achievementRepo.checkFirstWinAchievement(userId, finalScore.stars > 0)
-                if (firstWin) {
-                    Log.d(TAG, "🏆 First Win achievement unlocked!")
-                }
-
-                // Award Perfect Performance for 3 stars
-                if (finalScore.stars == 3) {
-                    val perfect = achievementRepo.awardAchievement(
-                        userId = userId,
-                        achievementType = "PERFECT_PERFORMANCE",
-                        name = "Perfect Performance",
-                        description = "Complete a level with 3 stars",
-                        iconName = "ic_star"
-                    )
-                    if (perfect) {
-                        Log.d(TAG, "🏆 Perfect Performance achievement unlocked!")
-                    }
-                }
-
-                // Check Speed Demon (fast completion)
-                val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, _timeElapsed.value)
-                if (speedDemon) {
-                    Log.d(TAG, "🏆 Speed Demon achievement unlocked!")
-                }
-
-                Log.d(TAG, "✅ Achievements checked")
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Error checking achievements: ${e.message}", e)
-            }
+            checkAchievements(userId, finalScore)
 
             if (isArcade) {
                 // Save arcade session to RoomDB
@@ -284,8 +258,35 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 // NOW SAVE TO FIRESTORE
                 syncProgressToFirestore(userId)
             }
+
+            // 🔥 SYNC EVERYTHING TO FIRESTORE
+            syncToFirestore()
+
         } catch (e: Exception) {
             Log.e(TAG, "Error completing game: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Update user profile statistics
+     */
+    private suspend fun updateUserProfileStats(userId: String, isWin: Boolean) {
+        try {
+            val userProfile = userProfileRepository.getUserProfile(userId)
+            if (userProfile != null) {
+                userProfileRepository.updateUserStats(
+                    userId = userId,
+                    totalGames = userProfile.totalGamesPlayed + 1,
+                    gamesWon = userProfile.gamesWon + if (isWin) 1 else 0,
+                    currentStreak = userProfile.currentStreak,
+                    bestStreak = userProfile.bestStreak,
+                    avgTime = ((userProfile.averageCompletionTime * userProfile.totalGamesPlayed) + _timeElapsed.value) / (userProfile.totalGamesPlayed + 1),
+                    accuracy = userProfile.accuracyRate
+                )
+                Log.d(TAG, "✅ User profile stats updated")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error updating user profile: ${e.message}", e)
         }
     }
 
@@ -307,6 +308,66 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Error updating streak: ${e.message}", e)
             }
+        }
+    }
+
+    /**
+     * Check and award achievements
+     */
+    private suspend fun checkAchievements(userId: String, finalScore: GameEngine.FinalScore) {
+        try {
+            val achievementRepo = RepositoryProvider.getAchievementRepository()
+
+            // Check First Win
+            val firstWin = achievementRepo.checkFirstWinAchievement(userId, finalScore.stars > 0)
+            if (firstWin) {
+                Log.d(TAG, "🏆 First Win achievement unlocked!")
+            }
+
+            // Award Perfect Performance for 3 stars
+            if (finalScore.stars == 3) {
+                val perfect = achievementRepo.awardAchievement(
+                    userId = userId,
+                    achievementType = "PERFECT_PERFORMANCE",
+                    name = "Perfect Performance",
+                    description = "Complete a level with 3 stars",
+                    iconName = "ic_star"
+                )
+                if (perfect) {
+                    Log.d(TAG, "🏆 Perfect Performance achievement unlocked!")
+                }
+            }
+
+            // Check Speed Demon (fast completion)
+            val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, _timeElapsed.value, 30)
+            if (speedDemon) {
+                Log.d(TAG, "🏆 Speed Demon achievement unlocked!")
+            }
+
+            // Check Memory Guru (high accuracy)
+            val config = GameConfig.getLevelConfig(currentLevelNumber)
+            val accuracy = calculateAccuracy(finalScore.moves, config.totalPairs)
+            val memoryGuru = achievementRepo.checkMemoryGuruAchievement(userId, accuracy, 95f)
+            if (memoryGuru) {
+                Log.d(TAG, "🏆 Memory Guru achievement unlocked!")
+            }
+
+            Log.d(TAG, "✅ Achievements checked")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error checking achievements: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Sync all data to Firestore
+     */
+    private fun syncToFirestore() {
+        try {
+            Log.d(TAG, "🔄 Syncing all data to Firestore...")
+            syncManager.syncToFirestore()
+            Log.d(TAG, "✅ Firestore sync initiated")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error syncing to Firestore: ${e.message}", e)
         }
     }
 

@@ -1,6 +1,7 @@
 package vcmsa.projects.prog7314.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -20,13 +21,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.R
+import vcmsa.projects.prog7314.data.entities.AchievementEntity
 import vcmsa.projects.prog7314.data.models.UserAnalytics
 import vcmsa.projects.prog7314.data.models.RecentGameSummary
+import vcmsa.projects.prog7314.data.models.AchievementType
 import vcmsa.projects.prog7314.data.repository.PerformanceTrend
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.AuthManager
@@ -44,6 +49,7 @@ fun StatisticsScreen(
     var recentGames by remember { mutableStateOf<List<RecentGameSummary>>(emptyList()) }
     var performanceTrend by remember { mutableStateOf(PerformanceTrend.INSUFFICIENT_DATA) }
     var isLoading by remember { mutableStateOf(true) }
+    var showAchievementsDialog by remember { mutableStateOf(false) }
 
     val currentUserId = AuthManager.getCurrentUser()?.uid ?: ""
 
@@ -155,14 +161,14 @@ fun StatisticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            StatCard(
+                            ImprovedStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.PlayArrow,
                                 value = stats.totalGames.toString(),
                                 label = stringResource(R.string.games),
                                 color = Color(0xFF2196F3)
                             )
-                            StatCard(
+                            ImprovedStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.CheckCircle,
                                 value = stats.totalWins.toString(),
@@ -175,14 +181,14 @@ fun StatisticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            StatCard(
+                            ImprovedStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.TrendingUp,
                                 value = "${String.format("%.1f", stats.winRate)}%",
                                 label = stringResource(R.string.win_rate),
                                 color = Color(0xFFFF9800)
                             )
-                            StatCard(
+                            ImprovedStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Schedule,
                                 value = formatPlaytime(stats.totalPlaytime),
@@ -195,14 +201,14 @@ fun StatisticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            StatCard(
+                            ImprovedStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Star,
                                 value = stats.currentLevel.toString(),
                                 label = stringResource(R.string.level),
                                 color = Color(0xFFE91E63)
                             )
-                            StatCard(
+                            ImprovedStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.EmojiEvents,
                                 value = stats.totalXP.toString(),
@@ -219,7 +225,10 @@ fun StatisticsScreen(
                         // Achievements Section
                         SectionHeader(icon = Icons.Default.EmojiEvents, title = stringResource(R.string.achievements))
 
-                        AchievementCard(stats = stats)
+                        ClickableAchievementCard(
+                            stats = stats,
+                            onClick = { showAchievementsDialog = true }
+                        )
 
                         // Themes & Modes Section
                         if (stats.themeStats.isNotEmpty()) {
@@ -271,6 +280,14 @@ fun StatisticsScreen(
             }
         }
     }
+
+    // Achievements Dialog
+    if (showAchievementsDialog) {
+        AchievementsDialog(
+            userId = currentUserId,
+            onDismiss = { showAchievementsDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -297,7 +314,7 @@ fun SectionHeader(icon: ImageVector, title: String) {
 }
 
 @Composable
-fun StatCard(
+fun ImprovedStatCard(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     value: String,
@@ -306,7 +323,7 @@ fun StatCard(
 ) {
     Card(
         modifier = modifier
-            .height(110.dp)
+            .height(120.dp)
             .shadow(8.dp, RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp)
@@ -314,44 +331,463 @@ fun StatCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(color.copy(alpha = 0.1f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(32.dp)
+            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = value,
-                fontSize = 24.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = color
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = label,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Gray
+                text = label.uppercase(),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Gray,
+                letterSpacing = 0.5.sp,
+                textAlign = TextAlign.Center
             )
         }
     }
 }
 
 @Composable
-fun PerformanceCard(stats: UserAnalytics, trend: PerformanceTrend) {
-    val context = LocalContext.current
+fun ClickableAchievementCard(stats: UserAnalytics, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(70.dp)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFFFFC107),
+                                Color(0xFFFF9800)
+                            )
+                        ),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${stats.achievementsUnlocked}",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "/ ${stats.totalAchievements}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+            }
 
+            Spacer(modifier = Modifier.width(20.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.achievements_unlocked),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                LinearProgressIndicator(
+                    progress = { (stats.achievementProgress / 100f).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(5.dp)),
+                    color = Color(0xFFFF9800),
+                    trackColor = Color(0xFFE0E0E0)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.tap_to_view_all),
+                    fontSize = 11.sp,
+                    color = Color(0xFF2196F3),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AchievementsDialog(
+    userId: String,
+    onDismiss: () -> Unit
+) {
+    var achievements by remember { mutableStateOf<List<AchievementEntity>>(emptyList()) }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current  // ✅ Get context OUTSIDE the launch block
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val repo = RepositoryProvider.getAchievementRepository()
+                val userAchievements = repo.getAllAchievementsForUser(userId)
+
+                // Get all achievement types and merge with user's achievements
+                val allAchievementTypes = AchievementType.getAllAchievements()
+                val mergedAchievements = allAchievementTypes.map { type ->
+                    val userAchievement = userAchievements.find { it.achievementType == type.achievementId }
+                    userAchievement ?: AchievementEntity(
+                        achievementId = type.achievementId,
+                        userId = userId,
+                        achievementType = type.achievementId,
+                        name = context.getString(type.displayNameResId),  // ✅ Use context variable
+                        description = context.getString(type.descriptionResId),  // ✅ Use context variable
+                        iconName = type.achievementId,
+                        unlockedAt = 0L,
+                        progress = 0,
+                        isUnlocked = false,
+                        isSynced = false
+                    )
+                }
+                achievements = mergedAchievements
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    val unlockedAchievements = achievements.filter { it.isUnlocked }
+    val lockedAchievements = achievements.filter { !it.isUnlocked }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
+                .shadow(16.dp, RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF00BCD4),
+                                    Color(0xFF0288D1)
+                                )
+                            )
+                        )
+                        .padding(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.all_achievements),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "${unlockedAchievements.size} / ${achievements.size} ${stringResource(R.string.unlocked)}",
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.close),
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+
+                // Content
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp)
+                ) {
+                    // Unlocked Achievements Section
+                    if (unlockedAchievements.isNotEmpty()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${stringResource(R.string.unlocked)} (${unlockedAchievements.size})",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF4CAF50)
+                            )
+                        }
+
+                        unlockedAchievements.forEach { achievement ->
+                            ColorfulAchievementItem(achievement = achievement, isUnlocked = true)
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+
+                    // Locked Achievements Section
+                    if (lockedAchievements.isNotEmpty()) {
+                        if (unlockedAchievements.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color.Gray,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${stringResource(R.string.locked)} (${lockedAchievements.size})",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Gray
+                            )
+                        }
+
+                        lockedAchievements.forEach { achievement ->
+                            ColorfulAchievementItem(achievement = achievement, isUnlocked = false)
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+
+                    if (achievements.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.EmojiEvents,
+                                    contentDescription = null,
+                                    tint = Color.Gray.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = stringResource(R.string.play_games_to_see_stats),
+                                    fontSize = 14.sp,
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ColorfulAchievementItem(achievement: AchievementEntity, isUnlocked: Boolean) {
+    val context = LocalContext.current
+    val achievementType = AchievementType.fromId(achievement.achievementType)
+    val icon = achievementType?.icon ?: Icons.Default.EmojiEvents
+
+    // ✅ ALWAYS get localized strings from resources, not from database
+    val displayName = achievementType?.let {
+        context.getString(it.displayNameResId)
+    } ?: achievement.name
+
+    val displayDescription = achievementType?.let {
+        context.getString(it.descriptionResId)
+    } ?: achievement.description
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(2.dp, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(12.dp),
+        border = if (isUnlocked) {
+            androidx.compose.foundation.BorderStroke(
+                2.dp,
+                achievementType?.color?.copy(alpha = 0.3f) ?: Color(0xFFE0E0E0)
+            )
+        } else {
+            androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0))
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon Circle
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(
+                        color = if (isUnlocked && achievementType != null) {
+                            achievementType.color.copy(alpha = 0.12f)
+                        } else {
+                            Color(0xFFF5F5F5)
+                        },
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isUnlocked && achievementType != null) {
+                        achievementType.color
+                    } else {
+                        Color.Gray
+                    },
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Text Content
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = displayName,  // ✅ Use localized name
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isUnlocked) Color(0xFF212121) else Color(0xFF9E9E9E)
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = displayDescription,  // ✅ Use localized description
+                    fontSize = 12.sp,
+                    color = if (isUnlocked) Color(0xFF757575) else Color(0xFFBDBDBD),
+                    lineHeight = 16.sp
+                )
+
+                // Progress bar for locked achievements
+                if (!isUnlocked && achievement.progress > 0) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        LinearProgressIndicator(
+                            progress = { achievement.progress / 100f },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = achievementType?.color ?: Color(0xFF2196F3),
+                            trackColor = Color(0xFFE0E0E0)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "${achievement.progress}%",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF9E9E9E)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Status Badge
+            if (isUnlocked) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(
+                            color = Color(0xFF4CAF50),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(
+                            color = Color(0xFFE0E0E0),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PerformanceCard(stats: UserAnalytics, trend: PerformanceTrend) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -495,8 +931,6 @@ fun RowScope.PerformanceStat(icon: ImageVector, label: String, value: String, co
 
 @Composable
 fun TrendChip(trend: PerformanceTrend) {
-    val context = LocalContext.current
-
     val (textResId, color, icon) = when (trend) {
         PerformanceTrend.IMPROVING -> Triple(R.string.improving, Color(0xFF4CAF50), Icons.Default.TrendingUp)
         PerformanceTrend.STABLE -> Triple(R.string.stable, Color(0xFF2196F3), Icons.Default.TrendingFlat)
@@ -525,81 +959,6 @@ fun TrendChip(trend: PerformanceTrend) {
                 fontWeight = FontWeight.Bold,
                 color = color
             )
-        }
-    }
-}
-
-@Composable
-fun AchievementCard(stats: UserAnalytics) {
-    val context = LocalContext.current
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFFFFC107),
-                                Color(0xFFFF9800)
-                            )
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "${stats.achievementsUnlocked}",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "/ ${stats.totalAchievements}",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(20.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.achievements_unlocked),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                LinearProgressIndicator(
-                    progress = { (stats.achievementProgress / 100f).coerceIn(0f, 1f) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(5.dp)),
-                    color = Color(0xFFFF9800),
-                    trackColor = Color(0xFFE0E0E0)
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = context.getString(R.string.percent_complete, String.format("%.0f", stats.achievementProgress)),
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
         }
     }
 }

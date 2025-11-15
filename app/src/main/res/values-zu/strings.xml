@@ -311,4 +311,37 @@
     <string name="push_notifications">Izaziso Zokucindezela</string>
     <string name="receive_game_updates">Thola izibuyekezo zomdlalo nezikhumbuzo</string>
 
+    <!-- Achievements Dialog -->
+    <string name="all_achievements">Zonke Izinto Ozifezile</string>
+    <string name="unlocked">Kuvuliwe</string>
+    <string name="view_all">Buka Konke</string>
+    <string name="tap_to_view_all">Thepha ukuze ubone zonke izinto ozifezile</string>
+
+    <!-- Achievement Names -->
+
+    <string name="achievement_perfect_performance">Ukwenza Okuphelele</string>
+    <string name="achievement_memory_guru">Ugqozi Wenkumbulo</string>
+    <string name="achievement_champion">Inqwaba</string>
+    <string name="achievement_high_scorer">Umfaki Wamaphuzu Aphezulu</string>
+    <string name="achievement_persistent">Umdlali Oqhubekayo</string>
+    <string name="achievement_streak_master">Inkosi Yokulandelana</string>
+    <string name="achievement_theme_explorer">Umhloli Wezihloko</string>
+    <string name="achievement_arcade_master">Inkosi Ye-Arcade</string>
+    <string name="achievement_level_conqueror">Umnqobi Wamazinga</string>
+    <string name="achievement_flawless">Ukunqoba Okungenamaphutha</string>
+
+    <!-- Achievement Descriptions -->
+    <string name="achievement_first_win_desc">Nqoba umdlalo wakho wokuqala</string>
+    <string name="achievement_speed_demon_desc">Qedela umdlalo ngaphansi kwamasekhondi angu-30</string>
+    <string name="achievement_perfect_performance_desc">Qedela izinga ngezinkanyezi ezi-3</string>
+    <string name="achievement_memory_guru_desc">Finyelela ukunemba okungu-95%</string>
+    <string name="achievement_champion_desc">Nqoba imidlalo engu-50</string>
+    <string name="achievement_high_scorer_desc">Thola amaphuzu angaphezu kuka-2000 emdlalweni owodwa</string>
+    <string name="achievement_persistent_desc">Dlala imidlalo engu-100</string>
+    <string name="achievement_streak_master_desc">Gcina ukulandelana kwezinsuku ezi-7</string>
+    <string name="achievement_theme_explorer_desc">Zama zonke izihloko ezi-5</string>
+    <string name="achievement_arcade_master_desc">Qedela wonke amazinga e-arcade</string>
+    <string name="achievement_level_conqueror_desc">Qedela wonke amazinga angu-16</string>
+    <string name="achievement_flawless_desc">Qedela umdlalo ngaphandle kwamaphutha</string>
+
 </resources>

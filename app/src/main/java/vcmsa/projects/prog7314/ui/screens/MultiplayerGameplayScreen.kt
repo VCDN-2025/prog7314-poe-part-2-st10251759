@@ -558,7 +558,7 @@ fun MultiplayerWinnerDialog(
                     ) {
                         MultiplayerStatRow(stringResource(R.string.time), formatTime(result.timeTaken))
                         MultiplayerStatRow(stringResource(R.string.total_moves), "${result.totalMoves}")
-                        MultiplayerStatRow(stringResource(R.string.theme), result.theme.themeName)
+                        MultiplayerStatRow(stringResource(R.string.theme), stringResource(result.theme.themeNameResId))
                     }
                 }
 

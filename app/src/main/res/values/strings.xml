@@ -92,8 +92,7 @@
     <!-- Achievements -->
     <string name="achievement_perfect">Perfect Performance</string>
     <string name="achievement_perfect_desc">You earned 3 stars on Level %1$d!</string>
-    <string name="achievement_speed_demon">Speed Demon</string>
-    <string name="achievement_first_win">First Victory</string>
+
 
     <!-- Common Messages -->
     <string name="loading">Loading…</string>
@@ -310,5 +309,39 @@
     <string name="notifications_disabled">Disabled</string>
     <string name="push_notifications">Push Notifications</string>
     <string name="receive_game_updates">Receive game updates and reminders</string>
+
+    <!-- Achievements Dialog -->
+    <string name="all_achievements">All Achievements</string>
+    <string name="unlocked">Unlocked</string>
+    <string name="view_all">View All</string>
+    <string name="tap_to_view_all">Tap to view all achievements</string>
+
+    <!-- Achievement Names -->
+    <string name="achievement_first_win">First Victory</string>
+    <string name="achievement_speed_demon">Speed Demon</string>
+    <string name="achievement_perfect_performance">Perfect Performance</string>
+    <string name="achievement_memory_guru">Memory Guru</string>
+    <string name="achievement_champion">Champion</string>
+    <string name="achievement_high_scorer">High Scorer</string>
+    <string name="achievement_persistent">Persistent Player</string>
+    <string name="achievement_streak_master">Streak Master</string>
+    <string name="achievement_theme_explorer">Theme Explorer</string>
+    <string name="achievement_arcade_master">Arcade Master</string>
+    <string name="achievement_level_conqueror">Level Conqueror</string>
+    <string name="achievement_flawless">Flawless Victory</string>
+
+    <!-- Achievement Descriptions -->
+    <string name="achievement_first_win_desc">Win your first game</string>
+    <string name="achievement_speed_demon_desc">Complete a game in under 30 seconds</string>
+    <string name="achievement_perfect_performance_desc">Complete a level with 3 stars</string>
+    <string name="achievement_memory_guru_desc">Achieve 95% accuracy</string>
+    <string name="achievement_champion_desc">Win 50 games</string>
+    <string name="achievement_high_scorer_desc">Score over 2000 points in one game</string>
+    <string name="achievement_persistent_desc">Play 100 games</string>
+    <string name="achievement_streak_master_desc">Maintain a 7-day streak</string>
+    <string name="achievement_theme_explorer_desc">Try all 5 themes</string>
+    <string name="achievement_arcade_master_desc">Complete all arcade levels</string>
+    <string name="achievement_level_conqueror_desc">Complete all 16 levels</string>
+    <string name="achievement_flawless_desc">Complete a game with no mistakes</string>
 
 </resources>

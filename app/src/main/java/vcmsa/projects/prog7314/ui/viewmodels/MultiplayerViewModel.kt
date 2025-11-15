@@ -53,7 +53,7 @@ class MultiplayerViewModel(application: Application) : AndroidViewModel(applicat
     fun initializeGame(theme: GameTheme) {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Initializing multiplayer game with theme: ${theme.themeName}")
+                Log.d(TAG, "Initializing multiplayer game with theme: ${theme.name}")  // ✅ Changed
 
                 gameEngine = MultiplayerGameEngine(theme)
                 val cards = gameEngine!!.initializeCards()
@@ -170,7 +170,7 @@ class MultiplayerViewModel(application: Application) : AndroidViewModel(applicat
             val userId = AuthManager.getCurrentUser()?.uid ?: "unknown"
             apiRepository.submitMultiplayerResult(
                 userId = userId,
-                theme = state.theme.themeName,
+                theme = state.theme.name,  // ✅ Changed
                 player1Score = state.player1.score,
                 player2Score = state.player2.score,
                 timeTaken = _timeElapsed.value,

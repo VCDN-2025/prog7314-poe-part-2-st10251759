@@ -1,18 +1,19 @@
 package vcmsa.projects.prog7314.data.models
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import vcmsa.projects.prog7314.R
 
 enum class GameTheme(
-    val themeName: String,
+    @StringRes val themeNameResId: Int,  // ✅ Changed to string resource
     @DrawableRes val previewImage: Int,
     val cardImages: List<Int>
 ) {
     ANIMALS(
-        themeName = "Animals",
+        themeNameResId = R.string.theme_animals,  // ✅ Uses localized string
         previewImage = R.drawable.animal_theme,
         cardImages = listOf(
-        R.drawable.animal_1,
+            R.drawable.animal_1,
             R.drawable.animal_2,
             R.drawable.animal_3,
             R.drawable.animal_4,
@@ -24,11 +25,10 @@ enum class GameTheme(
             R.drawable.animal_10,
             R.drawable.animal_11,
             R.drawable.animal_12,
-
-            )
+        )
     ),
     POKEMON(
-        themeName = "Pokémon",
+        themeNameResId = R.string.theme_pokemon,  // ✅ Uses localized string
         previewImage = R.drawable.pokemon_theme,
         cardImages = listOf(
             R.drawable.pokemon_1,
@@ -43,11 +43,10 @@ enum class GameTheme(
             R.drawable.pokemon_10,
             R.drawable.pokemon_11,
             R.drawable.pokemon_12,
-
         )
     ),
     FRUIT(
-        themeName = "Fruit",
+        themeNameResId = R.string.theme_fruits,  // ✅ Uses localized string
         previewImage = R.drawable.fruit_theme,
         cardImages = listOf(
             R.drawable.fruit_1,
@@ -61,10 +60,11 @@ enum class GameTheme(
             R.drawable.fruit_9,
             R.drawable.fruit_10,
             R.drawable.fruit_11,
-            R.drawable.fruit_12,)
+            R.drawable.fruit_12,
+        )
     ),
     HARRY_POTTER(
-        themeName = "Harry Potter",
+        themeNameResId = R.string.theme_harry_potter,  // ✅ Uses localized string
         previewImage = R.drawable.harry_potter_theme,
         cardImages = listOf(
             R.drawable.hp_1,
@@ -78,10 +78,11 @@ enum class GameTheme(
             R.drawable.hp_9,
             R.drawable.hp_10,
             R.drawable.hp_11,
-            R.drawable.hp_12, )
+            R.drawable.hp_12,
+        )
     ),
     F1_LOGOS(
-        themeName = "F1 Team Logos",
+        themeNameResId = R.string.theme_f1,  // ✅ Uses localized string
         previewImage = R.drawable.f1_theme,
         cardImages = listOf(
             R.drawable.f1_1,
@@ -97,7 +98,6 @@ enum class GameTheme(
             R.drawable.f1_11,
             R.drawable.f1_12,
         )
-
     )
 }
 
