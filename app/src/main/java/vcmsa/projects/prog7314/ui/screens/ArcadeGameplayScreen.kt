@@ -39,15 +39,16 @@ import vcmsa.projects.prog7314.utils.LocalNotificationManager
 fun ArcadeGameplayScreen(
     levelNumber: Int,
     isArcadeMode: Boolean = false,
+    gameInstanceKey: Int = 0,  // ⭐ NEW: Key to force ViewModel refresh
     onBackClick: () -> Unit,
     onGameComplete: (stars: Int, score: Int, time: Int, moves: Int, bonus: Int) -> Unit,
     cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
     val context = LocalContext.current
 
-    // CRITICAL FIX: Generate stable key only once per screen instance using remember
-    val viewModelKey = remember(levelNumber, isArcadeMode) {
-        "arcade_${levelNumber}_${isArcadeMode}_${System.currentTimeMillis()}"
+    // CRITICAL FIX: Include gameInstanceKey in the remember key to force new ViewModel on retry
+    val viewModelKey = remember(levelNumber, isArcadeMode, gameInstanceKey) {
+        "arcade_${levelNumber}_${isArcadeMode}_${gameInstanceKey}_${System.currentTimeMillis()}"
     }
 
     // FIXED: Use the stable key
@@ -67,8 +68,8 @@ fun ArcadeGameplayScreen(
     // Track if we've already called the completion callback
     var hasCalledCompletionCallback by remember { mutableStateOf(false) }
 
-    // Initialize game when level or mode changes
-    LaunchedEffect(levelNumber, isArcadeMode) {
+    // Initialize game when level, mode, or gameInstanceKey changes
+    LaunchedEffect(levelNumber, isArcadeMode, gameInstanceKey) {
         hasCalledCompletionCallback = false
         viewModel.initializeGame(levelNumber, isArcadeMode)
     }

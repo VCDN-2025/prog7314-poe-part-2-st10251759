@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
@@ -28,8 +29,16 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import vcmsa.projects.prog7314.R
 
+// Game mode enum to determine which buttons to show
+enum class GameMode {
+    ARCADE_RANDOM,      // Random quick-play: Only Home button
+    ARCADE_LEVELS,      // Level-based: Retry, Next, Home buttons
+    ADVENTURE           // Adventure mode: Full navigation
+}
+
 @Composable
 fun GameCompletionDialog(
+    gameMode: GameMode = GameMode.ARCADE_LEVELS,
     isNewRecord: Boolean = false,
     stars: Int,
     moves: Int,
@@ -58,6 +67,7 @@ fun GameCompletionDialog(
 
                 // Main Card
                 CompletionCard(
+                    gameMode = gameMode,
                     stars = stars,
                     moves = moves,
                     time = time,
@@ -129,6 +139,7 @@ fun NewRecordBadge() {
 
 @Composable
 fun CompletionCard(
+    gameMode: GameMode,
     stars: Int,
     moves: Int,
     time: Int,
@@ -233,35 +244,143 @@ fun CompletionCard(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // Replay Button
-                CircularActionButton(
-                    icon = Icons.Default.Refresh,
-                    backgroundColor = Color(0xFFFF9800),
-                    onClick = onReplay
-                )
-
-                // Next Level Button (if available)
-                if (onNextLevel != null) {
-                    CircularActionButton(
-                        icon = Icons.Default.Star,
-                        backgroundColor = Color(0xFF4CAF50),
-                        onClick = onNextLevel
+            // Action Buttons - Layout depends on game mode
+            when (gameMode) {
+                GameMode.ARCADE_RANDOM -> {
+                    // Only Home button for random quick-play
+                    ArcadeRandomButtons(onHome = onHome)
+                }
+                GameMode.ARCADE_LEVELS -> {
+                    // Retry, Next, Home for level-based arcade
+                    ArcadeLevelsButtons(
+                        onReplay = onReplay,
+                        onNextLevel = onNextLevel,
+                        onHome = onHome
                     )
                 }
-
-                // Home Button
-                CircularActionButton(
-                    icon = Icons.Default.Home,
-                    backgroundColor = Color(0xFF2196F3),
-                    onClick = onHome
-                )
+                GameMode.ADVENTURE -> {
+                    // Full navigation for adventure mode
+                    AdventureButtons(
+                        onReplay = onReplay,
+                        onNextLevel = onNextLevel,
+                        onHome = onHome
+                    )
+                }
             }
         }
+    }
+}
+
+// Button layouts for different game modes
+
+@Composable
+fun ArcadeRandomButtons(onHome: () -> Unit) {
+    // Only Home button - centered
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularActionButton(
+            icon = Icons.Default.Home,
+            backgroundColor = Color(0xFF2196F3),
+            onClick = onHome
+        )
+    }
+}
+
+@Composable
+fun ArcadeLevelsButtons(
+    onReplay: () -> Unit,
+    onNextLevel: (() -> Unit)?,
+    onHome: () -> Unit
+) {
+    // 3 buttons: Retry, Next, Home - always show all 3
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Retry/Replay Button
+        CircularActionButton(
+            icon = Icons.Default.Refresh,
+            backgroundColor = Color(0xFFFF9800),
+            onClick = onReplay
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Next Level Button (enabled or disabled based on availability)
+        if (onNextLevel != null) {
+            CircularActionButton(
+                icon = Icons.Default.ArrowForward,
+                backgroundColor = Color(0xFF4CAF50),
+                onClick = onNextLevel
+            )
+        } else {
+            // Disabled next button
+            CircularActionButton(
+                icon = Icons.Default.ArrowForward,
+                backgroundColor = Color(0xFF9E9E9E).copy(alpha = 0.5f),
+                onClick = {}
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Home Button
+        CircularActionButton(
+            icon = Icons.Default.Home,
+            backgroundColor = Color(0xFF2196F3),
+            onClick = onHome
+        )
+    }
+}
+
+@Composable
+fun AdventureButtons(
+    onReplay: () -> Unit,
+    onNextLevel: (() -> Unit)?,
+    onHome: () -> Unit
+) {
+    // Same as Arcade Levels - 3 buttons with all navigation
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Replay Button
+        CircularActionButton(
+            icon = Icons.Default.Refresh,
+            backgroundColor = Color(0xFFFF9800),
+            onClick = onReplay
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Next Level Button
+        if (onNextLevel != null) {
+            CircularActionButton(
+                icon = Icons.Default.ArrowForward,
+                backgroundColor = Color(0xFF4CAF50),
+                onClick = onNextLevel
+            )
+        } else {
+            CircularActionButton(
+                icon = Icons.Default.ArrowForward,
+                backgroundColor = Color(0xFF9E9E9E).copy(alpha = 0.5f),
+                onClick = {}
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Home Button
+        CircularActionButton(
+            icon = Icons.Default.Home,
+            backgroundColor = Color(0xFF2196F3),
+            onClick = onHome
+        )
     }
 }
 
@@ -335,19 +454,32 @@ fun CircularActionButton(
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
-    IconButton(
+    Button(
         onClick = onClick,
         modifier = Modifier
             .size(72.dp)
-            .shadow(8.dp, CircleShape)
-            .background(backgroundColor, CircleShape)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(32.dp)
+            .shadow(8.dp, CircleShape),
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = backgroundColor
+        ),
+        contentPadding = PaddingValues(0.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 4.dp
         )
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
 

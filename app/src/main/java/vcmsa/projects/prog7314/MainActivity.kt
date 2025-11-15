@@ -312,6 +312,9 @@ fun MemoryMatchMadnessApp() {
     var showCompletionDialog by remember { mutableStateOf(false) }
     var completionData by remember { mutableStateOf<CompletionData?>(null) }
 
+    // ⭐ NEW: Game instance key to force ViewModel refresh on retry
+    var gameInstanceKey by remember { mutableStateOf(0) }
+
     var showMultiplayerSetup by remember { mutableStateOf(false) }
     var showMultiplayerGame by remember { mutableStateOf(false) }
 
@@ -541,6 +544,7 @@ fun MemoryMatchMadnessApp() {
             ArcadeGameplayScreen(
                 levelNumber = selectedLevel,
                 isArcadeMode = isArcadeMode,
+                gameInstanceKey = gameInstanceKey,  // ⭐ Pass the key
                 onBackClick = {
                     showArcadeGameplay = false
                     if (isArcadeMode) {
@@ -557,6 +561,11 @@ fun MemoryMatchMadnessApp() {
 
             if (showCompletionDialog && completionData != null) {
                 GameCompletionDialog(
+                    gameMode = if (isArcadeMode) {
+                        GameMode.ARCADE_RANDOM  // Random quick-play - only Home
+                    } else {
+                        GameMode.ARCADE_LEVELS  // Level-based - Retry, Next, Home
+                    },
                     isNewRecord = false,
                     stars = completionData!!.stars,
                     moves = completionData!!.moves,
@@ -566,8 +575,7 @@ fun MemoryMatchMadnessApp() {
                     onReplay = {
                         showCompletionDialog = false
                         completionData = null
-                        showArcadeGameplay = false
-                        showArcadeGameplay = true
+                        gameInstanceKey++  // ⭐ Increment key to force new ViewModel
                     },
                     onNextLevel = if (!isArcadeMode && selectedLevel < 16) {
                         {

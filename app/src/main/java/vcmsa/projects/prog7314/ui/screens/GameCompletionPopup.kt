@@ -150,10 +150,11 @@ fun GameCompletionPopup(
                     }
                 }
 
-                // Action buttons
+                // Action buttons - Centered layout
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Replay button (Orange)
                     CircularActionButton(
@@ -162,12 +163,7 @@ fun GameCompletionPopup(
                         onClick = onReplay
                     )
 
-                    // Next button (Green)
-                    CircularActionButton(
-                        icon = "→",
-                        backgroundColor = Color(0xFF4CAF50),
-                        onClick = onNext
-                    )
+                    Spacer(modifier = Modifier.width(16.dp))
 
                     // Home button (Cyan)
                     CircularActionButton(
@@ -223,11 +219,16 @@ fun CircularActionButton(
             pressedElevation = 2.dp
         )
     ) {
-        Text(
-            text = icon,
-            fontSize = 28.sp,
-            color = Color.White,
-            textAlign = TextAlign.Center
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = icon,
+                fontSize = 28.sp,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }

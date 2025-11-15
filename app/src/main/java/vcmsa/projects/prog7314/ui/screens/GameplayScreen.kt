@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -142,17 +144,17 @@ fun GameHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Back button
+            // Back button - matching standard design
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
-                    .size(40.dp)
-                    .background(Color(0xFFE91E63), shape = RoundedCornerShape(20.dp))
+                    .size(48.dp)
+                    .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
             ) {
-                Text(
-                    text = "←",
-                    fontSize = 24.sp,
-                    color = Color.White
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = Color(0xFF4A90E2)
                 )
             }
 

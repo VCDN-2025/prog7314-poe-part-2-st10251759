@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -44,22 +46,26 @@ fun GridSizeSelectionScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Back Button
-            IconButton(
-                onClick = onBackClick,
+            // Back button - matching ThemeSelectionScreen style
+            Row(
                 modifier = Modifier
-                    .padding(top = 8.dp)
-                    .size(48.dp)
-                    .background(Color.White.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp))
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.Start
             ) {
-                Text(
-                    text = "←",
-                    fontSize = 32.sp,
-                    color = Color.White
-                )
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = Color(0xFF4A90E2)
+                    )
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Logo and Title
             Column(
