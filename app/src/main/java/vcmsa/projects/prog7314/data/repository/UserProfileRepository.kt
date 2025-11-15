@@ -217,12 +217,28 @@ class UserProfileRepository(
 
     /**
      * Update daily streak - call this whenever user plays a game
+     * Fixed: Only updates once per calendar day
      */
     suspend fun updateDailyStreak(userId: String): Boolean {
         return try {
             val profile = getUserProfile(userId) ?: return false
             val currentTime = System.currentTimeMillis()
             val lastPlayDate = profile.lastPlayDate
+
+            // Check if already played today (same calendar day)
+            val isSameDay = isSameCalendarDay(lastPlayDate, currentTime)
+
+            if (isSameDay && lastPlayDate > 0) {
+                // Already played today - just update lastPlayDate, don't change streak
+                Log.d(TAG, "✅ Already played today. Streak stays at ${profile.currentStreak}")
+                userProfileDao.updateStreakAndPlayDate(
+                    userId = userId,
+                    currentStreak = profile.currentStreak,
+                    bestStreak = profile.bestStreak,
+                    lastPlayDate = currentTime
+                )
+                return true
+            }
 
             // Calculate hours since last play
             val hoursSinceLastPlay = if (lastPlayDate > 0) {
@@ -270,6 +286,19 @@ class UserProfileRepository(
             Log.e(TAG, "❌ Error updating daily streak: ${e.message}", e)
             false
         }
+    }
+
+    /**
+     * Check if two timestamps are on the same calendar day
+     */
+    private fun isSameCalendarDay(timestamp1: Long, timestamp2: Long): Boolean {
+        if (timestamp1 == 0L) return false
+
+        val cal1 = java.util.Calendar.getInstance().apply { timeInMillis = timestamp1 }
+        val cal2 = java.util.Calendar.getInstance().apply { timeInMillis = timestamp2 }
+
+        return cal1.get(java.util.Calendar.YEAR) == cal2.get(java.util.Calendar.YEAR) &&
+                cal1.get(java.util.Calendar.DAY_OF_YEAR) == cal2.get(java.util.Calendar.DAY_OF_YEAR)
     }
 
     /**
