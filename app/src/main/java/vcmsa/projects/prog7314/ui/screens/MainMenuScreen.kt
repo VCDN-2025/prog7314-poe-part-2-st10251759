@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +29,8 @@ import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
+import vcmsa.projects.prog7314.utils.NetworkManager
+import vcmsa.projects.prog7314.data.sync.SyncManager
 
 @Composable
 fun MainMenuScreen(
@@ -48,6 +50,10 @@ fun MainMenuScreen(
     var bestStreak by remember { mutableStateOf(0) }
     var unreadNotificationCount by remember { mutableStateOf(0) }
 
+    // 🔥 NEW: Network and sync status
+    val isOnline by NetworkManager.isOnline.collectAsState()
+    var unsyncedCount by remember { mutableStateOf(0) }
+
     LaunchedEffect(Unit) {
         scope.launch {
             try {
@@ -64,6 +70,11 @@ fun MainMenuScreen(
 
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
                     unreadNotificationCount = notificationRepo.getUnreadCount(userId)
+
+                    // 🔥 Get unsynced count
+                    val syncManager = SyncManager(context)
+                    val counts = syncManager.getUnsyncedCounts()
+                    unsyncedCount = counts.total
                 }
             } catch (e: Exception) {
                 // Handle error silently
@@ -147,7 +158,29 @@ fun MainMenuScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // ✅ FIXED Notification Bell with Badge
+                    // 🔥 NEW: Simple WiFi Status Icon
+                    IconButton(
+                        onClick = { /* Optional: Show sync details */ },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.3f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = if (isOnline) Icons.Default.Wifi else Icons.Default.WifiOff,
+                            contentDescription = if (isOnline) "Online" else "Offline",
+                            tint = when {
+                                !isOnline -> Color(0xFFFF3D00) // Red - Offline
+                                unsyncedCount > 0 -> Color(0xFFFFA726) // Orange - Syncing
+                                else -> Color(0xFF66BB6A) // Green - Synced
+                            },
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    // Notification Bell with Badge
                     Box(contentAlignment = Alignment.Center) {
                         IconButton(
                             onClick = onNotificationsClick,
@@ -166,12 +199,11 @@ fun MainMenuScreen(
                             )
                         }
 
-                        // ✅ IMPROVED Badge - better positioned
                         if (unreadNotificationCount > 0) {
                             Box(
                                 modifier = Modifier
                                     .size(20.dp)
-                                    .offset(x = 14.dp, y = (-14).dp)  // ✅ FIXED positioning
+                                    .offset(x = 14.dp, y = (-14).dp)
                                     .background(Color(0xFFFF3D00), CircleShape)
                                     .border(2.dp, Color.White, CircleShape),
                                 contentAlignment = Alignment.Center
