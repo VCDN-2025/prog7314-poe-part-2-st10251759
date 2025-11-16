@@ -8,9 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import vcmsa.projects.prog7314.MainActivity
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
@@ -235,7 +233,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Generic notification display method with database save
+     * Generic notification display method with database save and duplicate prevention
+     * 🔥 FIXED: Uses flag variable to prevent duplicate popups
      */
     private fun showNotification(
         context: Context,
@@ -252,12 +251,34 @@ object LocalNotificationManager {
             return
         }
 
-        // ✅ NEW: Save to database
+        // 🔥 Flag to track if we should show the popup
+        var shouldShowPopup = true
+
         val userId = AuthManager.getCurrentUser()?.uid
         if (userId != null) {
-            CoroutineScope(Dispatchers.IO).launch {
+            // 🔥 Use runBlocking to check duplicates SYNCHRONOUSLY
+            runBlocking {
                 try {
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
+
+                    // 🔥 CHECK FOR DUPLICATES: Don't create if same notification exists in last 5 minutes
+                    val existingNotifications = notificationRepo.getAllNotifications(userId)
+                    val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
+
+                    val isDuplicate = existingNotifications.any { notif ->
+                        notif.type == type &&
+                                notif.title == title &&
+                                notif.message == message &&
+                                notif.timestamp > fiveMinutesAgo
+                    }
+
+                    if (isDuplicate) {
+                        Log.d(TAG, "⏭️ Skipping duplicate notification: $title")
+                        shouldShowPopup = false  // 🔥 Set flag to false
+                        return@runBlocking
+                    }
+
+                    // Create new notification in database
                     notificationRepo.createNotification(
                         userId = userId,
                         type = type,
@@ -270,8 +291,15 @@ object LocalNotificationManager {
                     Log.d(TAG, "✅ Notification saved to database")
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ Error saving notification to database: ${e.message}", e)
+                    shouldShowPopup = false  // 🔥 Don't show popup on error
                 }
             }
+        }
+
+        // 🔥 Only show popup if flag is true (not a duplicate and no error)
+        if (!shouldShowPopup) {
+            Log.d(TAG, "🚫 Popup notification skipped")
+            return
         }
 
         // Intent to open app when notification is tapped

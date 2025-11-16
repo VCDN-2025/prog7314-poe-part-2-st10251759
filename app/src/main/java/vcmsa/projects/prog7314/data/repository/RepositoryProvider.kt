@@ -47,12 +47,15 @@ object RepositoryProvider {
             gameResultDao = db.gameResultDao(),
             userProfileDao = db.userProfileDao(),
             levelProgressDao = db.levelProgressDao(),
-            context = requireContext()  // 🔥 USE STORED CONTEXT
+            context = requireContext()  //  USE STORED CONTEXT
         )
     }
 
     fun getLevelRepository(): LevelRepository {
-        return LevelRepository(requireDatabase().levelProgressDao())
+        return LevelRepository(
+            levelProgressDao = requireDatabase().levelProgressDao(),
+            context = requireContext()
+        )
     }
 
     fun getArcadeRepository(): ArcadeRepository {

@@ -6,10 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import vcmsa.projects.prog7314.data.AppDatabase
-import vcmsa.projects.prog7314.data.repository.ArcadeRepository
-import vcmsa.projects.prog7314.data.repository.ApiRepository
-import vcmsa.projects.prog7314.data.repository.LevelRepository
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.NetworkManager
 
@@ -41,10 +38,11 @@ class GameSyncWorker(
                 return@withContext Result.failure()
             }
 
-            val database = AppDatabase.getDatabase(applicationContext)
-            val levelRepository = LevelRepository(database.levelProgressDao())
-            val arcadeRepository = ArcadeRepository(database.arcadeSessionDao())
-            val apiRepository = ApiRepository()
+            // 🔥 USE REPOSITORY PROVIDER (already has context)
+            RepositoryProvider.initialize(applicationContext)
+            val levelRepository = RepositoryProvider.getLevelRepository()
+            val arcadeRepository = RepositoryProvider.getArcadeRepository()
+            val apiRepository = RepositoryProvider.getApiRepository()
 
             // Sync level progress
             val unsyncedLevels = levelRepository.getUnsyncedLevels(userId)

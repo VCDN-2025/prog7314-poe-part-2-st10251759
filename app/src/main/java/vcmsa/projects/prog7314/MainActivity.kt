@@ -23,10 +23,8 @@ import vcmsa.projects.prog7314.data.models.GameProgress
 import vcmsa.projects.prog7314.data.models.LevelData
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.GameResultRepository
-import vcmsa.projects.prog7314.data.repository.AchievementRepository
 import vcmsa.projects.prog7314.data.repository.ApiRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
-import vcmsa.projects.prog7314.data.repository.LevelRepository
 import vcmsa.projects.prog7314.data.sync.SyncManager
 import vcmsa.projects.prog7314.data.sync.FirestoreManager
 import vcmsa.projects.prog7314.data.sync.ProgressSyncHelper
@@ -219,11 +217,12 @@ class MainActivity : FragmentActivity() {
                 Log.d("DatabaseTest", "✅ Total games: $totalGames, Win rate: $winRate%")
 
                 Log.d("DatabaseTest", "\n--- Test 3: Achievements ---")
-                val firstWin = achievementRepo.checkFirstWinAchievement(userId, true)
-                Log.d("DatabaseTest", "✅ First Win achievement awarded: $firstWin")
+                // ❌ DISABLED: These create achievements and notifications on every app start!
+                // val firstWin = achievementRepo.checkFirstWinAchievement(userId, true)
+                // Log.d("DatabaseTest", "✅ First Win achievement awarded: $firstWin")
 
-                val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, 25)
-                Log.d("DatabaseTest", "✅ Speed Demon achievement awarded: $speedDemon")
+                // val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, 25)
+                // Log.d("DatabaseTest", "✅ Speed Demon achievement awarded: $speedDemon")
 
                 val unlockedCount = achievementRepo.getUnlockedCount(userId)
                 Log.d("DatabaseTest", "✅ Total unlocked achievements: $unlockedCount")
@@ -253,7 +252,7 @@ class MainActivity : FragmentActivity() {
                     Log.d("DatabaseTest", "✅ Manual sync result: $syncSuccess")
                 }
 
-                // ✅ NO FAKE NOTIFICATIONS! Only check if notification system is working
+                // ✅ Notification system check (no fake notifications)
                 if (currentUser != null) {
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
                     val totalNotifs = notificationRepo.getTotalCount(userId)
@@ -326,7 +325,7 @@ fun MemoryMatchMadnessApp() {
     var showCompletionDialog by remember { mutableStateOf(false) }
     var completionData by remember { mutableStateOf<CompletionData?>(null) }
 
-    // ⭐ Game instance key to force ViewModel refresh on retry (your friend's feature)
+    // ⭐ Game instance key to force ViewModel refresh on retry
     var gameInstanceKey by remember { mutableStateOf(0) }
 
     var showMultiplayerSetup by remember { mutableStateOf(false) }
@@ -369,8 +368,7 @@ fun MemoryMatchMadnessApp() {
                             Log.d("MainActivity", "🔄 Full Firestore sync initiated on login")
 
                             // Existing progress sync
-                            val db = AppDatabase.getDatabase(context)
-                            val levelRepo = LevelRepository(db.levelProgressDao())
+                            val levelRepo = RepositoryProvider.getLevelRepository()
                             val syncHelper = ProgressSyncHelper(levelRepo, FirestoreManager())
                             val success = syncHelper.loadProgressFromCloud(userId)
                             if (success) {
@@ -570,7 +568,7 @@ fun MemoryMatchMadnessApp() {
             ArcadeGameplayScreen(
                 levelNumber = selectedLevel,
                 isArcadeMode = isArcadeMode,
-                gameInstanceKey = gameInstanceKey,  // ⭐ Pass the key
+                gameInstanceKey = gameInstanceKey,
                 onBackClick = {
                     showArcadeGameplay = false
                     if (isArcadeMode) {
@@ -588,9 +586,9 @@ fun MemoryMatchMadnessApp() {
             if (showCompletionDialog && completionData != null) {
                 GameCompletionDialog(
                     gameMode = if (isArcadeMode) {
-                        GameMode.ARCADE_RANDOM  // Random quick-play - only Home
+                        GameMode.ARCADE_RANDOM
                     } else {
-                        GameMode.ARCADE_LEVELS  // Level-based - Retry, Next, Home
+                        GameMode.ARCADE_LEVELS
                     },
                     isNewRecord = false,
                     stars = completionData!!.stars,
@@ -601,7 +599,7 @@ fun MemoryMatchMadnessApp() {
                     onReplay = {
                         showCompletionDialog = false
                         completionData = null
-                        gameInstanceKey++  // ⭐ Increment key to force new ViewModel
+                        gameInstanceKey++
                     },
                     onNextLevel = if (!isArcadeMode && selectedLevel < 16) {
                         {

@@ -12,6 +12,7 @@ import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.entities.LevelProgressEntity
 import vcmsa.projects.prog7314.data.repository.LevelRepository
 import vcmsa.projects.prog7314.utils.AuthManager
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 
 class LevelSelectionViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "LevelSelectionViewModel"
@@ -27,8 +28,8 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
-        val database = AppDatabase.getDatabase(application)
-        levelRepository = LevelRepository(database.levelProgressDao())
+        RepositoryProvider.initialize(application)  // 🔥 INITIALIZE FIRST
+        levelRepository = RepositoryProvider.getLevelRepository()  // ✅ HAS CONTEXT
         loadLevelsProgress()
     }
 

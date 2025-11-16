@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.models.GameTheme
 import vcmsa.projects.prog7314.data.models.GameProgress
 import vcmsa.projects.prog7314.data.models.LevelData
@@ -69,10 +68,10 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
     val isGameComplete: StateFlow<Boolean> = _isGameComplete.asStateFlow()
 
     init {
-        val database = AppDatabase.getDatabase(application)
-        levelRepository = LevelRepository(database.levelProgressDao())
-        arcadeRepository = ArcadeRepository(database.arcadeSessionDao())
-        userProfileRepository = UserProfileRepository(database.userProfileDao())
+        RepositoryProvider.initialize(application)  // 🔥 INITIALIZE FIRST
+        levelRepository = RepositoryProvider.getLevelRepository()  // ✅ HAS CONTEXT
+        arcadeRepository = RepositoryProvider.getArcadeRepository()
+        userProfileRepository = RepositoryProvider.getUserProfileRepository()
         syncManager = SyncManager(application)
     }
 
@@ -227,7 +226,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             // 🔥 UPDATE DAILY STREAK
             updateDailyStreak()
 
-            // ✅ CHECK FOR ACHIEVEMENTS
+            // ✅ CHECK FOR ACHIEVEMENTS (FIXED: Only call once!)
             checkAchievements(userId, finalScore)
 
             if (isArcade) {
@@ -367,57 +366,26 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
 
     /**
      * Check and award achievements
+     * 🔥 FIXED: Only call checkAllAchievements once - it checks everything!
      */
     private suspend fun checkAchievements(userId: String, finalScore: GameEngine.FinalScore) {
         try {
             val achievementRepo = RepositoryProvider.getAchievementRepository()
-
-            // Check First Win
-            val firstWin = achievementRepo.checkFirstWinAchievement(userId, finalScore.stars > 0)
-            if (firstWin) {
-                Log.d(TAG, "🏆 First Win achievement unlocked!")
-            }
-
-            // Award Perfect Performance for 3 stars
-            if (finalScore.stars == 3) {
-                val perfect = achievementRepo.awardAchievement(
-                    userId = userId,
-                    achievementType = "PERFECT_PERFORMANCE",
-                    name = "Perfect Performance",
-                    description = "Complete a level with 3 stars",
-                    iconName = "ic_star"
-                )
-                if (perfect) {
-                    Log.d(TAG, "🏆 Perfect Performance achievement unlocked!")
-                }
-            }
-
-            // Check Speed Demon (fast completion)
-            val speedDemon = achievementRepo.checkSpeedDemonAchievement(userId, _timeElapsed.value, 30)
-            if (speedDemon) {
-                Log.d(TAG, "🏆 Speed Demon achievement unlocked!")
-            }
-
-            // Check Memory Guru (high accuracy)
             val config = GameConfig.getLevelConfig(currentLevelNumber)
             val accuracy = calculateAccuracy(finalScore.moves, config.totalPairs)
-            val memoryGuru = achievementRepo.checkMemoryGuruAchievement(userId, accuracy, 95f)
-            if (memoryGuru) {
-                Log.d(TAG, "🏆 Memory Guru achievement unlocked!")
-            }
 
-            // 🔥 CHECK ALL OTHER ACHIEVEMENTS
+            // 🔥 ONLY USE checkAllAchievements - it checks EVERYTHING (First Win, Speed Demon, Memory Guru, etc.)
             achievementRepo.checkAllAchievements(
                 userId = userId,
                 score = finalScore.finalScore,
                 moves = finalScore.moves,
-                perfectMoves = config.totalPairs,  // ✅ CORRECT (already is pairs)
+                perfectMoves = config.totalPairs,
                 timeTaken = _timeElapsed.value,
                 accuracy = accuracy,
                 isWin = finalScore.stars > 0
             )
 
-            Log.d(TAG, "✅ Achievements checked")
+            Log.d(TAG, "✅ All achievements checked")
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error checking achievements: ${e.message}", e)
         }

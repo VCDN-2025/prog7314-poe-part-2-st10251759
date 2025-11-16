@@ -1,12 +1,15 @@
 package vcmsa.projects.prog7314.data.repository
 
+import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import vcmsa.projects.prog7314.data.dao.LevelProgressDao
 import vcmsa.projects.prog7314.data.entities.LevelProgressEntity
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
 
 class LevelRepository(
-    private val levelProgressDao: LevelProgressDao
+    private val levelProgressDao: LevelProgressDao,
+    private val context: Context  // 🔥 ADD CONTEXT
 ) {
     private val TAG = "LevelRepository"
 
@@ -108,6 +111,7 @@ class LevelRepository(
 
     /**
      * Complete a level and update progress
+     * 🔥 NOW WITH NOTIFICATIONS!
      */
     suspend fun completeLevelAndUnlockNext(
         userId: String,
@@ -120,6 +124,10 @@ class LevelRepository(
         return try {
             Log.d(TAG, "Completing level $levelNumber for user $userId")
 
+            // Check if this is the first level completion
+            val completedCount = getCompletedLevelsCount(userId)
+            val isFirstLevel = completedCount == 0
+
             // Update current level
             levelProgressDao.updateLevelResult(
                 userId = userId,
@@ -130,10 +138,29 @@ class LevelRepository(
                 moves = moves
             )
 
+            // 🔥 NOTIFY: First Level Completed
+            if (isFirstLevel) {
+                try {
+                    LocalNotificationManager.notifyFirstLevelCompleted(context)
+                    Log.d(TAG, "🔔 First level completion notification sent")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error sending first level notification: ${e.message}", e)
+                }
+            }
+
             // Unlock next level if exists
             if (levelNumber < TOTAL_LEVELS) {
-                levelProgressDao.unlockLevel(userId, levelNumber + 1)
-                Log.d(TAG, "✅ Unlocked level ${levelNumber + 1}")
+                val nextLevel = levelNumber + 1
+                levelProgressDao.unlockLevel(userId, nextLevel)
+                Log.d(TAG, "✅ Unlocked level $nextLevel")
+
+                // 🔥 NOTIFY: Level Unlocked
+                try {
+                    LocalNotificationManager.notifyLevelUnlocked(context, nextLevel)
+                    Log.d(TAG, "🔔 Level unlock notification sent for level $nextLevel")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error sending level unlock notification: ${e.message}", e)
+                }
             }
 
             true
