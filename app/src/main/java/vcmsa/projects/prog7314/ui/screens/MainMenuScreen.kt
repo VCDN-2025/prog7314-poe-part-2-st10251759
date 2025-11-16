@@ -50,9 +50,12 @@ fun MainMenuScreen(
     var bestStreak by remember { mutableStateOf(0) }
     var unreadNotificationCount by remember { mutableStateOf(0) }
 
-    // 🔥 NEW: Network and sync status
+    // 🔥 Network and sync status
     val isOnline by NetworkManager.isOnline.collectAsState()
     var unsyncedCount by remember { mutableStateOf(0) }
+
+    // 🔥 NEW: Show sync status dialog
+    var showSyncDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         scope.launch {
@@ -71,13 +74,29 @@ fun MainMenuScreen(
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
                     unreadNotificationCount = notificationRepo.getUnreadCount(userId)
 
-                    // 🔥 Get unsynced count
+                    // Get unsynced count
                     val syncManager = SyncManager(context)
                     val counts = syncManager.getUnsyncedCounts()
                     unsyncedCount = counts.total
                 }
             } catch (e: Exception) {
                 // Handle error silently
+            }
+        }
+    }
+
+    // 🔥 Refresh unsynced count periodically
+    LaunchedEffect(isOnline) {
+        scope.launch {
+            try {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+                    val syncManager = SyncManager(context)
+                    val counts = syncManager.getUnsyncedCounts()
+                    unsyncedCount = counts.total
+                }
+            } catch (e: Exception) {
+                // Handle error
             }
         }
     }
@@ -158,9 +177,9 @@ fun MainMenuScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 🔥 NEW: Simple WiFi Status Icon
+                    // 🔥 WiFi Status Icon (Clickable)
                     IconButton(
-                        onClick = { /* Optional: Show sync details */ },
+                        onClick = { showSyncDialog = true },
                         modifier = Modifier
                             .size(48.dp)
                             .background(
@@ -291,6 +310,132 @@ fun MainMenuScreen(
                 )
             }
         }
+    }
+
+    // 🔥 NEW: Sync Status Dialog
+    if (showSyncDialog) {
+        AlertDialog(
+            onDismissRequest = { showSyncDialog = false },
+            icon = {
+                Icon(
+                    imageVector = if (isOnline) Icons.Default.Wifi else Icons.Default.WifiOff,
+                    contentDescription = null,
+                    tint = when {
+                        !isOnline -> Color(0xFFFF3D00)
+                        unsyncedCount > 0 -> Color(0xFFFFA726)
+                        else -> Color(0xFF66BB6A)
+                    },
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = if (isOnline) "Online" else "Offline Mode",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (isOnline) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF66BB6A),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Connected to internet",
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        if (unsyncedCount > 0) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CloudSync,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFFA726),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "Syncing $unsyncedCount item${if (unsyncedCount > 1) "s" else ""}...",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFFFFA726)
+                                )
+                            }
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CloudDone,
+                                    contentDescription = null,
+                                    tint = Color(0xFF66BB6A),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(
+                                    text = "All data synced",
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF66BB6A)
+                                )
+                            }
+                        }
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = null,
+                                tint = Color(0xFFFF3D00),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "No internet connection",
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "You can still play! Your progress will be saved locally and synced automatically when you're back online.",
+                            fontSize = 13.sp,
+                            color = Color.Gray,
+                            lineHeight = 18.sp
+                        )
+
+                        if (unsyncedCount > 0) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "⚠️ $unsyncedCount item${if (unsyncedCount > 1) "s" else ""} waiting to sync",
+                                fontSize = 13.sp,
+                                color = Color(0xFFFFA726),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showSyncDialog = false }
+                ) {
+                    Text("OK", fontWeight = FontWeight.Bold)
+                }
+            }
+        )
     }
 }
 
