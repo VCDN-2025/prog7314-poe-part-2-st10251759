@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +28,7 @@ import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.AppDatabase
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 
 @Composable
 fun MainMenuScreen(
@@ -35,16 +38,16 @@ fun MainMenuScreen(
     onStatisticsClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     userEmail: String = "user@example.com"
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // State for streak data
     var currentStreak by remember { mutableStateOf(0) }
     var bestStreak by remember { mutableStateOf(0) }
+    var unreadNotificationCount by remember { mutableStateOf(0) }
 
-    // Load streak data when screen loads
     LaunchedEffect(Unit) {
         scope.launch {
             try {
@@ -58,6 +61,9 @@ fun MainMenuScreen(
                         currentStreak = profile.currentStreak
                         bestStreak = profile.bestStreak
                     }
+
+                    val notificationRepo = RepositoryProvider.getNotificationRepository()
+                    unreadNotificationCount = notificationRepo.getUnreadCount(userId)
                 }
             } catch (e: Exception) {
                 // Handle error silently
@@ -65,10 +71,7 @@ fun MainMenuScreen(
         }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Card background image - MORE VISIBLE
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.card_background),
             contentDescription = null,
@@ -77,7 +80,6 @@ fun MainMenuScreen(
             alpha = 0.6f
         )
 
-        // Lighter gradient overlay so background shows
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,7 +99,7 @@ fun MainMenuScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Bar with Streak and Settings
+            // Top Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,11 +107,10 @@ fun MainMenuScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Streak Display Card
+                // Streak Card
                 if (currentStreak > 0) {
                     Card(
-                        modifier = Modifier
-                            .padding(end = 8.dp),
+                        modifier = Modifier.padding(end = 8.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White.copy(alpha = 0.9f)
                         ),
@@ -121,13 +122,7 @@ fun MainMenuScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // Fire emoji
-                            Text(
-                                text = "🔥",
-                                fontSize = 28.sp
-                            )
-
-                            // Streak info
+                            Text(text = "🔥", fontSize = 28.sp)
                             Column {
                                 Text(
                                     text = stringResource(R.string.day_streak, currentStreak),
@@ -147,25 +142,70 @@ fun MainMenuScreen(
                     Spacer(modifier = Modifier.width(1.dp))
                 }
 
-                // Settings Button
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            color = Color.White.copy(alpha = 0.3f),
-                            shape = CircleShape
-                        )
+                // Icons Row
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "⚙",
-                        fontSize = 24.sp,
-                        color = Color.White
-                    )
+                    // ✅ FIXED Notification Bell with Badge
+                    Box(contentAlignment = Alignment.Center) {
+                        IconButton(
+                            onClick = onNotificationsClick,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    color = Color.White.copy(alpha = 0.3f),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // ✅ IMPROVED Badge - better positioned
+                        if (unreadNotificationCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .offset(x = 14.dp, y = (-14).dp)  // ✅ FIXED positioning
+                                    .background(Color(0xFFFF3D00), CircleShape)
+                                    .border(2.dp, Color.White, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (unreadNotificationCount > 9) "9+" else unreadNotificationCount.toString(),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+
+                    // Settings Button
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.3f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Text(
+                            text = "⚙",
+                            fontSize = 24.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 
-            // Logo - BIGGER
+            // Logo
             Image(
                 painter = painterResource(id = R.drawable.transparent_logo),
                 contentDescription = "Memory Match Madness Logo",
@@ -177,13 +217,12 @@ fun MainMenuScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Game Mode Buttons with 3D effect
+            // Game Mode Buttons
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Arcade Mode Button
                 GameModeButton3D(
                     text = stringResource(R.string.arcade_mode).uppercase(),
                     backgroundColor = Color(0xFFFFC107),
@@ -191,7 +230,6 @@ fun MainMenuScreen(
                     onClick = onArcadeModeClick
                 )
 
-                // Adventure Mode Button
                 GameModeButton3D(
                     text = stringResource(R.string.adventure_mode).uppercase(),
                     backgroundColor = Color(0xFF2196F3),
@@ -199,7 +237,6 @@ fun MainMenuScreen(
                     onClick = onAdventureModeClick
                 )
 
-                // Multiplayer Button
                 GameModeButton3D(
                     text = stringResource(R.string.multiplayer).uppercase(),
                     backgroundColor = Color(0xFFE91E63),
@@ -207,7 +244,6 @@ fun MainMenuScreen(
                     onClick = onMultiplayerClick
                 )
 
-                // Statistics Button
                 GameModeButton3D(
                     text = stringResource(R.string.statistics).uppercase(),
                     backgroundColor = Color(0xFF9C27B0),
@@ -215,7 +251,6 @@ fun MainMenuScreen(
                     onClick = onStatisticsClick
                 )
 
-                // Settings Button
                 GameModeButton3D(
                     text = "⚙ ${stringResource(R.string.settings).uppercase()}",
                     backgroundColor = Color(0xFF8BC34A),
@@ -239,19 +274,15 @@ fun GameModeButton3D(
             .fillMaxWidth()
             .padding(horizontal = 32.dp)
     ) {
-        // Bottom shadow layer - STRONGER 3D EFFECT
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp)
                 .offset(y = 8.dp)
                 .clip(RoundedCornerShape(30.dp))
-                .background(
-                    color = shadowColor
-                )
+                .background(color = shadowColor)
         )
 
-        // Main button with softer white border
         Box(
             modifier = Modifier
                 .fillMaxWidth()

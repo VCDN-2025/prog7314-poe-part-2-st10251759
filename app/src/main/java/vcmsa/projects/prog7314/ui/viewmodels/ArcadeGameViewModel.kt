@@ -23,6 +23,7 @@ import vcmsa.projects.prog7314.data.sync.SyncManager
 import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.game.GameEngine
 import vcmsa.projects.prog7314.utils.AuthManager
+import kotlin.math.sqrt
 
 class ArcadeGameViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "ArcadeGameViewModel"
@@ -92,7 +93,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                 val randomTheme = GameTheme.entries.random()
                 currentTheme = randomTheme
 
-                Log.d(TAG, "Theme: ${randomTheme.name}, Grid: ${config.gridRows}x${config.gridColumns}")  // ✅ Use enum name for logging
+                Log.d(TAG, "Theme: ${randomTheme.name}, Grid: ${config.gridRows}x${config.gridColumns}")
 
                 gameEngine = GameEngine(randomTheme, config)
                 gameEngine!!.initializeCards()
@@ -201,7 +202,7 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             val userId = AuthManager.getCurrentUser()?.uid ?: return
             val finalScore = getFinalScore()
             val config = GameConfig.getLevelConfig(currentLevelNumber)
-            val theme = currentTheme?.name ?: "Unknown"  // ✅ Use enum name for database
+            val theme = currentTheme?.name ?: "Unknown"
             val gridSize = "${config.gridRows}x${config.gridColumns}"
 
             // ✅ ALWAYS SAVE TO GAME RESULTS (for Statistics)
@@ -220,8 +221,8 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             )
             Log.d(TAG, "✅ Game result saved for statistics")
 
-            // 🔥 UPDATE USER PROFILE STATS
-            updateUserProfileStats(userId, finalScore.stars > 0)
+            // 🔥 UPDATE USER PROFILE STATS + XP
+            updateUserProfileStatsAndXP(userId, finalScore.stars > 0, finalScore.stars, finalScore.finalScore)
 
             // 🔥 UPDATE DAILY STREAK
             updateDailyStreak()
@@ -268,12 +269,13 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     /**
-     * Update user profile statistics
+     * 🔥 NEW: Update user profile statistics AND award XP
      */
-    private suspend fun updateUserProfileStats(userId: String, isWin: Boolean) {
+    private suspend fun updateUserProfileStatsAndXP(userId: String, isWin: Boolean, stars: Int, score: Int) {
         try {
             val userProfile = userProfileRepository.getUserProfile(userId)
             if (userProfile != null) {
+                // Update basic stats
                 userProfileRepository.updateUserStats(
                     userId = userId,
                     totalGames = userProfile.totalGamesPlayed + 1,
@@ -284,10 +286,62 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
                     accuracy = userProfile.accuracyRate
                 )
                 Log.d(TAG, "✅ User profile stats updated")
+
+                // 🔥 AWARD XP AND CHECK LEVEL UP
+                val earnedXP = calculateXP(stars, score, _timeElapsed.value)
+                val newTotalXP = userProfile.totalXP + earnedXP
+                val newLevel = calculateLevel(newTotalXP)
+
+                userProfileRepository.updateXPAndLevel(
+                    userId = userId,
+                    xp = newTotalXP,
+                    level = newLevel
+                )
+
+                if (newLevel > userProfile.level) {
+                    Log.d(TAG, "🎉 LEVEL UP! Now level $newLevel")
+                }
+                Log.d(TAG, "✅ Earned $earnedXP XP (Total: $newTotalXP, Level: $newLevel)")
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error updating user profile: ${e.message}", e)
         }
+    }
+
+    /**
+     * 🔥 NEW: Calculate XP earned from game performance
+     */
+    private fun calculateXP(stars: Int, score: Int, timeTaken: Int): Int {
+        var xp = 0
+
+        // Base XP from score
+        xp += (score / 10) // 100 score = 10 XP
+
+        // Star bonus
+        xp += when (stars) {
+            3 -> 100  // Perfect performance
+            2 -> 50   // Good performance
+            1 -> 25   // Completed
+            else -> 0
+        }
+
+        // Time bonus (faster = more XP)
+        if (timeTaken < 30) xp += 50
+        else if (timeTaken < 60) xp += 25
+
+        return xp
+    }
+
+    /**
+     * 🔥 NEW: Calculate level from total XP
+     */
+    private fun calculateLevel(totalXP: Int): Int {
+        // Simple level formula: Level = sqrt(XP / 100)
+        // Level 1 = 0-99 XP
+        // Level 2 = 100-399 XP
+        // Level 3 = 400-899 XP
+        // Level 4 = 900-1599 XP, etc.
+        return (sqrt(totalXP.toDouble() / 100.0).toInt() + 1).coerceAtLeast(1)
     }
 
     /**
@@ -351,6 +405,17 @@ class ArcadeGameViewModel(application: Application) : AndroidViewModel(applicati
             if (memoryGuru) {
                 Log.d(TAG, "🏆 Memory Guru achievement unlocked!")
             }
+
+            // 🔥 CHECK ALL OTHER ACHIEVEMENTS
+            achievementRepo.checkAllAchievements(
+                userId = userId,
+                score = finalScore.finalScore,
+                moves = finalScore.moves,
+                perfectMoves = config.totalPairs,  // ✅ CORRECT (already is pairs)
+                timeTaken = _timeElapsed.value,
+                accuracy = accuracy,
+                isWin = finalScore.stars > 0
+            )
 
             Log.d(TAG, "✅ Achievements checked")
         } catch (e: Exception) {

@@ -8,8 +8,12 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.MainActivity
 import vcmsa.projects.prog7314.R
+import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 
 object LocalNotificationManager {
 
@@ -56,7 +60,14 @@ object LocalNotificationManager {
         val title = "🏆 Achievement Unlocked!"
         val message = "$achievementTitle: $achievementDescription"
 
-        showNotification(context, title, message, "achievement")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "ACHIEVEMENT",
+            category = "GAME",
+            iconType = "trophy"
+        )
         Log.d(TAG, "Achievement notification sent: $achievementTitle")
     }
 
@@ -72,7 +83,15 @@ object LocalNotificationManager {
         val title = "🆕 New Level Unlocked!"
         val message = "Level $levelNumber is now available to play!"
 
-        showNotification(context, title, message, "level_unlock")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "LEVEL_UNLOCK",
+            category = "GAME",
+            iconType = "level",
+            actionData = levelNumber.toString()
+        )
         Log.d(TAG, "Level unlock notification sent: Level $levelNumber")
     }
 
@@ -89,7 +108,14 @@ object LocalNotificationManager {
         val title = "🌟 New Personal Record!"
         val message = "You beat your best score by $improvement points! New record: $score"
 
-        showNotification(context, title, message, "high_score")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "HIGH_SCORE",
+            category = "GAME",
+            iconType = "star"
+        )
         Log.d(TAG, "High score notification sent: $score (was $previousBest)")
     }
 
@@ -105,7 +131,14 @@ object LocalNotificationManager {
         val title = "🔥 Keep Your Streak Going!"
         val message = "You're on a $currentStreak day streak! Play today to keep it alive!"
 
-        showNotification(context, title, message, "daily_streak")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "DAILY_STREAK",
+            category = "GAME",
+            iconType = "fire"
+        )
         Log.d(TAG, "Daily streak notification sent: $currentStreak days")
     }
 
@@ -121,7 +154,14 @@ object LocalNotificationManager {
         val title = "💔 Streak Lost"
         val message = "You lost your $lostStreak day streak. Start a new one today!"
 
-        showNotification(context, title, message, "streak_lost")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "STREAK_LOST",
+            category = "SYSTEM",
+            iconType = "fire"
+        )
         Log.d(TAG, "Streak lost notification sent: $lostStreak days")
     }
 
@@ -137,7 +177,14 @@ object LocalNotificationManager {
         val title = "🎮 We Miss You!"
         val message = "It's been a while! Come back and test your memory skills!"
 
-        showNotification(context, title, message, "comeback")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "COMEBACK",
+            category = "SYSTEM",
+            iconType = "system"
+        )
         Log.d(TAG, "Comeback reminder notification sent")
     }
 
@@ -153,7 +200,14 @@ object LocalNotificationManager {
         val title = "🎉 First Level Completed!"
         val message = "Congratulations! You've completed your first level. Keep going!"
 
-        showNotification(context, title, message, "first_level")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "FIRST_LEVEL",
+            category = "GAME",
+            iconType = "trophy"
+        )
         Log.d(TAG, "First level completion notification sent")
     }
 
@@ -169,23 +223,55 @@ object LocalNotificationManager {
         val title = "🎨 New Theme Unlocked!"
         val message = "$themeName theme is now available! Try it out!"
 
-        showNotification(context, title, message, "theme_unlock")
+        showNotification(
+            context = context,
+            title = title,
+            message = message,
+            type = "THEME_UNLOCK",
+            category = "GAME",
+            iconType = "theme"
+        )
         Log.d(TAG, "Theme unlock notification sent: $themeName")
     }
 
     /**
-     * Generic notification display method
+     * Generic notification display method with database save
      */
     private fun showNotification(
         context: Context,
         title: String,
         message: String,
-        type: String
+        type: String,
+        category: String,
+        iconType: String,
+        actionData: String? = null
     ) {
         // Check if user has notification permission
         if (!NotificationHelper.hasNotificationPermission(context)) {
             Log.d(TAG, "No notification permission")
             return
+        }
+
+        // ✅ NEW: Save to database
+        val userId = AuthManager.getCurrentUser()?.uid
+        if (userId != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val notificationRepo = RepositoryProvider.getNotificationRepository()
+                    notificationRepo.createNotification(
+                        userId = userId,
+                        type = type,
+                        category = category,
+                        title = title,
+                        message = message,
+                        iconType = iconType,
+                        actionData = actionData
+                    )
+                    Log.d(TAG, "✅ Notification saved to database")
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error saving notification to database: ${e.message}", e)
+                }
+            }
         }
 
         // Intent to open app when notification is tapped

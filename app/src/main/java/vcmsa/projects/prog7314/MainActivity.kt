@@ -176,12 +176,15 @@ class MainActivity : FragmentActivity() {
                 val db = AppDatabase.getDatabase(applicationContext)
                 val userRepo = UserProfileRepository(db.userProfileDao())
                 val gameRepo = GameResultRepository(db.gameResultDao())
-                val achievementRepo = AchievementRepository(db.achievementDao())
+                val achievementRepo = RepositoryProvider.getAchievementRepository()
 
                 Log.d("DatabaseTest", "========== TESTING REPOSITORIES ==========")
 
+                val currentUser = AuthManager.getCurrentUser()
+                val userId = currentUser?.uid ?: "test_user_123"
+                Log.d("DatabaseTest", "🔑 Using User ID: $userId")
+
                 Log.d("DatabaseTest", "\n--- Test 1: User Profile ---")
-                val userId = "test_user_123"
                 val created = userRepo.createNewUserProfile(
                     userId = userId,
                     username = "TestPlayer",
@@ -250,6 +253,22 @@ class MainActivity : FragmentActivity() {
                     Log.d("DatabaseTest", "✅ Manual sync result: $syncSuccess")
                 }
 
+                // ✅ NO FAKE NOTIFICATIONS! Only check if notification system is working
+                if (currentUser != null) {
+                    val notificationRepo = RepositoryProvider.getNotificationRepository()
+                    val totalNotifs = notificationRepo.getTotalCount(userId)
+                    val unreadNotifs = notificationRepo.getUnreadCount(userId)
+
+                    Log.d("DatabaseTest", "\n--- Test 7: Notification System ---")
+                    Log.d("DatabaseTest", "✅ Notification system initialized")
+                    Log.d("DatabaseTest", "📊 Current notifications: $totalNotifs total, $unreadNotifs unread")
+                    Log.d("DatabaseTest", "🔔 Real notifications will appear when you:")
+                    Log.d("DatabaseTest", "   - Complete a game")
+                    Log.d("DatabaseTest", "   - Unlock an achievement")
+                    Log.d("DatabaseTest", "   - Unlock a new level")
+                    Log.d("DatabaseTest", "   - Break a high score")
+                }
+
                 Log.d("DatabaseTest", "\n========== ALL TESTS PASSED ✅ ==========")
 
             } catch (e: Exception) {
@@ -315,6 +334,7 @@ fun MemoryMatchMadnessApp() {
     var showEditProfile by remember { mutableStateOf(false) }
     var showChangePassword by remember { mutableStateOf(false) }
     var showStatistics by remember { mutableStateOf(false) }
+    var showNotifications by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -451,6 +471,15 @@ fun MemoryMatchMadnessApp() {
             StatisticsScreen(
                 onBackClick = {
                     showStatistics = false
+                    showMainMenu = true
+                }
+            )
+        }
+
+        showNotifications -> {
+            NotificationsScreen(
+                onBackClick = {
+                    showNotifications = false
                     showMainMenu = true
                 }
             )
@@ -664,6 +693,10 @@ fun MemoryMatchMadnessApp() {
                 onSettingsClick = {
                     showMainMenu = false
                     showSettingsScreen = true
+                },
+                onNotificationsClick = {
+                    showMainMenu = false
+                    showNotifications = true
                 },
                 onProfileClick = {}
             )

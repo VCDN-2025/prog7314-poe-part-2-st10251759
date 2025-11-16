@@ -87,7 +87,7 @@ class AnalyticsRepository(
 
             // Get achievement stats
             val achievementsUnlocked = achievementDao.getUnlockedCount(userId)
-            val totalAchievements = 20 // Update based on your total achievements
+            val totalAchievements = 12 // Update based on your total achievements
             val achievementProgress = if (totalAchievements > 0) {
                 (achievementsUnlocked.toFloat() / totalAchievements.toFloat()) * 100f
             } else {

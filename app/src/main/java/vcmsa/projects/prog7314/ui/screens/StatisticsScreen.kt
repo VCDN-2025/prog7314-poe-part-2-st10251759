@@ -1160,7 +1160,7 @@ fun RecentGameRow(game: RecentGameSummary) {
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = game.score.toString(),
+                text = "${game.score} pts",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF4CAF50)

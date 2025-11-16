@@ -13,9 +13,10 @@ import vcmsa.projects.prog7314.data.entities.*
         GameResultEntity::class,
         AchievementEntity::class,
         LevelProgressEntity::class,
-        ArcadeSessionEntity::class
+        ArcadeSessionEntity::class,
+        NotificationEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,10 +25,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userProfileDao(): UserProfileDao
     abstract fun gameResultDao(): GameResultDao
     abstract fun achievementDao(): AchievementDao
-
-    // Newly added DAOs
     abstract fun levelProgressDao(): LevelProgressDao
     abstract fun arcadeSessionDao(): ArcadeSessionDao
+
+   // Notification DAO
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         @Volatile

@@ -9,13 +9,14 @@ import vcmsa.projects.prog7314.data.AppDatabase
 object RepositoryProvider {
 
     private var database: AppDatabase? = null
+    private var appContext: Context? = null  // 🔥 ADD THIS
 
     fun initialize(context: Context) {
         if (database == null) {
-            database = AppDatabase.getDatabase(context.applicationContext)
+            appContext = context.applicationContext  // 🔥 STORE CONTEXT
+            database = AppDatabase.getDatabase(appContext!!)
         }
     }
-
 
     fun getRepositories(context: Context): Repositories {
         initialize(context)
@@ -26,10 +27,10 @@ object RepositoryProvider {
             levelRepository = getLevelRepository(),
             arcadeRepository = getArcadeRepository(),
             apiRepository = getApiRepository(),
-            analyticsRepository = getAnalyticsRepository()  // ← ADD THIS
+            analyticsRepository = getAnalyticsRepository(),
+            notificationRepository = getNotificationRepository()
         )
     }
-
 
     fun getUserProfileRepository(): UserProfileRepository {
         return UserProfileRepository(requireDatabase().userProfileDao())
@@ -40,7 +41,14 @@ object RepositoryProvider {
     }
 
     fun getAchievementRepository(): AchievementRepository {
-        return AchievementRepository(requireDatabase().achievementDao())
+        val db = requireDatabase()
+        return AchievementRepository(
+            achievementDao = db.achievementDao(),
+            gameResultDao = db.gameResultDao(),
+            userProfileDao = db.userProfileDao(),
+            levelProgressDao = db.levelProgressDao(),
+            context = requireContext()  // 🔥 USE STORED CONTEXT
+        )
     }
 
     fun getLevelRepository(): LevelRepository {
@@ -55,7 +63,6 @@ object RepositoryProvider {
         return ApiRepository()
     }
 
-
     fun getAnalyticsRepository(): AnalyticsRepository {
         val db = requireDatabase()
         return AnalyticsRepository(
@@ -65,8 +72,20 @@ object RepositoryProvider {
         )
     }
 
+    //  Notification Repository
+    fun getNotificationRepository(): NotificationRepository {
+        return NotificationRepository(requireDatabase().notificationDao())
+    }
+
     private fun requireDatabase(): AppDatabase {
         return database ?: throw IllegalStateException(
+            "RepositoryProvider must be initialized before use"
+        )
+    }
+
+    // 🔥 NEW: Helper to get context
+    private fun requireContext(): Context {
+        return appContext ?: throw IllegalStateException(
             "RepositoryProvider must be initialized before use"
         )
     }
@@ -78,6 +97,7 @@ object RepositoryProvider {
         val levelRepository: LevelRepository,
         val arcadeRepository: ArcadeRepository,
         val apiRepository: ApiRepository,
-        val analyticsRepository: AnalyticsRepository  // ← ADD THIS
+        val analyticsRepository: AnalyticsRepository,
+        val notificationRepository: NotificationRepository
     )
 }

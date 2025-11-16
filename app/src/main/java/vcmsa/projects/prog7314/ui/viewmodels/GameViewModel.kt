@@ -16,6 +16,7 @@ import vcmsa.projects.prog7314.data.models.*
 import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.data.sync.SyncManager
+import kotlin.math.sqrt
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -259,6 +260,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         accuracy = ((userProfile.accuracyRate * userProfile.totalGamesPlayed) + calculateAccuracy(moves)) / (userProfile.totalGamesPlayed + 1)
                     )
                     Log.d("GameViewModel", "✅ User profile stats updated")
+
+                    // 2.5 🔥 ADD XP AND CHECK LEVEL UP
+                    val earnedXP = calculateXP(stars, finalScore, timeTaken)
+                    val newTotalXP = userProfile.totalXP + earnedXP
+                    val newLevel = calculateLevel(newTotalXP)
+
+                    userProfileRepository.updateXPAndLevel(
+                        userId = userId,
+                        xp = newTotalXP,
+                        level = newLevel
+                    )
+
+                    if (newLevel > userProfile.level) {
+                        Log.d("GameViewModel", "🎉 LEVEL UP! Now level $newLevel")
+                    }
+                    Log.d("GameViewModel", "✅ Earned $earnedXP XP (Total: $newTotalXP, Level: $newLevel)")
                 }
 
                 // 3. Update daily streak
@@ -266,7 +283,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 Log.d("GameViewModel", "🔥 Daily streak updated")
 
                 // 4. Check achievements
-                checkAchievements(userId, stars, timeTaken, moves)
+                checkAchievements(userId, stars, timeTaken, moves, finalScore)
 
                 // 5. 🔥 SYNC TO FIRESTORE
                 syncManager.syncToFirestore()
@@ -281,11 +298,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Check and award achievements
      */
-    private suspend fun checkAchievements(userId: String, stars: Int, timeTaken: Int, moves: Int) {
+    private suspend fun checkAchievements(userId: String, stars: Int, timeTaken: Int, moves: Int, finalScore: Int) {
         try {
             val achievementRepo = RepositoryProvider.getAchievementRepository()
 
-            // First Win - THIS IS THE FIX!
+            // First Win
             val firstWin = achievementRepo.checkFirstWinAchievement(userId, stars > 0)
             if (firstWin) Log.d("GameViewModel", "🏆 First Victory achievement!")
 
@@ -310,10 +327,57 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val memoryGuru = achievementRepo.checkMemoryGuruAchievement(userId, accuracy, 95f)
             if (memoryGuru) Log.d("GameViewModel", "🏆 Memory Guru achievement!")
 
+            // 🔥 CHECK ALL OTHER ACHIEVEMENTS
+            achievementRepo.checkAllAchievements(
+                userId = userId,
+                score = finalScore,
+                moves = moves,
+                perfectMoves = currentGridSize.totalCards / 2,  // ✅ CORRECT (number of pairs)
+                timeTaken = timeTaken,
+                accuracy = accuracy,
+                isWin = stars > 0
+            )
+
             Log.d("GameViewModel", "✅ Achievements checked")
         } catch (e: Exception) {
             Log.e("GameViewModel", "❌ Error checking achievements: ${e.message}", e)
         }
+    }
+
+    /**
+     * Calculate XP earned from game performance
+     */
+    private fun calculateXP(stars: Int, score: Int, timeTaken: Int): Int {
+        var xp = 0
+
+        // Base XP from score
+        xp += (score / 10) // 100 score = 10 XP
+
+        // Star bonus
+        xp += when (stars) {
+            3 -> 100  // Perfect performance
+            2 -> 50   // Good performance
+            1 -> 25   // Completed
+            else -> 0
+        }
+
+        // Time bonus (faster = more XP)
+        if (timeTaken < 30) xp += 50
+        else if (timeTaken < 60) xp += 25
+
+        return xp
+    }
+
+    /**
+     * Calculate level from total XP
+     */
+    private fun calculateLevel(totalXP: Int): Int {
+        // Simple level formula: Level = sqrt(XP / 100)
+        // Level 1 = 0-99 XP
+        // Level 2 = 100-399 XP
+        // Level 3 = 400-899 XP
+        // Level 4 = 900-1599 XP, etc.
+        return (sqrt(totalXP.toDouble() / 100.0).toInt() + 1).coerceAtLeast(1)
     }
 
     /**

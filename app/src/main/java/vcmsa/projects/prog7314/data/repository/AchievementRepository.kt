@@ -1,13 +1,22 @@
 package vcmsa.projects.prog7314.data.repository
 
+import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import vcmsa.projects.prog7314.data.dao.AchievementDao
+import vcmsa.projects.prog7314.data.dao.GameResultDao
+import vcmsa.projects.prog7314.data.dao.LevelProgressDao
+import vcmsa.projects.prog7314.data.dao.UserProfileDao
 import vcmsa.projects.prog7314.data.entities.AchievementEntity
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
 import java.util.UUID
 
 class AchievementRepository(
-    private val achievementDao: AchievementDao
+    private val achievementDao: AchievementDao,
+    private val gameResultDao: GameResultDao,
+    private val userProfileDao: UserProfileDao,
+    private val levelProgressDao: LevelProgressDao,
+    private val context: Context  // 🔥 NEW: Context for notifications
 ) {
     private val TAG = "AchievementRepository"
 
@@ -250,6 +259,7 @@ class AchievementRepository(
 
     /**
      * Award achievement by type (creates if doesn't exist, unlocks if exists)
+     * 🔥 NOW TRIGGERS NOTIFICATIONS!
      */
     suspend fun awardAchievement(
         userId: String,
@@ -266,6 +276,19 @@ class AchievementRepository(
                 // Achievement exists, unlock it if not already unlocked
                 if (!existing.isUnlocked) {
                     unlockAchievement(existing.achievementId)
+
+                    // 🔥 TRIGGER NOTIFICATION
+                    try {
+                        LocalNotificationManager.notifyAchievementUnlocked(
+                            context = context,
+                            achievementTitle = name,
+                            achievementDescription = description
+                        )
+                        Log.d(TAG, "🔔 Notification sent for: $name")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                    }
+
                     true
                 } else {
                     false // Already unlocked
@@ -281,6 +304,21 @@ class AchievementRepository(
                     progress = 100,
                     isUnlocked = true
                 )
+
+                if (achievementId != null) {
+                    // 🔥 TRIGGER NOTIFICATION
+                    try {
+                        LocalNotificationManager.notifyAchievementUnlocked(
+                            context = context,
+                            achievementTitle = name,
+                            achievementDescription = description
+                        )
+                        Log.d(TAG, "🔔 Notification sent for: $name")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                    }
+                }
+
                 achievementId != null
             }
         } catch (e: Exception) {
@@ -288,6 +326,8 @@ class AchievementRepository(
             false
         }
     }
+
+    // ===== ACHIEVEMENT CHECK FUNCTIONS =====
 
     /**
      * Check and award "First Win" achievement
@@ -329,9 +369,256 @@ class AchievementRepository(
             userId = userId,
             achievementType = "MEMORY_GURU",
             name = "Memory Guru",
-            description = "Achieve ${threshold}% accuracy",
+            description = "Achieve ${threshold.toInt()}% accuracy",
             iconName = "ic_brain"
         )
+    }
+
+    /**
+     * 🆕 Check and award "Champion" achievement - Win 50 games
+     */
+    suspend fun checkChampionAchievement(userId: String): Boolean {
+        return try {
+            val winsCount = gameResultDao.getWinsCount(userId)
+            if (winsCount >= 50) {
+                awardAchievement(
+                    userId = userId,
+                    achievementType = "CHAMPION",
+                    name = "Champion",
+                    description = "Win 50 games",
+                    iconName = "ic_trophy"
+                )
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking Champion achievement: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * 🆕 Check and award "High Scorer" achievement - Score over 2000 in one game
+     */
+    suspend fun checkHighScorerAchievement(userId: String, score: Int): Boolean {
+        if (score < 2000) return false
+
+        return awardAchievement(
+            userId = userId,
+            achievementType = "HIGH_SCORER",
+            name = "High Scorer",
+            description = "Score over 2000 points in one game",
+            iconName = "ic_star"
+        )
+    }
+
+    /**
+     * 🆕 Check and award "Persistent Player" achievement - Play 100 games
+     */
+    suspend fun checkPersistentAchievement(userId: String): Boolean {
+        return try {
+            val totalGames = gameResultDao.getTotalGamesCount(userId)
+            if (totalGames >= 100) {
+                awardAchievement(
+                    userId = userId,
+                    achievementType = "PERSISTENT",
+                    name = "Persistent Player",
+                    description = "Play 100 games",
+                    iconName = "ic_schedule"
+                )
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking Persistent achievement: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * 🆕 Check and award "Streak Master" achievement - Maintain a 7-day streak
+     */
+    suspend fun checkStreakMasterAchievement(userId: String): Boolean {
+        return try {
+            val userProfile = userProfileDao.getUserProfile(userId)
+            val currentStreak = userProfile?.currentStreak ?: 0
+
+            if (currentStreak >= 7) {
+                awardAchievement(
+                    userId = userId,
+                    achievementType = "STREAK_MASTER",
+                    name = "Streak Master",
+                    description = "Maintain a 7-day streak",
+                    iconName = "ic_fire"
+                )
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking Streak Master achievement: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * 🆕 Check and award "Theme Explorer" achievement - Try all 5 themes
+     */
+    suspend fun checkThemeExplorerAchievement(userId: String): Boolean {
+        return try {
+            val allGames = gameResultDao.getAllGamesForUser(userId)
+            val uniqueThemes = allGames.map { it.theme }.distinct()
+
+            Log.d(TAG, "   Unique themes played: ${uniqueThemes.size} - $uniqueThemes")
+
+            // If user has played 5 or more different themes, unlock
+            if (uniqueThemes.size >= 5) {
+                awardAchievement(
+                    userId = userId,
+                    achievementType = "THEME_EXPLORER",
+                    name = "Theme Explorer",
+                    description = "Try all 5 themes",
+                    iconName = "ic_palette"
+                )
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking Theme Explorer achievement: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * 🆕 Check and award "Arcade Master" achievement - Complete all arcade levels (16 levels)
+     */
+    suspend fun checkArcadeMasterAchievement(userId: String): Boolean {
+        return try {
+            val allLevels = levelProgressDao.getAllLevelsProgress(userId)
+            val completedLevels = allLevels.filter { it.isCompleted && it.levelNumber <= 16 }
+
+            if (completedLevels.size >= 16) {
+                awardAchievement(
+                    userId = userId,
+                    achievementType = "ARCADE_MASTER",
+                    name = "Arcade Master",
+                    description = "Complete all arcade levels",
+                    iconName = "ic_gamepad"
+                )
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking Arcade Master achievement: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * 🆕 Check and award "Level Conqueror" achievement - Complete all 16 levels
+     */
+    suspend fun checkLevelConquerorAchievement(userId: String): Boolean {
+        return try {
+            val allLevels = levelProgressDao.getAllLevelsProgress(userId)
+            val completedLevels = allLevels.filter { it.isCompleted && it.levelNumber <= 16 }
+
+            if (completedLevels.size >= 16) {
+                awardAchievement(
+                    userId = userId,
+                    achievementType = "LEVEL_CONQUEROR",
+                    name = "Level Conqueror",
+                    description = "Complete all 16 levels",
+                    iconName = "ic_stars"
+                )
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking Level Conqueror achievement: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * 🆕 Check and award "Flawless Victory" achievement - Complete a game with no mistakes
+     */
+    suspend fun checkFlawlessAchievement(userId: String, moves: Int, perfectMoves: Int): Boolean {
+        // Flawless = moves equals perfect moves (no wrong guesses)
+        if (moves != perfectMoves) return false
+
+        return awardAchievement(
+            userId = userId,
+            achievementType = "FLAWLESS",
+            name = "Flawless Victory",
+            description = "Complete a game with no mistakes",
+            iconName = "ic_check_circle"
+        )
+    }
+
+    /**
+     * 🔥 NEW: Check ALL achievements at once after a game
+     * Call this from ViewModels after each game completion
+     */
+    suspend fun checkAllAchievements(
+        userId: String,
+        score: Int,
+        moves: Int,
+        perfectMoves: Int,
+        timeTaken: Int,
+        accuracy: Float,
+        isWin: Boolean
+    ) {
+        try {
+            Log.d(TAG, "🏆 Checking all achievements...")
+            Log.d(TAG, "   Score: $score, Moves: $moves, Time: $timeTaken, Accuracy: $accuracy, Win: $isWin")
+
+            // Check instant achievements (based on current game)
+            Log.d(TAG, "   Checking High Scorer (need 2000+, have: $score)...")
+            val highScorer = checkHighScorerAchievement(userId, score)
+            if (highScorer) Log.d(TAG, "   🏆 HIGH SCORER UNLOCKED!")
+
+            Log.d(TAG, "   Checking Flawless (need $perfectMoves moves, have: $moves)...")
+            val flawless = checkFlawlessAchievement(userId, moves, perfectMoves)
+            if (flawless) Log.d(TAG, "   🏆 FLAWLESS UNLOCKED!")
+
+            // Check cumulative achievements (based on total stats)
+            val totalGames = gameResultDao.getTotalGamesCount(userId)
+            val totalWins = gameResultDao.getWinsCount(userId)
+            Log.d(TAG, "   Total Games: $totalGames, Total Wins: $totalWins")
+
+            Log.d(TAG, "   Checking Champion (need 50 wins, have: $totalWins)...")
+            val champion = checkChampionAchievement(userId)
+            if (champion) Log.d(TAG, "   🏆 CHAMPION UNLOCKED!")
+
+            Log.d(TAG, "   Checking Persistent (need 100 games, have: $totalGames)...")
+            val persistent = checkPersistentAchievement(userId)
+            if (persistent) Log.d(TAG, "   🏆 PERSISTENT UNLOCKED!")
+
+            val userProfile = userProfileDao.getUserProfile(userId)
+            val currentStreak = userProfile?.currentStreak ?: 0
+            Log.d(TAG, "   Checking Streak Master (need 7 days, have: $currentStreak)...")
+            val streakMaster = checkStreakMasterAchievement(userId)
+            if (streakMaster) Log.d(TAG, "   🏆 STREAK MASTER UNLOCKED!")
+
+            val allGames = gameResultDao.getAllGamesForUser(userId)
+            val uniqueThemes = allGames.map { it.theme }.distinct()
+            Log.d(TAG, "   Checking Theme Explorer (need 5 themes, have: ${uniqueThemes.size} - $uniqueThemes)...")
+            val themeExplorer = checkThemeExplorerAchievement(userId)
+            if (themeExplorer) Log.d(TAG, "   🏆 THEME EXPLORER UNLOCKED!")
+
+            val allLevels = levelProgressDao.getAllLevelsProgress(userId)
+            val completedLevels = allLevels.filter { it.isCompleted && it.levelNumber <= 16 }
+            Log.d(TAG, "   Checking Arcade Master (need 16 levels, have: ${completedLevels.size})...")
+            val arcadeMaster = checkArcadeMasterAchievement(userId)
+            if (arcadeMaster) Log.d(TAG, "   🏆 ARCADE MASTER UNLOCKED!")
+
+            Log.d(TAG, "   Checking Level Conqueror (need 16 levels, have: ${completedLevels.size})...")
+            val levelConqueror = checkLevelConquerorAchievement(userId)
+            if (levelConqueror) Log.d(TAG, "   🏆 LEVEL CONQUEROR UNLOCKED!")
+
+            Log.d(TAG, "✅ All achievements checked!")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error checking all achievements: ${e.message}", e)
+        }
     }
 
     /**
