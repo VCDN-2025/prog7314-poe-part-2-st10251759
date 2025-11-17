@@ -17,7 +17,7 @@ class AchievementRepository(
     private val gameResultDao: GameResultDao,
     private val userProfileDao: UserProfileDao,
     private val levelProgressDao: LevelProgressDao,
-    private val context: Context  // 🔥 NEW: Context for notifications
+    private val context: Context  // 🔥 Context for notifications
 ) {
     private val TAG = "AchievementRepository"
 
@@ -34,8 +34,6 @@ class AchievementRepository(
             achievementDao.insertAchievement(achievement.copy(isSynced = false))
 
             Log.d(TAG, "✅ Achievement saved locally")
-
-            // TODO: Sync to cloud if online (we'll add this later)
 
             true
         } catch (e: Exception) {
@@ -260,7 +258,7 @@ class AchievementRepository(
 
     /**
      * Award achievement by type (creates if doesn't exist, unlocks if exists)
-     * 🔥 FIXED: Only triggers notifications for new achievements, prevents duplicates
+     * 🔥 FIXED: Properly unlocks achievement FIRST, then handles notification
      */
     suspend fun awardAchievement(
         userId: String,
@@ -274,31 +272,36 @@ class AchievementRepository(
             val existing = getAchievementByType(userId, achievementType)
 
             if (existing != null) {
-                // Achievement exists, unlock it if not already unlocked
+                // Achievement exists
                 if (!existing.isUnlocked) {
-                    unlockAchievement(existing.achievementId)
+                    // 🔥 UNLOCK THE ACHIEVEMENT FIRST
+                    val unlocked = unlockAchievement(existing.achievementId)
 
-                    // 🔥 FIXED: Check if notification already sent
-                    if (!NotificationTracker.hasAchievementNotificationBeenSent(context, userId, achievementType)) {
-                        try {
-                            LocalNotificationManager.notifyAchievementUnlocked(
-                                context = context,
-                                achievementTitle = name,
-                                achievementDescription = description
-                            )
-                            NotificationTracker.markAchievementNotificationAsSent(context, userId, achievementType)
-                            Log.d(TAG, "🔔 Notification sent for: $name")
-                        } catch (e: Exception) {
-                            Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                    if (unlocked) {
+                        Log.d(TAG, "✅ Achievement '$name' unlocked!")
+
+                        // 🔥 THEN check if notification should be sent
+                        if (!NotificationTracker.hasAchievementNotificationBeenSent(context, userId, achievementType)) {
+                            try {
+                                LocalNotificationManager.notifyAchievementUnlocked(
+                                    context = context,
+                                    achievementTitle = name,
+                                    achievementDescription = description
+                                )
+                                NotificationTracker.markAchievementNotificationAsSent(context, userId, achievementType)
+                                Log.d(TAG, "🔔 Notification sent for: $name")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                            }
+                        } else {
+                            Log.d(TAG, "⏭️ Skipping notification (already sent for $achievementType)")
                         }
-                    } else {
-                        Log.d(TAG, "⏭️ Skipping achievement notification (already sent for $achievementType)")
                     }
 
-                    true
+                    return unlocked
                 } else {
-                    Log.d(TAG, "⏭️ Achievement already unlocked: $achievementType")
-                    false // Already unlocked
+                    Log.d(TAG, "⏭️ Achievement '$name' already unlocked")
+                    return false // Already unlocked, but this is not an error
                 }
             } else {
                 // Achievement doesn't exist, create and unlock it
@@ -313,7 +316,9 @@ class AchievementRepository(
                 )
 
                 if (achievementId != null) {
-                    // 🔥 FIXED: Check if notification already sent
+                    Log.d(TAG, "✅ New achievement '$name' created and unlocked!")
+
+                    // Send notification
                     if (!NotificationTracker.hasAchievementNotificationBeenSent(context, userId, achievementType)) {
                         try {
                             LocalNotificationManager.notifyAchievementUnlocked(
@@ -326,80 +331,85 @@ class AchievementRepository(
                         } catch (e: Exception) {
                             Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
                         }
-                    } else {
-                        Log.d(TAG, "⏭️ Skipping achievement notification (already sent for $achievementType)")
                     }
-                    true
+                    return true
                 } else {
-                    false
+                    Log.e(TAG, "❌ Failed to create achievement: $name")
+                    return false
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error awarding achievement: ${e.message}", e)
-            false
+            Log.e(TAG, "❌ Error awarding achievement: ${e.message}", e)
+            return false
         }
     }
 
-    // ===== ACHIEVEMENT CHECK FUNCTIONS =====
+    // ===== ACHIEVEMENT CHECKERS =====
 
     /**
-     * Check and award "First Win" achievement
+     * Check and award "First Win" achievement - Win your first game
      */
-    suspend fun checkFirstWinAchievement(userId: String, hasWon: Boolean): Boolean {
-        if (!hasWon) return false
+    suspend fun checkFirstWinAchievement(userId: String, isWin: Boolean): Boolean {
+        if (!isWin) return false
 
-        return awardAchievement(
-            userId = userId,
-            achievementType = "FIRST_WIN",
-            name = "First Victory",
-            description = "Win your first game",
-            iconName = "ic_trophy"
-        )
+        val totalWins = gameResultDao.getWinsCount(userId)
+        if (totalWins >= 1) {
+            return awardAchievement(
+                userId = userId,
+                achievementType = "FIRST_WIN",
+                name = "First Victory",
+                description = "Win your first game",
+                iconName = "ic_trophy"
+            )
+        }
+        return false
     }
 
     /**
-     * Check and award "Speed Demon" achievement
+     * Check and award "Speed Demon" achievement - Complete a game in under 30 seconds
      */
-    suspend fun checkSpeedDemonAchievement(userId: String, timeTaken: Int, threshold: Int = 30): Boolean {
-        if (timeTaken > threshold) return false
-
-        return awardAchievement(
-            userId = userId,
-            achievementType = "SPEED_DEMON",
-            name = "Speed Demon",
-            description = "Complete a game in under $threshold seconds",
-            iconName = "ic_speed"
-        )
+    suspend fun checkSpeedDemonAchievement(userId: String, timeTaken: Int, targetTime: Int = 30): Boolean {
+        if (timeTaken <= targetTime) {
+            return awardAchievement(
+                userId = userId,
+                achievementType = "SPEED_DEMON",
+                name = "Speed Demon",
+                description = "Complete a game in under 30 seconds",
+                iconName = "ic_flash"
+            )
+        }
+        return false
     }
 
     /**
-     * Check and award "Memory Guru" achievement
+     * Check and award "Memory Guru" achievement - Achieve 95% accuracy
      */
-    suspend fun checkMemoryGuruAchievement(userId: String, accuracy: Float, threshold: Float = 95f): Boolean {
-        if (accuracy < threshold) return false
-
-        return awardAchievement(
-            userId = userId,
-            achievementType = "MEMORY_GURU",
-            name = "Memory Guru",
-            description = "Achieve ${threshold.toInt()}% accuracy",
-            iconName = "ic_brain"
-        )
+    suspend fun checkMemoryGuruAchievement(userId: String, accuracy: Float, targetAccuracy: Float = 95f): Boolean {
+        if (accuracy >= targetAccuracy) {
+            return awardAchievement(
+                userId = userId,
+                achievementType = "MEMORY_GURU",
+                name = "Memory Guru",
+                description = "Achieve 95% accuracy",
+                iconName = "ic_brain"
+            )
+        }
+        return false
     }
 
     /**
-     * 🆕 Check and award "Champion" achievement - Win 50 games
+     * Check and award "Champion" achievement - Win 50 games
      */
     suspend fun checkChampionAchievement(userId: String): Boolean {
         return try {
-            val winsCount = gameResultDao.getWinsCount(userId)
-            if (winsCount >= 50) {
+            val totalWins = gameResultDao.getWinsCount(userId)
+            if (totalWins >= 50) {
                 awardAchievement(
                     userId = userId,
                     achievementType = "CHAMPION",
                     name = "Champion",
                     description = "Win 50 games",
-                    iconName = "ic_trophy"
+                    iconName = "ic_medal"
                 )
             } else {
                 false
@@ -411,22 +421,23 @@ class AchievementRepository(
     }
 
     /**
-     * 🆕 Check and award "High Scorer" achievement - Score over 2000 in one game
+     * Check and award "High Scorer" achievement - Score over 2000 points in one game
      */
     suspend fun checkHighScorerAchievement(userId: String, score: Int): Boolean {
-        if (score < 2000) return false
-
-        return awardAchievement(
-            userId = userId,
-            achievementType = "HIGH_SCORER",
-            name = "High Scorer",
-            description = "Score over 2000 points in one game",
-            iconName = "ic_star"
-        )
+        if (score >= 2000) {
+            return awardAchievement(
+                userId = userId,
+                achievementType = "HIGH_SCORER",
+                name = "High Scorer",
+                description = "Score over 2000 points in one game",
+                iconName = "ic_star"
+            )
+        }
+        return false
     }
 
     /**
-     * 🆕 Check and award "Persistent Player" achievement - Play 100 games
+     * Check and award "Persistent Player" achievement - Play 100 games
      */
     suspend fun checkPersistentAchievement(userId: String): Boolean {
         return try {
@@ -437,7 +448,7 @@ class AchievementRepository(
                     achievementType = "PERSISTENT",
                     name = "Persistent Player",
                     description = "Play 100 games",
-                    iconName = "ic_schedule"
+                    iconName = "ic_gamepad"
                 )
             } else {
                 false
@@ -449,7 +460,7 @@ class AchievementRepository(
     }
 
     /**
-     * 🆕 Check and award "Streak Master" achievement - Maintain a 7-day streak
+     * Check and award "Streak Master" achievement - Maintain a 7-day streak
      */
     suspend fun checkStreakMasterAchievement(userId: String): Boolean {
         return try {
@@ -474,17 +485,18 @@ class AchievementRepository(
     }
 
     /**
-     * 🆕 Check and award "Theme Explorer" achievement - Try all 5 themes
+     * Check and award "Theme Explorer" achievement - Try all 5 themes
      */
     suspend fun checkThemeExplorerAchievement(userId: String): Boolean {
         return try {
-            val allGames = gameResultDao.getAllGamesForUser(userId)
-            val uniqueThemes = allGames.map { it.theme }.distinct()
+            // 🔥 FIXED: Changed from getAllGameResults to getAllGamesForUser
+            val allResults = gameResultDao.getAllGamesForUser(userId)
 
-            Log.d(TAG, "   Unique themes played: ${uniqueThemes.size} - $uniqueThemes")
+            // Get unique themes from game results
+            val uniqueThemes = allResults.map { it.theme }.toSet()
 
-            // If user has played 5 or more different themes, unlock
-            if (uniqueThemes.size >= 5) {
+            // 🔥 FIXED: Changed from .size to .count() and using toSet() to get distinct themes
+            if (uniqueThemes.count() >= 5) {
                 awardAchievement(
                     userId = userId,
                     achievementType = "THEME_EXPLORER",
@@ -502,7 +514,7 @@ class AchievementRepository(
     }
 
     /**
-     * 🆕 Check and award "Arcade Master" achievement - Complete all arcade levels (16 levels)
+     * Check and award "Arcade Master" achievement - Complete all arcade levels (16 levels)
      */
     suspend fun checkArcadeMasterAchievement(userId: String): Boolean {
         return try {
@@ -527,7 +539,7 @@ class AchievementRepository(
     }
 
     /**
-     * 🆕 Check and award "Level Conqueror" achievement - Complete all 16 levels
+     * Check and award "Level Conqueror" achievement - Complete all 16 levels
      */
     suspend fun checkLevelConquerorAchievement(userId: String): Boolean {
         return try {
@@ -552,7 +564,7 @@ class AchievementRepository(
     }
 
     /**
-     * 🆕 Check and award "Flawless Victory" achievement - Complete a game with no mistakes
+     * Check and award "Flawless Victory" achievement - Complete a game with no mistakes
      */
     suspend fun checkFlawlessAchievement(userId: String, moves: Int, perfectMoves: Int): Boolean {
         // Flawless = moves equals perfect moves (no wrong guesses)
@@ -568,7 +580,7 @@ class AchievementRepository(
     }
 
     /**
-     * 🔥 NEW: Check ALL achievements at once after a game
+     * 🔥 COMPREHENSIVE: Check ALL achievements at once after a game
      * Call this from ViewModels after each game completion
      */
     suspend fun checkAllAchievements(
@@ -581,70 +593,75 @@ class AchievementRepository(
         isWin: Boolean
     ) {
         try {
-            Log.d(TAG, "🏆 Checking all achievements...")
-            Log.d(TAG, "   Score: $score, Moves: $moves, Time: $timeTaken, Accuracy: $accuracy, Win: $isWin")
+            Log.d(TAG, "🏆 ========== CHECKING ALL ACHIEVEMENTS ==========")
+            Log.d(TAG, "   Score: $score, Moves: $moves, Time: $timeTaken, Accuracy: $accuracy%, Win: $isWin")
 
-            // Check instant achievements (based on current game)
+            // 1. First Win (requires win)
+            if (isWin) {
+                Log.d(TAG, "   Checking First Win...")
+                val firstWin = checkFirstWinAchievement(userId, isWin)
+                if (firstWin) Log.d(TAG, "   ✅ FIRST WIN UNLOCKED!")
+            }
+
+            // 2. High Scorer (instant check)
             Log.d(TAG, "   Checking High Scorer (need 2000+, have: $score)...")
             val highScorer = checkHighScorerAchievement(userId, score)
-            if (highScorer) Log.d(TAG, "   🏆 HIGH SCORER UNLOCKED!")
+            if (highScorer) Log.d(TAG, "   ✅ HIGH SCORER UNLOCKED!")
 
+            // 3. Flawless (instant check)
             Log.d(TAG, "   Checking Flawless (need $perfectMoves moves, have: $moves)...")
             val flawless = checkFlawlessAchievement(userId, moves, perfectMoves)
-            if (flawless) Log.d(TAG, "   🏆 FLAWLESS UNLOCKED!")
+            if (flawless) Log.d(TAG, "   ✅ FLAWLESS UNLOCKED!")
 
-            // Check cumulative achievements (based on total stats)
+            // 4. Speed Demon (instant check)
+            Log.d(TAG, "   Checking Speed Demon (need ≤30s, have: ${timeTaken}s)...")
+            val speedDemon = checkSpeedDemonAchievement(userId, timeTaken, 30)
+            if (speedDemon) Log.d(TAG, "   ✅ SPEED DEMON UNLOCKED!")
+
+            // 5. Memory Guru (instant check)
+            Log.d(TAG, "   Checking Memory Guru (need ≥95%, have: $accuracy%)...")
+            val memoryGuru = checkMemoryGuruAchievement(userId, accuracy, 95f)
+            if (memoryGuru) Log.d(TAG, "   ✅ MEMORY GURU UNLOCKED!")
+
+            // 6. Cumulative achievements
             val totalGames = gameResultDao.getTotalGamesCount(userId)
             val totalWins = gameResultDao.getWinsCount(userId)
-            Log.d(TAG, "   Total Games: $totalGames, Total Wins: $totalWins")
+            Log.d(TAG, "   Total Stats - Games: $totalGames, Wins: $totalWins")
 
+            // 7. Champion (50 wins)
             Log.d(TAG, "   Checking Champion (need 50 wins, have: $totalWins)...")
             val champion = checkChampionAchievement(userId)
-            if (champion) Log.d(TAG, "   🏆 CHAMPION UNLOCKED!")
+            if (champion) Log.d(TAG, "   ✅ CHAMPION UNLOCKED!")
 
+            // 8. Persistent (100 games)
             Log.d(TAG, "   Checking Persistent (need 100 games, have: $totalGames)...")
             val persistent = checkPersistentAchievement(userId)
-            if (persistent) Log.d(TAG, "   🏆 PERSISTENT UNLOCKED!")
+            if (persistent) Log.d(TAG, "   ✅ PERSISTENT UNLOCKED!")
 
+            // 9. Streak Master
             val userProfile = userProfileDao.getUserProfile(userId)
             val currentStreak = userProfile?.currentStreak ?: 0
-            Log.d(TAG, "   Checking Streak Master (need 7 days, have: $currentStreak)...")
+            Log.d(TAG, "   Checking Streak Master (need 7 days, have: $currentStreak days)...")
             val streakMaster = checkStreakMasterAchievement(userId)
-            if (streakMaster) Log.d(TAG, "   🏆 STREAK MASTER UNLOCKED!")
+            if (streakMaster) Log.d(TAG, "   ✅ STREAK MASTER UNLOCKED!")
 
-            val allGames = gameResultDao.getAllGamesForUser(userId)
-            val uniqueThemes = allGames.map { it.theme }.distinct()
-            Log.d(TAG, "   Checking Theme Explorer (need 5 themes, have: ${uniqueThemes.size} - $uniqueThemes)...")
+            // 10. Theme Explorer
+            Log.d(TAG, "   Checking Theme Explorer...")
             val themeExplorer = checkThemeExplorerAchievement(userId)
-            if (themeExplorer) Log.d(TAG, "   🏆 THEME EXPLORER UNLOCKED!")
+            if (themeExplorer) Log.d(TAG, "   ✅ THEME EXPLORER UNLOCKED!")
 
-            val allLevels = levelProgressDao.getAllLevelsProgress(userId)
-            val completedLevels = allLevels.filter { it.isCompleted && it.levelNumber <= 16 }
-            Log.d(TAG, "   Checking Arcade Master (need 16 levels, have: ${completedLevels.size})...")
+            // 11. Arcade Master / Level Conqueror
+            Log.d(TAG, "   Checking Arcade Master / Level Conqueror...")
             val arcadeMaster = checkArcadeMasterAchievement(userId)
-            if (arcadeMaster) Log.d(TAG, "   🏆 ARCADE MASTER UNLOCKED!")
+            if (arcadeMaster) Log.d(TAG, "   ✅ ARCADE MASTER UNLOCKED!")
 
-            Log.d(TAG, "   Checking Level Conqueror (need 16 levels, have: ${completedLevels.size})...")
             val levelConqueror = checkLevelConquerorAchievement(userId)
-            if (levelConqueror) Log.d(TAG, "   🏆 LEVEL CONQUEROR UNLOCKED!")
+            if (levelConqueror) Log.d(TAG, "   ✅ LEVEL CONQUEROR UNLOCKED!")
 
-            Log.d(TAG, "✅ All achievements checked!")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Error checking all achievements: ${e.message}", e)
-        }
-    }
+            Log.d(TAG, "🏆 ========== ACHIEVEMENT CHECK COMPLETE ==========")
 
-    /**
-     * Delete all achievements for user
-     */
-    suspend fun deleteAllAchievementsForUser(userId: String): Boolean {
-        return try {
-            achievementDao.deleteAllAchievementsForUser(userId)
-            Log.d(TAG, "✅ All achievements deleted for user: $userId")
-            true
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error deleting achievements: ${e.message}", e)
-            false
+            Log.e(TAG, "❌ Error in checkAllAchievements: ${e.message}", e)
         }
     }
 }

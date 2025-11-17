@@ -130,14 +130,14 @@ fun ThemeCard(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val themeName = stringResource(theme.themeNameResId)  // ✅ Get localized name
+    val themeName = stringResource(theme.themeNameResId)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .clickable {
-                // 🔥 FIXED: Check if notification already sent before sending
+                // Check if notification already sent before sending
                 val userId = AuthManager.getCurrentUser()?.uid
                 if (userId != null) {
                     if (!NotificationTracker.hasThemeUnlockBeenSent(context, userId, themeName)) {
@@ -154,7 +154,7 @@ fun ThemeCard(
             },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E88E5).copy(alpha = 0.9f)
+            containerColor = Color.Transparent  // 🔥 FIXED: Changed from blue to transparent
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -162,13 +162,29 @@ fun ThemeCard(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            // Theme image background - 🔥 FIXED: Changed to previewImage
+            // Theme image background - 🔥 FIXED: Removed alpha to show image clearly
             Image(
                 painter = painterResource(id = theme.previewImage),
                 contentDescription = themeName,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                alpha = 0.3f
+                contentScale = ContentScale.Crop
+                // 🔥 REMOVED: alpha = 0.3f
+            )
+
+            // Dark overlay for text readability - 🔥 NEW: Added subtle dark gradient
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.5f)
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
             )
 
             // Theme name text
@@ -178,7 +194,7 @@ fun ThemeCard(
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.5f),
+                        color = Color.Black.copy(alpha = 0.8f),  // 🔥 Increased shadow for better readability
                         offset = Offset(2f, 2f),
                         blurRadius = 4f
                     )
