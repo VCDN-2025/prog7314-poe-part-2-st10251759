@@ -25,6 +25,7 @@ import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.GameResultRepository
 import vcmsa.projects.prog7314.data.repository.ApiRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
+import vcmsa.projects.prog7314.data.repository.SettingsSyncRepository
 import vcmsa.projects.prog7314.data.sync.SyncManager
 import vcmsa.projects.prog7314.data.sync.FirestoreManager
 import vcmsa.projects.prog7314.data.sync.ProgressSyncHelper
@@ -37,6 +38,7 @@ import vcmsa.projects.prog7314.utils.NetworkManager
 import vcmsa.projects.prog7314.utils.NotificationHelper
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
 import vcmsa.projects.prog7314.utils.LanguageManager
+import vcmsa.projects.prog7314.utils.NotificationScheduler
 
 class MainActivity : FragmentActivity() {
     private lateinit var syncManager: SyncManager
@@ -63,6 +65,9 @@ class MainActivity : FragmentActivity() {
         NotificationHelper.requestNotificationPermission(this)
         getFCMToken()
         LocalNotificationManager.initialize(this)
+        // 🔥 NEW: Schedule daily notifications
+        NotificationScheduler.scheduleDailyStreakCheck(this)
+        Log.d("MainActivity", "✅ Daily notifications scheduled")
 
         syncManager = SyncManager(this)
         syncManager.initialize()
@@ -362,7 +367,20 @@ fun MemoryMatchMadnessApp() {
                     val userId = AuthManager.getCurrentUser()?.uid
                     if (userId != null) {
                         coroutineScope.launch {
-                            // 🔥 NEW: Perform full Firestore sync on login
+                            // 🔥 NEW: Load Settings from Firestore FIRST
+                            try {
+                                val settingsSyncRepo = SettingsSyncRepository(context)
+                                val settingsResult = settingsSyncRepo.loadSettingsFromFirestore()
+                                if (settingsResult.isSuccess) {
+                                    Log.d("MainActivity", "✅ Settings loaded from Firestore")
+                                } else {
+                                    Log.d("MainActivity", "ℹ️ No cloud settings found, using local")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("MainActivity", "❌ Error loading settings: ${e.message}", e)
+                            }
+
+                            // 🔥 Perform full Firestore sync on login
                             val syncManager = SyncManager(context)
                             syncManager.performFullFirestoreSync()
                             Log.d("MainActivity", "🔄 Full Firestore sync initiated on login")

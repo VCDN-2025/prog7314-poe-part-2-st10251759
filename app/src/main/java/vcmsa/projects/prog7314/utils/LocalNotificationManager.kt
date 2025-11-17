@@ -234,7 +234,6 @@ object LocalNotificationManager {
 
     /**
      * Generic notification display method with database save and duplicate prevention
-     * 🔥 FIXED: Uses flag variable to prevent duplicate popups
      */
     private fun showNotification(
         context: Context,
@@ -251,17 +250,15 @@ object LocalNotificationManager {
             return
         }
 
-        // 🔥 Flag to track if we should show the popup
         var shouldShowPopup = true
 
         val userId = AuthManager.getCurrentUser()?.uid
         if (userId != null) {
-            // 🔥 Use runBlocking to check duplicates SYNCHRONOUSLY
             runBlocking {
                 try {
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
 
-                    // 🔥 CHECK FOR DUPLICATES: Don't create if same notification exists in last 5 minutes
+                    // Check for duplicates
                     val existingNotifications = notificationRepo.getAllNotifications(userId)
                     val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
 
@@ -274,7 +271,7 @@ object LocalNotificationManager {
 
                     if (isDuplicate) {
                         Log.d(TAG, "⏭️ Skipping duplicate notification: $title")
-                        shouldShowPopup = false  // 🔥 Set flag to false
+                        shouldShowPopup = false
                         return@runBlocking
                     }
 
@@ -291,12 +288,11 @@ object LocalNotificationManager {
                     Log.d(TAG, "✅ Notification saved to database")
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ Error saving notification to database: ${e.message}", e)
-                    shouldShowPopup = false  // 🔥 Don't show popup on error
+                    shouldShowPopup = false
                 }
             }
         }
 
-        // 🔥 Only show popup if flag is true (not a duplicate and no error)
         if (!shouldShowPopup) {
             Log.d(TAG, "🚫 Popup notification skipped")
             return
@@ -332,21 +328,47 @@ object LocalNotificationManager {
     }
 
     /**
-     * Save last play date for streak tracking
+     * 🔥 NEW: Save last play date using UserProfileRepository (syncs to Firestore)
      */
     fun saveLastPlayDate(context: Context) {
-        val prefs = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
-        val currentTime = System.currentTimeMillis()
-        prefs.edit().putLong("last_play_date", currentTime).apply()
-        Log.d(TAG, "Last play date saved: $currentTime")
+        runBlocking {
+            try {
+                val userId = AuthManager.getCurrentUser()?.uid
+                if (userId != null) {
+                    val userProfileRepo = RepositoryProvider.getUserProfileRepository()
+                    val success = userProfileRepo.updateDailyStreak(userId)
+
+                    if (success) {
+                        Log.d(TAG, "✅ Last play date saved and streak updated via repository")
+                    } else {
+                        Log.e(TAG, "❌ Failed to save last play date")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error saving last play date: ${e.message}", e)
+            }
+        }
     }
 
     /**
-     * Get last play date
+     * 🔥 NEW: Get last play date from UserProfileRepository
      */
     fun getLastPlayDate(context: Context): Long {
-        val prefs = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
-        return prefs.getLong("last_play_date", 0L)
+        return runBlocking {
+            try {
+                val userId = AuthManager.getCurrentUser()?.uid
+                if (userId != null) {
+                    val userProfileRepo = RepositoryProvider.getUserProfileRepository()
+                    val profile = userProfileRepo.getUserProfile(userId)
+                    profile?.lastPlayDate ?: 0L
+                } else {
+                    0L
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting last play date: ${e.message}", e)
+                0L
+            }
+        }
     }
 
     /**

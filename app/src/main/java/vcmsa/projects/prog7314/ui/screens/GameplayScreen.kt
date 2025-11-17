@@ -1,5 +1,6 @@
 package vcmsa.projects.prog7314.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -34,6 +35,7 @@ import vcmsa.projects.prog7314.data.models.GameTheme
 import vcmsa.projects.prog7314.data.models.GridSize
 import vcmsa.projects.prog7314.ui.viewmodels.GameViewModel
 import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
 
 @Composable
 fun GameplayScreen(
@@ -58,6 +60,15 @@ fun GameplayScreen(
     // Initialize game once
     LaunchedEffect(theme, gridSize) {
         viewModel.initializeGame(theme, gridSize)
+    }
+
+    // 🔥 Save last play date when game completes
+    LaunchedEffect(isGameComplete) {
+        if (isGameComplete && gameResult != null) {
+            Log.d("GameplayScreen", "🎮 Game completed! Saving last play date...")
+            LocalNotificationManager.saveLastPlayDate(context)
+            Log.d("GameplayScreen", "✅ Last play date should be saved now")
+        }
     }
 
     Box(

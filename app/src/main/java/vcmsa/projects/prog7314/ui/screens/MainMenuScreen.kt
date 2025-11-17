@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.AppDatabase
@@ -31,6 +32,7 @@ import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.NetworkManager
 import vcmsa.projects.prog7314.data.sync.SyncManager
+import vcmsa.projects.prog7314.utils.LocalNotificationManager
 
 @Composable
 fun MainMenuScreen(
@@ -54,8 +56,12 @@ fun MainMenuScreen(
     val isOnline by NetworkManager.isOnline.collectAsState()
     var unsyncedCount by remember { mutableStateOf(0) }
 
-    // 🔥 NEW: Show sync status dialog
+    // 🔥 Sync status dialog
     var showSyncDialog by remember { mutableStateOf(false) }
+
+    // 🔥 NEW: Streak countdown timer
+    var hoursRemaining by remember { mutableStateOf(0) }
+    var minutesRemaining by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
         scope.launch {
@@ -101,6 +107,31 @@ fun MainMenuScreen(
         }
     }
 
+    // 🔥 NEW: Update countdown timer every minute
+    LaunchedEffect(currentStreak) {
+        if (currentStreak > 0) {
+            while (true) {
+                val lastPlayDate = LocalNotificationManager.getLastPlayDate(context)
+                if (lastPlayDate > 0) {
+                    val currentTime = System.currentTimeMillis()
+                    val hoursElapsed = (currentTime - lastPlayDate) / (1000 * 60 * 60)
+                    val hoursUntilExpiry = 48 - hoursElapsed
+
+                    if (hoursUntilExpiry > 0) {
+                        hoursRemaining = hoursUntilExpiry.toInt()
+                        val totalMinutesElapsed = (currentTime - lastPlayDate) / (1000 * 60)
+                        val minutesInCurrentHour = totalMinutesElapsed % 60
+                        minutesRemaining = (60 - minutesInCurrentHour).toInt()
+                    } else {
+                        hoursRemaining = 0
+                        minutesRemaining = 0
+                    }
+                }
+                delay(60000) // Update every minute
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.card_background),
@@ -137,7 +168,7 @@ fun MainMenuScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Streak Card
+                // Streak Card with Countdown
                 if (currentStreak > 0) {
                     Card(
                         modifier = Modifier.padding(end = 8.dp),
@@ -160,6 +191,15 @@ fun MainMenuScreen(
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFFF6F00)
                                 )
+                                // 🔥 NEW: Countdown timer
+                                if (hoursRemaining > 0) {
+                                    Text(
+                                        text = "⏰ ${hoursRemaining}h ${minutesRemaining}m left",
+                                        fontSize = 10.sp,
+                                        color = if (hoursRemaining < 24) Color(0xFFFF5722) else Color(0xFF4CAF50),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                                 Text(
                                     text = stringResource(R.string.best_days, bestStreak),
                                     fontSize = 11.sp,
@@ -177,7 +217,7 @@ fun MainMenuScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 🔥 WiFi Status Icon (Clickable)
+                    // WiFi Status Icon (Clickable)
                     IconButton(
                         onClick = { showSyncDialog = true },
                         modifier = Modifier
@@ -191,9 +231,9 @@ fun MainMenuScreen(
                             imageVector = if (isOnline) Icons.Default.Wifi else Icons.Default.WifiOff,
                             contentDescription = if (isOnline) "Online" else "Offline",
                             tint = when {
-                                !isOnline -> Color(0xFFFF3D00) // Red - Offline
-                                unsyncedCount > 0 -> Color(0xFFFFA726) // Orange - Syncing
-                                else -> Color(0xFF66BB6A) // Green - Synced
+                                !isOnline -> Color(0xFFFF3D00)
+                                unsyncedCount > 0 -> Color(0xFFFFA726)
+                                else -> Color(0xFF66BB6A)
                             },
                             modifier = Modifier.size(24.dp)
                         )
@@ -312,7 +352,7 @@ fun MainMenuScreen(
         }
     }
 
-    // 🔥 NEW: Sync Status Dialog
+    // Sync Status Dialog
     if (showSyncDialog) {
         AlertDialog(
             onDismissRequest = { showSyncDialog = false },

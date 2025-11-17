@@ -1,5 +1,6 @@
 package vcmsa.projects.prog7314.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -84,8 +85,10 @@ fun ArcadeGameplayScreen(
             hasCalledCompletionCallback = true
             val finalScore = viewModel.getFinalScore()
 
-            // Save last play date for streak tracking
+            // 🔥 Save last play date for streak tracking
+            Log.d("ArcadeGameplay", "🎮 Game completed! Saving last play date...")
             LocalNotificationManager.saveLastPlayDate(context)
+            Log.d("ArcadeGameplay", "✅ Last play date should be saved now")
 
             // All notifications are now handled by repositories
             onGameComplete(

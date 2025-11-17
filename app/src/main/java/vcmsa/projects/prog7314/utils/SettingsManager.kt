@@ -3,6 +3,10 @@ package vcmsa.projects.prog7314.utils
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import vcmsa.projects.prog7314.data.repository.SettingsSyncRepository
 
 object SettingsManager {
 
@@ -37,11 +41,27 @@ object SettingsManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    /**
+     * 🔥 NEW: Trigger sync after setting change
+     */
+    private fun triggerSync(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val syncRepo = SettingsSyncRepository(context)
+                val isOnline = NetworkManager.isNetworkAvailable()
+                syncRepo.onSettingChanged(isOnline)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error triggering settings sync: ${e.message}", e)
+            }
+        }
+    }
+
     // ===== PROFILE IMAGE SETTINGS =====
 
     fun setProfileImageUri(context: Context, uriString: String?) {
         getPreferences(context).edit().putString(KEY_PROFILE_IMAGE_URI, uriString).apply()
         Log.d(TAG, "Profile image URI saved: $uriString")
+        // Profile images are device-specific, don't sync
     }
 
     fun getProfileImageUri(context: Context): String? {
@@ -58,6 +78,7 @@ object SettingsManager {
     fun setLanguage(context: Context, language: String) {
         getPreferences(context).edit().putString(KEY_LANGUAGE, language).apply()
         Log.d(TAG, "Language set to: $language")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun getLanguage(context: Context): String {
@@ -69,6 +90,7 @@ object SettingsManager {
     fun setNotificationsEnabled(context: Context, enabled: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled).apply()
         Log.d(TAG, "Notifications enabled: $enabled")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun isNotificationsEnabled(context: Context): Boolean {
@@ -78,6 +100,7 @@ object SettingsManager {
     fun setDailyReminderEnabled(context: Context, enabled: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_DAILY_REMINDER, enabled).apply()
         Log.d(TAG, "Daily reminder enabled: $enabled")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun isDailyReminderEnabled(context: Context): Boolean {
@@ -87,6 +110,7 @@ object SettingsManager {
     fun setAchievementAlertsEnabled(context: Context, enabled: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_ACHIEVEMENT_ALERTS, enabled).apply()
         Log.d(TAG, "Achievement alerts enabled: $enabled")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun isAchievementAlertsEnabled(context: Context): Boolean {
@@ -98,6 +122,7 @@ object SettingsManager {
     fun setSoundEffectsEnabled(context: Context, enabled: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_SOUND_EFFECTS, enabled).apply()
         Log.d(TAG, "Sound effects enabled: $enabled")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun isSoundEffectsEnabled(context: Context): Boolean {
@@ -107,6 +132,7 @@ object SettingsManager {
     fun setBackgroundMusicEnabled(context: Context, enabled: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_BACKGROUND_MUSIC, enabled).apply()
         Log.d(TAG, "Background music enabled: $enabled")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun isBackgroundMusicEnabled(context: Context): Boolean {
@@ -118,6 +144,7 @@ object SettingsManager {
     fun setCardBackground(context: Context, theme: String) {
         getPreferences(context).edit().putString(KEY_CARD_BACKGROUND, theme).apply()
         Log.d(TAG, "Card background set to: $theme")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun getCardBackground(context: Context): String {
@@ -128,6 +155,7 @@ object SettingsManager {
     fun setHighContrastMode(context: Context, enabled: Boolean) {
         getPreferences(context).edit().putBoolean(KEY_HIGH_CONTRAST, enabled).apply()
         Log.d(TAG, "High contrast mode: $enabled")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     fun isHighContrastMode(context: Context): Boolean {
@@ -151,6 +179,7 @@ object SettingsManager {
             apply()
         }
         Log.d(TAG, "Settings reset to defaults")
+        triggerSync(context) // 🔥 Sync to cloud
     }
 
     // ===== UTILITY FUNCTIONS =====
@@ -172,8 +201,6 @@ object SettingsManager {
             "profile_image_uri" to getProfileImageUri(context)
         )
     }
-
-    
 
     /**
      * Log all current settings (for debugging)

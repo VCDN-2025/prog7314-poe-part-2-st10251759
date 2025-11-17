@@ -16,7 +16,7 @@ import vcmsa.projects.prog7314.data.entities.*
         ArcadeSessionEntity::class,
         NotificationEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,7 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun levelProgressDao(): LevelProgressDao
     abstract fun arcadeSessionDao(): ArcadeSessionDao
 
-   // Notification DAO
+    // Notification DAO
     abstract fun notificationDao(): NotificationDao
 
     companion object {
