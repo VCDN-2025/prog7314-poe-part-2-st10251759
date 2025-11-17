@@ -1523,7 +1523,7 @@ class LanguageManager(
   <sub>Fingerprint authentication dialog</sub>
 </td>
 <td align="center" width="50%">
-  <img src="images/part3/biometric_settings.jgp" width="250"/><br/>
+  <img src="images/part3/biometric_settings.jpg" width="250"/><br/>
   <b>Biometric Settings</b><br/>
   <sub>Enable/disable toggle</sub>
 </td>
