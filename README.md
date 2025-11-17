@@ -1194,10 +1194,6 @@ class AnalyticsEngine {
 
 ### Real-Time Notification System
 
-<div align="center">
-<img src="images/part3/notification_settings.jgp" width="800" alt="Notification System"/>
-</div>
-
 **Firebase Cloud Messaging Integration:**
 ```kotlin
 // FCMService.kt
