@@ -234,6 +234,7 @@ object LocalNotificationManager {
 
     /**
      * Generic notification display method with database save and duplicate prevention
+     * 🔥 FIXED: Enhanced duplicate prevention using both database and time-based checking
      */
     private fun showNotification(
         context: Context,
@@ -258,19 +259,30 @@ object LocalNotificationManager {
                 try {
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
 
-                    // Check for duplicates
+                    // 🔥 ENHANCED: Check for duplicates in last 24 hours (not just 5 minutes)
                     val existingNotifications = notificationRepo.getAllNotifications(userId)
-                    val fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000)
+                    val oneDayAgo = System.currentTimeMillis() - (24 * 60 * 60 * 1000)
 
                     val isDuplicate = existingNotifications.any { notif ->
                         notif.type == type &&
                                 notif.title == title &&
                                 notif.message == message &&
-                                notif.timestamp > fiveMinutesAgo
+                                notif.timestamp > oneDayAgo
                     }
 
                     if (isDuplicate) {
-                        Log.d(TAG, "⏭️ Skipping duplicate notification: $title")
+                        Log.d(TAG, "⏭️ Skipping duplicate notification: $title (found in last 24 hours)")
+                        shouldShowPopup = false
+                        return@runBlocking
+                    }
+
+                    // 🔥 NEW: Additional duplicate check - count recent similar notifications
+                    val recentSimilarCount = existingNotifications.count { notif ->
+                        notif.type == type && notif.timestamp > oneDayAgo
+                    }
+
+                    if (recentSimilarCount >= 3) {
+                        Log.d(TAG, "⏭️ Skipping notification to prevent flooding: $title (already sent $recentSimilarCount similar notifications today)")
                         shouldShowPopup = false
                         return@runBlocking
                     }
@@ -285,18 +297,21 @@ object LocalNotificationManager {
                         iconType = iconType,
                         actionData = actionData
                     )
+
                     Log.d(TAG, "✅ Notification saved to database")
+
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ Error saving notification to database: ${e.message}", e)
-                    shouldShowPopup = false
+                    Log.e(TAG, "❌ Error saving notification: ${e.message}", e)
                 }
             }
         }
 
         if (!shouldShowPopup) {
-            Log.d(TAG, "🚫 Popup notification skipped")
             return
         }
+
+        // Create notification channel
+        createNotificationChannel(context)
 
         // Intent to open app when notification is tapped
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -306,14 +321,24 @@ object LocalNotificationManager {
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            type.hashCode(), // Use type hashCode for unique request code
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        // Select appropriate icon
+        val iconRes = when (iconType) {
+            "trophy" -> R.drawable.ic_launcher_foreground
+            "level" -> R.drawable.ic_launcher_foreground
+            "star" -> R.drawable.ic_launcher_foreground
+            "fire" -> R.drawable.ic_launcher_foreground
+            "theme" -> R.drawable.ic_launcher_foreground
+            else -> R.drawable.ic_launcher_foreground
+        }
+
         // Build notification
         val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(iconRes)
             .setContentTitle(title)
             .setContentText(message)
             .setAutoCancel(true)
@@ -321,10 +346,14 @@ object LocalNotificationManager {
             .setContentIntent(pendingIntent)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
 
+        // Show notification
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
 
-        Log.d(TAG, "Notification displayed: $title")
+        // 🔥 FIXED: Use unique notification ID based on type and timestamp to avoid replacing
+        val notificationId = (type.hashCode() + System.currentTimeMillis()).toInt()
+        notificationManager.notify(notificationId, notificationBuilder.build())
+
+        Log.d(TAG, "🔔 Notification displayed: $title")
     }
 
     /**

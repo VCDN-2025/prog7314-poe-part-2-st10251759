@@ -9,6 +9,7 @@ import vcmsa.projects.prog7314.data.dao.LevelProgressDao
 import vcmsa.projects.prog7314.data.dao.UserProfileDao
 import vcmsa.projects.prog7314.data.entities.AchievementEntity
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
+import vcmsa.projects.prog7314.utils.NotificationTracker
 import java.util.UUID
 
 class AchievementRepository(
@@ -259,7 +260,7 @@ class AchievementRepository(
 
     /**
      * Award achievement by type (creates if doesn't exist, unlocks if exists)
-     * 🔥 NOW TRIGGERS NOTIFICATIONS!
+     * 🔥 FIXED: Only triggers notifications for new achievements, prevents duplicates
      */
     suspend fun awardAchievement(
         userId: String,
@@ -277,20 +278,26 @@ class AchievementRepository(
                 if (!existing.isUnlocked) {
                     unlockAchievement(existing.achievementId)
 
-                    // 🔥 TRIGGER NOTIFICATION
-                    try {
-                        LocalNotificationManager.notifyAchievementUnlocked(
-                            context = context,
-                            achievementTitle = name,
-                            achievementDescription = description
-                        )
-                        Log.d(TAG, "🔔 Notification sent for: $name")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                    // 🔥 FIXED: Check if notification already sent
+                    if (!NotificationTracker.hasAchievementNotificationBeenSent(context, userId, achievementType)) {
+                        try {
+                            LocalNotificationManager.notifyAchievementUnlocked(
+                                context = context,
+                                achievementTitle = name,
+                                achievementDescription = description
+                            )
+                            NotificationTracker.markAchievementNotificationAsSent(context, userId, achievementType)
+                            Log.d(TAG, "🔔 Notification sent for: $name")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                        }
+                    } else {
+                        Log.d(TAG, "⏭️ Skipping achievement notification (already sent for $achievementType)")
                     }
 
                     true
                 } else {
+                    Log.d(TAG, "⏭️ Achievement already unlocked: $achievementType")
                     false // Already unlocked
                 }
             } else {
@@ -301,25 +308,31 @@ class AchievementRepository(
                     name = name,
                     description = description,
                     iconName = iconName,
-                    progress = 100,
-                    isUnlocked = true
+                    isUnlocked = true,
+                    progress = 100
                 )
 
                 if (achievementId != null) {
-                    // 🔥 TRIGGER NOTIFICATION
-                    try {
-                        LocalNotificationManager.notifyAchievementUnlocked(
-                            context = context,
-                            achievementTitle = name,
-                            achievementDescription = description
-                        )
-                        Log.d(TAG, "🔔 Notification sent for: $name")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                    // 🔥 FIXED: Check if notification already sent
+                    if (!NotificationTracker.hasAchievementNotificationBeenSent(context, userId, achievementType)) {
+                        try {
+                            LocalNotificationManager.notifyAchievementUnlocked(
+                                context = context,
+                                achievementTitle = name,
+                                achievementDescription = description
+                            )
+                            NotificationTracker.markAchievementNotificationAsSent(context, userId, achievementType)
+                            Log.d(TAG, "🔔 Notification sent for new achievement: $name")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "❌ Error sending notification: ${e.message}", e)
+                        }
+                    } else {
+                        Log.d(TAG, "⏭️ Skipping achievement notification (already sent for $achievementType)")
                     }
+                    true
+                } else {
+                    false
                 }
-
-                achievementId != null
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error awarding achievement: ${e.message}", e)

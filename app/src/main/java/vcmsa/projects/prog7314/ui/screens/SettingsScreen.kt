@@ -43,6 +43,7 @@ import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.BiometricHelper
 import vcmsa.projects.prog7314.utils.LanguageManager
+import vcmsa.projects.prog7314.utils.NotificationTracker
 import vcmsa.projects.prog7314.utils.ProfileImageHelper
 import vcmsa.projects.prog7314.utils.SettingsManager
 
@@ -423,6 +424,14 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
+                        // 🔥 NEW: Clear notification tracking before logout
+                        val userId = AuthManager.getCurrentUser()?.uid
+                        if (userId != null) {
+                            NotificationTracker.clearAllTracking(context, userId)
+                            Log.d("SettingsScreen", "🗑️ Cleared notification tracking on logout")
+                        }
+
+                        // Existing logout code
                         com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
                         AuthManager.clearSavedCredentials(context)
                         showLogoutDialog = false

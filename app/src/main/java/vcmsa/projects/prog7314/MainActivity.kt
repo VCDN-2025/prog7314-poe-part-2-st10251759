@@ -39,6 +39,7 @@ import vcmsa.projects.prog7314.utils.NotificationHelper
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
 import vcmsa.projects.prog7314.utils.LanguageManager
 import vcmsa.projects.prog7314.utils.NotificationScheduler
+import vcmsa.projects.prog7314.utils.NotificationTracker
 
 class MainActivity : FragmentActivity() {
     private lateinit var syncManager: SyncManager
@@ -170,6 +171,18 @@ class MainActivity : FragmentActivity() {
             } catch (e: Exception) {
                 Log.e("MainActivity", "❌ API Test Error: ${e.message}", e)
             }
+        }
+    }
+
+    /**
+     * 🔥 NEW: Clear notification tracking when user logs out
+     * Call this in your logout function
+     */
+    private fun clearNotificationTrackingOnLogout() {
+        val userId = AuthManager.getCurrentUser()?.uid
+        if (userId != null) {
+            NotificationTracker.clearAllTracking(this, userId)
+            Log.d("MainActivity", "🗑️ Cleared notification tracking for logout")
         }
     }
 

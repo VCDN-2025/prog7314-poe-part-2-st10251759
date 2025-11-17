@@ -1,5 +1,6 @@
 package vcmsa.projects.prog7314.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,8 +14,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -24,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameTheme
+import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
+import vcmsa.projects.prog7314.utils.NotificationTracker
 
 @Composable
 fun ThemeSelectionScreen(
@@ -132,56 +137,53 @@ fun ThemeCard(
             .fillMaxWidth()
             .height(100.dp)
             .clickable {
-                // Check if this is the first time unlocking this theme
-                val prefs = context.getSharedPreferences("game_prefs", android.content.Context.MODE_PRIVATE)
-                val themeKey = "theme_unlocked_${themeName.replace(" ", "_")}"  // ✅ Use localized name
-                val hasUnlockedTheme = prefs.getBoolean(themeKey, false)
-
-                if (!hasUnlockedTheme) {
-                    // First time selecting this theme - show notification
-                    LocalNotificationManager.notifyThemeUnlocked(context, themeName)  // ✅ Use localized name
-                    prefs.edit().putBoolean(themeKey, true).apply()
+                // 🔥 FIXED: Check if notification already sent before sending
+                val userId = AuthManager.getCurrentUser()?.uid
+                if (userId != null) {
+                    if (!NotificationTracker.hasThemeUnlockBeenSent(context, userId, themeName)) {
+                        // First time selecting this theme - show notification
+                        LocalNotificationManager.notifyThemeUnlocked(context, themeName)
+                        NotificationTracker.markThemeUnlockAsSent(context, userId, themeName)
+                        Log.d("ThemeCard", "🔔 Theme unlock notification sent for: $themeName")
+                    } else {
+                        Log.d("ThemeCard", "⏭️ Skipping theme notification (already sent for $themeName)")
+                    }
                 }
 
                 onClick()
             },
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E88E5).copy(alpha = 0.9f)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            // Background image
+            // Theme image background - 🔥 FIXED: Changed to previewImage
             Image(
                 painter = painterResource(id = theme.previewImage),
-                contentDescription = themeName,  // ✅ Use localized name
+                contentDescription = themeName,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                alpha = 0.3f
             )
 
-            // Overlay gradient for text readability
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.6f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-
-            // Theme name
+            // Theme name text
             Text(
-                text = themeName,  // ✅ Use localized name
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 24.dp)
+                text = themeName,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    shadow = Shadow(
+                        color = Color.Black.copy(alpha = 0.5f),
+                        offset = Offset(2f, 2f),
+                        blurRadius = 4f
+                    )
+                ),
+                modifier = Modifier.padding(16.dp)
             )
         }
     }

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import vcmsa.projects.prog7314.data.dao.LevelProgressDao
 import vcmsa.projects.prog7314.data.entities.LevelProgressEntity
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
+import vcmsa.projects.prog7314.utils.NotificationTracker
 
 class LevelRepository(
     private val levelProgressDao: LevelProgressDao,
@@ -110,8 +111,21 @@ class LevelRepository(
     }
 
     /**
-     * Complete a level and update progress
-     * 🔥 NOW WITH NOTIFICATIONS!
+     * 🔥 NEW: Check if a level is unlocked
+     */
+    suspend fun isLevelUnlocked(userId: String, levelNumber: Int): Boolean {
+        return try {
+            val level = levelProgressDao.getLevelProgress(userId, levelNumber)
+            level?.isUnlocked ?: false
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking if level is unlocked: ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * Complete a level and unlock the next one
+     * 🔥 FIXED: Only sends notifications for newly unlocked levels
      */
     suspend fun completeLevelAndUnlockNext(
         userId: String,
@@ -138,10 +152,11 @@ class LevelRepository(
                 moves = moves
             )
 
-            // 🔥 NOTIFY: First Level Completed
-            if (isFirstLevel) {
+            // 🔥 FIXED: Check if first level notification already sent
+            if (isFirstLevel && !NotificationTracker.hasFirstLevelNotificationBeenSent(context, userId)) {
                 try {
                     LocalNotificationManager.notifyFirstLevelCompleted(context)
+                    NotificationTracker.markFirstLevelNotificationAsSent(context, userId)
                     Log.d(TAG, "🔔 First level completion notification sent")
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ Error sending first level notification: ${e.message}", e)
@@ -151,15 +166,24 @@ class LevelRepository(
             // Unlock next level if exists
             if (levelNumber < TOTAL_LEVELS) {
                 val nextLevel = levelNumber + 1
+
+                // 🔥 FIXED: Check if level was already unlocked before
+                val wasAlreadyUnlocked = isLevelUnlocked(userId, nextLevel)
+
                 levelProgressDao.unlockLevel(userId, nextLevel)
                 Log.d(TAG, "✅ Unlocked level $nextLevel")
 
-                // 🔥 NOTIFY: Level Unlocked
-                try {
-                    LocalNotificationManager.notifyLevelUnlocked(context, nextLevel)
-                    Log.d(TAG, "🔔 Level unlock notification sent for level $nextLevel")
-                } catch (e: Exception) {
-                    Log.e(TAG, "❌ Error sending level unlock notification: ${e.message}", e)
+                // 🔥 FIXED: Only send notification if this is a NEW unlock
+                if (!wasAlreadyUnlocked && !NotificationTracker.hasLevelUnlockBeenSent(context, userId, nextLevel)) {
+                    try {
+                        LocalNotificationManager.notifyLevelUnlocked(context, nextLevel)
+                        NotificationTracker.markLevelUnlockAsSent(context, userId, nextLevel)
+                        Log.d(TAG, "🔔 Level unlock notification sent for level $nextLevel")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "❌ Error sending level unlock notification: ${e.message}", e)
+                    }
+                } else {
+                    Log.d(TAG, "⏭️ Skipping level unlock notification (already sent or already unlocked)")
                 }
             }
 
