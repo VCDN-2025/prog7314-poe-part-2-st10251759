@@ -27,7 +27,7 @@
 
 ### API Github and Render
 [![PROG7314 PART 3 Repository](https://img.shields.io/badge/GitHub-API%20Repo-181717?logo=github&logoColor=white)](https://github.com/st10251759/memory-match-maddness-api.git)
-[![Render API](https://img.shields.io/badge/Backend_API-009c49?logo=node.js&logoColor=white)](https://memory-match-maddness-api.onrender.com/)
+[![Render API](https://img.shields.io/badge/Render_API-009c49?logo=node.js&logoColor=white)](https://memory-match-maddness-api.onrender.com/)
  
 ---
 ### Demo Videos
@@ -66,6 +66,17 @@
 
 </div>
 
+### Access APK
+<div align="center">
+
+<a href="https://github.com/VCDN-2025/prog7314-poe-part-2-st10251759/tree/ca320ec6898beb920e272afb7451af3832b94a58/APKs" target="_blank">
+  <img src="https://img.shields.io/badge/Access_built_APK_&_Signed_APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="APK"/>
+</a>
+
+*Click above to access the latest built APK and the signed APK for publishing to Playstore*
+
+</div>
+
 </div>
 
 ---
@@ -93,6 +104,7 @@
 - [Getting Started](#getting-started)
 - [Usage Guide](#usage-guide)
 - [Troubleshooting](#troubleshooting)
+- [Resources & References](#resources-&-references)
 - [License](#license)
 
 </details>
@@ -2257,6 +2269,117 @@ rm -rf ~/.gradle/caches/
 
 ---
 
+## Resources & References
+
+### Resources 
+
+| Resource | Link |
+|:---|:---:|
+| **Android Developer Docs** | [developer.android.com](https://developer.android.com/) |
+| **Firebase Documentation** | [firebase.google.com/docs](https://firebase.google.com/docs) |
+| **Jetpack Compose** | [developer.android.com/jetpack/compose](https://developer.android.com/jetpack/compose) |
+| **Kotlin Docs** | [kotlinlang.org/docs](https://kotlinlang.org/docs/home.html) |
+| **Material Design 3** | [m3.material.io](https://m3.material.io/) |
+
+### References
+
+**Biometric Authentication Implementation:**
+- **Author:** Android Developers
+- **Link:** [Login with Biometrics on Android](https://developer.android.com/codelabs/biometric-login#0)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Security and authentication features
+
+**Coroutine Workers Implementation:**
+- **Author:** Android Developers
+- **Link:** [CoroutineWorker documentation](https://developer.android.com/reference/kotlin/androidx/work/CoroutineWorker)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Background task processing
+
+**Creating Data Access Objects:**
+- **Author:** Android Developers
+- **Link:** [Accessing data using Room DAOs](https://developer.android.com/training/data-storage/room/accessing-data)
+- **Date Accessed:** 17 November 2025
+- **Usage:** Data access layer design patterns
+
+**Creating RESTful APIs:**
+- **Author:** W3Schools
+- **Link:** [Node.js REST API Tutorial](https://www.w3schools.com/nodejs/nodejs_rest_api.asp)
+- **Date Accessed:** 17 November 2025
+- **Usage:** API design patterns and implementation
+
+**Creating ViewModels:**
+- **Author:** Android Developers
+- **Link:** [ViewModel Overview](https://developer.android.com/topic/libraries/architecture/viewmodel)
+- **Date Accessed:** 18 November 2025
+- **Usage:** MVVM architecture and ViewModel patterns
+
+**Data Classes in Kotlin:**
+- **Author:** Kotlin
+- **Link:** [Data classes documentation](https://kotlinlang.org/docs/data-classes.html)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Model class implementation patterns
+
+**Developing Kotlin Game Application:**
+- **Author:** Dentistkiller
+- **Link:** [X and O - Android Tic Tac Toe Game](https://github.com/Dentistkiller/TicTacToe)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Kotlin application architecture patterns
+
+**Enum Classes in Kotlin:**
+- **Author:** Kotlin
+- **Link:** [Enum classes documentation](https://kotlinlang.org/docs/enum-classes.html)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Status and type enumeration implementations
+
+**Firebase Authentication:**
+- **Author:** Firebase
+- **Link:** [Firebase Authentication on Android](https://firebase.google.com/docs/auth/android/start)
+- **Date Accessed:** 18 November 2025
+- **Usage:** User authentication system implementation
+
+**Firebase Database Integration:**
+- **Author:** Firebase
+- **Link:** [Firebase Realtime Database Android setup](https://firebase.google.com/docs/database/android/start)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Real-time database connectivity
+
+**Language Preference Implementation:**
+- **Author:** Android Developers
+- **Link:** [Per-app language preferences](https://developer.android.com/guide/topics/resources/app-languages)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Internationalization and localization features
+
+**Push Notifications Implementation:**
+- **Author:** Firebase
+- **Link:** [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Notification system architecture
+
+**Repository Pattern Implementation:**
+- **Author:** Android Developers
+- **Link:** [Data layer architecture](https://developer.android.com/topic/architecture/data-layer)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Repository pattern and data layer design
+
+**Room Database Entities:**
+- **Author:** Android Developers
+- **Link:** [Defining data using Room entities](https://developer.android.com/training/data-storage/room/defining-data)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Database entity design and implementation
+
+**Unit Testing Implementation:**
+- **Author:** Android Developers
+- **Link:** [Build local unit tests](https://developer.android.com/training/testing/local-tests)
+- **Date Accessed:** 18 November 2025
+- **Usage:** Testing strategies and implementation
+
+**Using a Retrofit Client:**
+- **Author:** GeeksforGeeks
+- **Link:** [Introduction to Retrofit in Android](https://www.geeksforgeeks.org/android/introduction-retofit-2-android-set-1/)
+- **Date Accessed:** 17 November 2025
+- **Usage:** API client implementation patterns
+
+---
 ## License
 
 <div align="center">
@@ -2297,17 +2420,6 @@ SOFTWARE.
 - Kotlin - Apache 2.0
 - Retrofit - Apache 2.0
 - Room - Apache 2.0
----
-
-### Resources & References
-
-| Resource | Link |
-|:---|:---:|
-| **Android Developer Docs** | [developer.android.com](https://developer.android.com/) |
-| **Firebase Documentation** | [firebase.google.com/docs](https://firebase.google.com/docs) |
-| **Jetpack Compose** | [developer.android.com/jetpack/compose](https://developer.android.com/jetpack/compose) |
-| **Kotlin Docs** | [kotlinlang.org/docs](https://kotlinlang.org/docs/home.html) |
-| **Material Design 3** | [m3.material.io](https://m3.material.io/) |
 
 ---
 
