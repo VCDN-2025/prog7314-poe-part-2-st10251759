@@ -14,31 +14,56 @@ import vcmsa.projects.prog7314.data.repository.LevelRepository
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 
+/*
+    Code Attribution for: Creating ViewModels
+    ===================================================
+    Android Developers, 2019b. ViewModel Overview | Android Developers (Version unknown) [Source code].
+    Available at: <https://developer.android.com/topic/libraries/architecture/viewmodel>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * ViewModel that manages the level selection screen.
+ * Handles loading and displaying progress for all available levels.
+ */
 class LevelSelectionViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "LevelSelectionViewModel"
+
+    // Repository for accessing level data
     private val levelRepository: LevelRepository
 
+    // List of all levels with their progress information
     private val _levelsProgress = MutableStateFlow<List<LevelProgressEntity>>(emptyList())
     val levelsProgress: StateFlow<List<LevelProgressEntity>> = _levelsProgress.asStateFlow()
 
+    // Count of how many levels the player has completed
     private val _completedCount = MutableStateFlow(0)
     val completedCount: StateFlow<Int> = _completedCount.asStateFlow()
 
+    // Whether data is currently being loaded
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
-        RepositoryProvider.initialize(application)  // 🔥 INITIALIZE FIRST
-        levelRepository = RepositoryProvider.getLevelRepository()  // ✅ HAS CONTEXT
+        // Initialize the repository provider before accessing any repositories
+        RepositoryProvider.initialize(application)
+
+        // Get the level repository instance
+        levelRepository = RepositoryProvider.getLevelRepository()
+
+        // Load all levels for the current user
         loadLevelsProgress()
     }
 
     /**
-     * Load levels progress for current user
+     * Loads level progress data for the currently logged in user.
+     * Initializes levels if this is the first time the user is playing.
+     * Sets up continuous observation of level progress and completion count.
      */
     private fun loadLevelsProgress() {
         val userId = AuthManager.getCurrentUser()?.uid
 
+        // Exit early if no user is logged in
         if (userId == null) {
             Log.e(TAG, "No user ID found")
             _levelsProgress.value = emptyList()
@@ -46,13 +71,13 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
             return
         }
 
-        // Initialize levels in a separate coroutine
+        // Initialize level data if needed
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 Log.d(TAG, "Loading levels for user: $userId")
 
-                // Initialize levels if not exists
+                // Check if levels exist for this user, create them if not
                 val existingLevels = levelRepository.getAllLevelsProgress(userId)
                 if (existingLevels.isEmpty()) {
                     Log.d(TAG, "No levels found, initializing...")
@@ -65,8 +90,8 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
             }
         }
 
-        // FIXED: Launch separate coroutines for each Flow collection
-        // Collect levels progress
+        // Set up continuous observation of level progress
+        // This flow updates automatically when level data changes in the database
         viewModelScope.launch {
             try {
                 levelRepository.getAllLevelsProgressFlow(userId).collect { levels ->
@@ -78,7 +103,8 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
             }
         }
 
-        // Collect completed count in a separate coroutine
+        // Set up continuous observation of completion count in a separate coroutine
+        // This prevents blocking the levels flow collection
         viewModelScope.launch {
             try {
                 levelRepository.getCompletedLevelsCountFlow(userId).collect { count ->
@@ -92,7 +118,8 @@ class LevelSelectionViewModel(application: Application) : AndroidViewModel(appli
     }
 
     /**
-     * Refresh levels data
+     * Manually triggers a reload of level data.
+     * Useful for pull-to-refresh or when returning from a completed level.
      */
     fun refreshLevels() {
         loadLevelsProgress()

@@ -14,6 +14,14 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
 
+/*
+     Code Attribution for: Firebase Authentication
+    ===================================================
+    Firebase, 2019b. Get Started with Firebase Authentication on Android | Firebase (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/auth/android/start>
+    [Accessed 18 November 2025].
+*/
+
 object AuthManager {
 
     private const val TAG = "AuthManager"

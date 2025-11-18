@@ -36,23 +36,81 @@ import vcmsa.projects.prog7314.ui.viewmodels.ArcadeGameViewModel
 import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+
+/**
+ * ArcadeGameplayScreen
+ *
+ * This Composable renders the main gameplay screen for the arcade or level mode.
+ * It handles UI, game state, animations, and completion logic.
+ *
+ * Parameters:
+ * - levelNumber: Int -> The current level number for the game.
+ * - isArcadeMode: Boolean -> Flag for whether the game is in arcade mode.
+ * - gameInstanceKey: Int -> Unique key to force ViewModel recreation (used for retries).
+ * - onBackClick: () -> Unit -> Callback when the back button is pressed.
+ * - onGameComplete: (stars, score, time, moves, bonus) -> Unit -> Callback triggered when the game completes.
+ * - cardBackgroundViewModel: CardBackgroundViewModel -> Provides the card background drawable.
+ *
+ * Key Concepts:
+ * 1. ViewModel Management:
+ *    - Uses a dynamic key with remember() to force recreation of ArcadeGameViewModel on retry or new game instance.
+ *    - Collects game state and metrics (score, time, moves, matched pairs) via collectAsState().
+ *
+ * 2. Game Initialization:
+ *    - LaunchedEffect is used to initialize the game whenever level, mode, or gameInstanceKey changes.
+ *    - Resets hasCalledCompletionCallback to prevent duplicate completion events.
+ *
+ * 3. Game Completion Handling:
+ *    - Monitors isGameComplete and matchedPairs to trigger onGameComplete callback exactly once.
+ *    - Saves last play date for streak tracking.
+ *    - All other notifications and repository updates are handled by the repositories, not the Composable.
+ *
+ * 4. UI Structure:
+ *    - Background: Vertical gradient from cyan to dark blue.
+ *    - Header Bar: Displays level/arcade label, score, time, and moves using GameHeaderBar().
+ *    - Progress Bar: Linear progress based on matched pairs.
+ *    - Cards Grid: LazyVerticalGrid showing all cards, with flip animations.
+ *
+ * 5. Card Flip Logic:
+ *    - Animate card rotation with animateFloatAsState() from 0 to 180 degrees.
+ *    - Front side shows card image; back side shows background drawable.
+ *    - Matched cards have green border and light green background.
+ *
+ * 6. Helper Functions:
+ *    - formatTime(): Converts seconds into MM:SS format for display.
+ *
+ * Notes:
+ * - Uses Compose state management (remember, LaunchedEffect, collectAsState) to reactively update UI.
+ * - Ensures no duplicate game completion callbacks using hasCalledCompletionCallback flag.
+ * - All gameplay logic (matching cards, calculating score, tracking time/moves) is handled inside ArcadeGameViewModel.
+ * - UI is fully responsive and adapts to grid size and device screen size.
+ */
+
 @Composable
 fun ArcadeGameplayScreen(
     levelNumber: Int,
     isArcadeMode: Boolean = false,
-    gameInstanceKey: Int = 0,  // ⭐ NEW: Key to force ViewModel refresh
+    gameInstanceKey: Int = 0,  // Key to force ViewModel refresh
     onBackClick: () -> Unit,
     onGameComplete: (stars: Int, score: Int, time: Int, moves: Int, bonus: Int) -> Unit,
     cardBackgroundViewModel: CardBackgroundViewModel = viewModel()
 ) {
     val context = LocalContext.current
 
-    // CRITICAL FIX: Include gameInstanceKey in the remember key to force new ViewModel on retry
+    // Include gameInstanceKey in the remember key to force new ViewModel on retry
     val viewModelKey = remember(levelNumber, isArcadeMode, gameInstanceKey) {
         "arcade_${levelNumber}_${isArcadeMode}_${gameInstanceKey}_${System.currentTimeMillis()}"
     }
 
-    // FIXED: Use the stable key
+    // Use the stable key
     val viewModel: ArcadeGameViewModel = viewModel(key = viewModelKey)
 
     val gameState by viewModel.gameState.collectAsState()
@@ -359,7 +417,7 @@ fun GameCardItem(
         }
     }
 }
-
+//Formating the unit of time into seconds
 fun formatTime(seconds: Int): String {
     val mins = seconds / 60
     val secs = seconds % 60

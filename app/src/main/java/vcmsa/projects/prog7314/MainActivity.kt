@@ -41,6 +41,15 @@ import vcmsa.projects.prog7314.utils.LanguageManager
 import vcmsa.projects.prog7314.utils.NotificationScheduler
 import vcmsa.projects.prog7314.utils.NotificationTracker
 
+/*
+     Code Attribution for: Firebase Authentication
+    ===================================================
+    Firebase, 2019b. Get Started with Firebase Authentication on Android | Firebase (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/auth/android/start>
+    [Accessed 18 November 2025].
+*/
+
+
 class MainActivity : FragmentActivity() {
     private lateinit var syncManager: SyncManager
     private lateinit var firestoreManager: FirestoreManager

@@ -3,6 +3,13 @@ package vcmsa.projects.prog7314.game
 import android.util.Log
 import vcmsa.projects.prog7314.data.models.GameCard
 import vcmsa.projects.prog7314.data.models.GameTheme
+/*
+    Code Attribution for: Data Classes
+    ===================================================
+    Kotlin, 2025a. Data classes | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://kotlinlang.org/docs/data-classes.html>
+    [Accessed 18 November 2025].
+*/
 
 /**
  * Pure Kotlin game engine for card matching logic
@@ -98,7 +105,7 @@ class GameEngine(
             return Pair(false, FlipResult.TOO_MANY_FLIPPED)
         }
 
-        // FIXED: Create new card instance with isFlipped = true
+        // Create new card instance with isFlipped = true
         val flippedCard = card.copy(isFlipped = true)
         cards[cardIndex] = flippedCard
         flippedCards.add(flippedCard)

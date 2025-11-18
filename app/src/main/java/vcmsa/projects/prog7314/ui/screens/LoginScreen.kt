@@ -38,6 +38,55 @@ import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.AuthResult
 import vcmsa.projects.prog7314.utils.BiometricHelper
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * LoginScreen
+ *
+ * Provides a full-featured login interface for the Memory Match Madness app.
+ *
+ * Key Features:
+ *
+ * 1. Email/Password Authentication:
+ *    - Standard input fields with validation for empty input, email format, and minimum password length.
+ *    - Provides user-friendly error messages for invalid credentials or too many failed attempts.
+ *
+ * 2. Biometric Authentication:
+ *    - Checks for saved credentials, device support, and enabled biometric settings.
+ *    - If available, shows a fingerprint login button and automatically prompts the user on screen load.
+ *    - Performs offline login via AuthManager.
+ *
+ * 3. Google Sign-In:
+ *    - Integrates Google account login using ActivityResultContracts.
+ *    - Handles new user profile creation after first login.
+ *    - Saves credentials for biometric login after successful Google sign-in.
+ *
+ * 4. UI Layout:
+ *    - Gradient background with centered logo and title.
+ *    - Main login card with rounded corners and elevated shadow.
+ *    - Responsive layout with padding, spacing, and scrollable elements for smaller devices.
+ *
+ * 5. Loading & Feedback:
+ *    - Displays loading indicator on login attempts.
+ *    - Shows inline error messages in a colored card for clarity.
+ *    - Handles multiple login methods seamlessly while providing clear visual feedback.
+ *
+ * 6. Security & Usability:
+ *    - Limits login attempts to prevent brute-force attacks.
+ *    - Password visibility toggle for ease of entry.
+ *    - Supports offline login via biometric credentials if available.
+ *
+ * Purpose:
+ * Enhances user experience by providing multiple authentication options,
+ * clear feedback, and smooth integration with biometric and Google login services.
+ */
+
 
 @Composable
 fun LoginScreen(

@@ -31,6 +31,58 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.entities.LevelProgressEntity
 import vcmsa.projects.prog7314.ui.viewmodels.LevelSelectionViewModel
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * LevelSelectionScreen
+ *
+ * Composable screen that allows the user to select a game level in the memory match game.
+ * Displays levels in a 4-column grid, showing completion status, stars, and locked/unlocked state.
+ *
+ * Key Components & Features:
+ *
+ * 1. Screen Layout:
+ *    - Box with vertical gradient background (blue shades).
+ *    - Column contains back button, logo/title, levels grid, and progress section.
+ *
+ * 2. Back Button:
+ *    - Top-left positioned IconButton for navigation back.
+ *    - Styled with semi-transparent white background and rounded corners.
+ *
+ * 3. Logo and Titles:
+ *    - Game logo displayed at top, made slightly larger for emphasis.
+ *    - Title text indicates "Select Level" with shadow effect for visibility.
+ *    - Subtitle prompts user to choose their adventure.
+ *
+ * 4. Levels Grid:
+ *    - Uses LazyVerticalGrid with 4 fixed columns.
+ *    - Each level represented by LevelCard composable:
+ *        • Shows level number if unlocked.
+ *        • Displays lock icon if locked.
+ *        • Shows 1-3 stars if level completed.
+ *        • Card color and shadow vary based on completion/unlocked state.
+ *        • Clickable if level is unlocked, triggers onLevelClick callback.
+ *
+ * 5. Progress Section:
+ *    - Displays completed levels out of total levels.
+ *    - Includes a progress bar with horizontal gradient fill.
+ *    - Provides visual feedback on player's overall progress in adventure mode.
+ *
+ * 6. Animations & Styling:
+ *    - Level cards scale slightly when unlocked for subtle animation.
+ *    - Gradient backgrounds, rounded corners, and shadows enhance UI aesthetics.
+ *
+ * Overall Purpose:
+ * Provides a clear, engaging interface for selecting levels, showing progress,
+ * and visually communicating which levels are locked, completed, or unlocked.
+ */
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -29,6 +29,62 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import vcmsa.projects.prog7314.R
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * GameCompletionDialog
+ *
+ * This Composable displays a modal dialog when a player completes a game.
+ * It provides visual feedback, game statistics, total score, and action buttons
+ * appropriate to the game mode.
+ *
+ * Features & Behavior:
+ *
+ * 1. Game Modes:
+ *    - Controlled via the GameMode enum:
+ *      • ARCADE_RANDOM: Quick-play mode, only shows Home button.
+ *      • ARCADE_LEVELS: Level-based arcade, shows Retry, Next Level, and Home buttons.
+ *      • ADVENTURE: Adventure mode, full navigation buttons.
+ *
+ * 2. New Record Badge:
+ *    - Optional badge displayed if the player sets a new high score.
+ *    - Animated rotation effect to emphasize achievement.
+ *
+ * 3. Stars Display:
+ *    - Shows earned stars with animated scaling for visual feedback.
+ *    - Uses AnimatedStar Composable to handle each star's animation.
+ *
+ * 4. Stats Section:
+ *    - Displays moves, time (formatted as mm:ss), and bonus points in a colored card.
+ *    - Uses StatRow for consistent label-value layout.
+ *
+ * 5. Total Score:
+ *    - Highlighted in a yellow card with gradient background and prominent font.
+ *
+ * 6. Action Buttons:
+ *    - Layout and number of buttons vary based on game mode.
+ *    - CircularActionButton is a reusable, elevated circular button for Replay, Next, Home, etc.
+ *
+ * 7. Animations & UX:
+ *    - New record and star animations provide responsive, engaging visual feedback.
+ *    - Padding, spacing, and rounded corners ensure a polished, user-friendly UI.
+ *
+ * 8. Utility Functions:
+ *    - formatTimeForDialog: Converts total time in seconds to "MM:SS" format for display.
+ *
+ * Overall Purpose:
+ * This dialog provides a clear and visually appealing summary of game performance,
+ * celebrates achievements, and guides players to next actions depending on the
+ * game mode.
+ */
+
+
 // Game mode enum to determine which buttons to show
 enum class GameMode {
     ARCADE_RANDOM,      // Random quick-play: Only Home button

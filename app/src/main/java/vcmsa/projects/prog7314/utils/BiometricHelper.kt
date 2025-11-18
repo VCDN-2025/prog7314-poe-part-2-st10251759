@@ -8,6 +8,15 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
+/*
+     Code Attribution for: Biometric Authentication
+    ===================================================
+    Android Developers, 2024. Login with Biometrics on Android (Version unknown) [Source code].
+    Available at: <https://developer.android.com/codelabs/biometric-login#0>
+    [Accessed 18 November 2025].
+*/
+
+
 object BiometricHelper {
     private const val TAG = "BiometricHelper"
     private const val PREFS_NAME = "biometric_prefs"

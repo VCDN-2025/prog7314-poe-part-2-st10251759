@@ -13,22 +13,41 @@ import vcmsa.projects.prog7314.MainActivity
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 
+/*
+    Code Attribution for: Push Notifications
+    ===================================================
+    Firebase, 2019. Firebase Cloud Messaging | Firebase (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/cloud-messaging>
+    [Accessed 18 November 2025].
+*/
+
+
+/**
+ * Utility object for managing local push notifications in the app.
+ * Handles showing notifications for achievements, level unlocks, high scores, and daily streaks.
+ * Includes duplicate prevention and database storage of all notifications.
+ */
 object LocalNotificationManager {
 
     private const val TAG = "LocalNotificationManager"
+
+    // Notification channel configuration for Android 8.0 and above
     private const val CHANNEL_ID = "game_events"
     private const val CHANNEL_NAME = "Game Events"
     private const val CHANNEL_DESCRIPTION = "Notifications for achievements, level unlocks, and records"
 
     /**
-     * Initialize notification channel
+     * Sets up the notification system for the app.
+     * Should be called when the app starts, typically in Application.onCreate().
      */
     fun initialize(context: Context) {
         createNotificationChannel(context)
     }
 
     /**
-     * Create notification channel (Android 8.0+)
+     * Creates a notification channel for Android 8.0 and above.
+     * Channels are required on newer Android versions to organize and control notifications.
+     * On older versions, this method does nothing.
      */
     private fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -47,7 +66,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show Achievement Unlocked notification
+     * Displays a notification when the player unlocks a new achievement.
+     * Only shows if achievement notifications are enabled in user settings.
      */
     fun notifyAchievementUnlocked(context: Context, achievementTitle: String, achievementDescription: String) {
         if (!NotificationHelper.areAchievementNotificationsEnabled(context)) {
@@ -70,7 +90,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show Level Unlocked notification
+     * Displays a notification when a new level becomes available to play.
+     * Only shows if general notifications are enabled in user settings.
      */
     fun notifyLevelUnlocked(context: Context, levelNumber: Int) {
         if (!NotificationHelper.areNotificationsEnabled(context)) {
@@ -94,7 +115,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show High Score notification
+     * Displays a notification when the player beats their previous best score.
+     * Shows the improvement amount and the new record score.
      */
     fun notifyNewHighScore(context: Context, score: Int, previousBest: Int) {
         if (!NotificationHelper.areNotificationsEnabled(context)) {
@@ -118,7 +140,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show Daily Streak Reminder notification
+     * Displays a reminder notification to encourage the player to maintain their daily streak.
+     * Only shows if daily reminder notifications are enabled in user settings.
      */
     fun notifyDailyStreak(context: Context, currentStreak: Int) {
         if (!NotificationHelper.areDailyRemindersEnabled(context)) {
@@ -141,7 +164,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show Streak Lost notification
+     * Displays a notification when the player's daily streak is broken.
+     * Encourages them to start a new streak.
      */
     fun notifyStreakLost(context: Context, lostStreak: Int) {
         if (!NotificationHelper.areDailyRemindersEnabled(context)) {
@@ -164,7 +188,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show Comeback Reminder notification
+     * Displays a reminder notification for players who haven't played in several days.
+     * Encourages them to return to the game.
      */
     fun notifyComebackReminder(context: Context) {
         if (!NotificationHelper.areDailyRemindersEnabled(context)) {
@@ -187,7 +212,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show First Level Completed notification
+     * Displays a congratulatory notification when the player completes their first level.
+     * This is a special one-time milestone notification.
      */
     fun notifyFirstLevelCompleted(context: Context) {
         if (!NotificationHelper.areNotificationsEnabled(context)) {
@@ -210,7 +236,8 @@ object LocalNotificationManager {
     }
 
     /**
-     * Show New Theme Unlocked notification
+     * Displays a notification when a new visual theme is unlocked for the game.
+     * Encourages the player to try out the new theme.
      */
     fun notifyThemeUnlocked(context: Context, themeName: String) {
         if (!NotificationHelper.areNotificationsEnabled(context)) {
@@ -233,8 +260,13 @@ object LocalNotificationManager {
     }
 
     /**
-     * Generic notification display method with database save and duplicate prevention
-     * 🔥 FIXED: Enhanced duplicate prevention using both database and time-based checking
+     * Core method that builds and displays a notification.
+     * Includes duplicate prevention to avoid showing the same notification multiple times.
+     * Saves each notification to the database for the notification history screen.
+     *
+     * Duplicate prevention logic:
+     * 1. Checks if an identical notification was shown in the last 24 hours
+     * 2. Prevents flooding by limiting similar notification types to 3 per day
      */
     private fun showNotification(
         context: Context,
@@ -245,7 +277,7 @@ object LocalNotificationManager {
         iconType: String,
         actionData: String? = null
     ) {
-        // Check if user has notification permission
+        // Check if the app has permission to show notifications
         if (!NotificationHelper.hasNotificationPermission(context)) {
             Log.d(TAG, "No notification permission")
             return
@@ -253,16 +285,18 @@ object LocalNotificationManager {
 
         var shouldShowPopup = true
 
+        // Handle database storage and duplicate checking
         val userId = AuthManager.getCurrentUser()?.uid
         if (userId != null) {
             runBlocking {
                 try {
                     val notificationRepo = RepositoryProvider.getNotificationRepository()
 
-                    // 🔥 ENHANCED: Check for duplicates in last 24 hours (not just 5 minutes)
+                    // Get all existing notifications for this user
                     val existingNotifications = notificationRepo.getAllNotifications(userId)
                     val oneDayAgo = System.currentTimeMillis() - (24 * 60 * 60 * 1000)
 
+                    // Check if this exact notification was already sent in the last 24 hours
                     val isDuplicate = existingNotifications.any { notif ->
                         notif.type == type &&
                                 notif.title == title &&
@@ -276,7 +310,7 @@ object LocalNotificationManager {
                         return@runBlocking
                     }
 
-                    // 🔥 NEW: Additional duplicate check - count recent similar notifications
+                    // Count how many similar notifications were sent today to prevent flooding
                     val recentSimilarCount = existingNotifications.count { notif ->
                         notif.type == type && notif.timestamp > oneDayAgo
                     }
@@ -287,7 +321,7 @@ object LocalNotificationManager {
                         return@runBlocking
                     }
 
-                    // Create new notification in database
+                    // Save this notification to the database
                     notificationRepo.createNotification(
                         userId = userId,
                         type = type,
@@ -306,14 +340,15 @@ object LocalNotificationManager {
             }
         }
 
+        // Exit if duplicate was detected
         if (!shouldShowPopup) {
             return
         }
 
-        // Create notification channel
+        // Ensure notification channel exists
         createNotificationChannel(context)
 
-        // Intent to open app when notification is tapped
+        // Create intent that opens the app when notification is tapped
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("notification_type", type)
@@ -321,12 +356,12 @@ object LocalNotificationManager {
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            type.hashCode(), // Use type hashCode for unique request code
+            type.hashCode(), // Use type as unique identifier
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // Select appropriate icon
+        // Select the appropriate icon based on notification type
         val iconRes = when (iconType) {
             "trophy" -> R.drawable.ic_launcher_foreground
             "level" -> R.drawable.ic_launcher_foreground
@@ -336,20 +371,20 @@ object LocalNotificationManager {
             else -> R.drawable.ic_launcher_foreground
         }
 
-        // Build notification
+        // Build the notification with all properties
         val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(iconRes)
             .setContentTitle(title)
             .setContentText(message)
-            .setAutoCancel(true)
+            .setAutoCancel(true) // Notification disappears when tapped
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message)) // Expandable notification
 
-        // Show notification
+        // Display the notification
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // 🔥 FIXED: Use unique notification ID based on type and timestamp to avoid replacing
+        // Generate unique ID using type and timestamp to avoid replacing previous notifications
         val notificationId = (type.hashCode() + System.currentTimeMillis()).toInt()
         notificationManager.notify(notificationId, notificationBuilder.build())
 
@@ -357,7 +392,9 @@ object LocalNotificationManager {
     }
 
     /**
-     * 🔥 NEW: Save last play date using UserProfileRepository (syncs to Firestore)
+     * Records the current time as the last time the user played.
+     * This is used for tracking daily streaks and determining when to show comeback reminders.
+     * Updates are synced to Firestore through the UserProfileRepository.
      */
     fun saveLastPlayDate(context: Context) {
         runBlocking {
@@ -380,7 +417,9 @@ object LocalNotificationManager {
     }
 
     /**
-     * 🔥 NEW: Get last play date from UserProfileRepository
+     * Retrieves the timestamp of when the user last played the game.
+     * Returns 0 if no play date is recorded or if the user is not logged in.
+     * Used for calculating streaks and determining if comeback reminders should be shown.
      */
     fun getLastPlayDate(context: Context): Long {
         return runBlocking {
@@ -401,7 +440,9 @@ object LocalNotificationManager {
     }
 
     /**
-     * Calculate if streak should continue (within 48 hours)
+     * Determines if the player's daily streak should continue.
+     * Returns true if they played within the last 48 hours.
+     * The 48-hour window gives players some flexibility in maintaining their streak.
      */
     fun shouldContinueStreak(context: Context): Boolean {
         val lastPlayDate = getLastPlayDate(context)
@@ -414,7 +455,9 @@ object LocalNotificationManager {
     }
 
     /**
-     * Check if user should get a comeback reminder (not played in 3+ days)
+     * Determines if a comeback reminder notification should be shown.
+     * Returns true if the player hasn't played in 3 or more days.
+     * Used by the notification scheduler to re-engage inactive players.
      */
     fun shouldShowComebackReminder(context: Context): Boolean {
         val lastPlayDate = getLastPlayDate(context)

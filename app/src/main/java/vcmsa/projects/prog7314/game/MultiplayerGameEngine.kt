@@ -3,6 +3,14 @@ package vcmsa.projects.prog7314.game
 import android.util.Log
 import vcmsa.projects.prog7314.data.models.*
 
+/*
+    Code Attribution for: Data Classes
+    ===================================================
+    Kotlin, 2025a. Data classes | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://kotlinlang.org/docs/data-classes.html>
+    [Accessed 18 November 2025].
+*/
+
 class MultiplayerGameEngine(private val theme: GameTheme) {
 
     private var cards: MutableList<GameCard> = mutableListOf()

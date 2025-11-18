@@ -38,6 +38,47 @@ import vcmsa.projects.prog7314.utils.AuthManager
 import java.text.SimpleDateFormat
 import java.util.*
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * StatisticsScreen
+ *
+ * This screen shows the player's game statistics and achievements.
+ *
+ * What it displays:
+ * - Total games played, wins, and win rate
+ * - Playtime, current level, and XP earned
+ * - Performance trends (improving, stable, or declining)
+ * - Average and best scores
+ * - Achievement progress with unlock status
+ * - Favorite themes and most played modes
+ * - Recent game history with scores and star ratings
+ *
+ * Main interactions:
+ * - Back button returns to previous screen
+ * - Refresh button reloads all statistics
+ * - Tapping achievements card opens detailed view
+ * - Achievements dialog shows all locked and unlocked achievements
+ *
+ * Data sources:
+ * - Loads analytics from AnalyticsRepository
+ * - Gets achievement data from AchievementRepository
+ * - Uses current user ID from AuthManager
+ *
+ * Display states:
+ * - Loading spinner while fetching data
+ * - Empty state if no games have been played
+ * - Full statistics once data is available
+ *
+ */
+
+
 @Composable
 fun StatisticsScreen(
     onBackClick: () -> Unit = {}

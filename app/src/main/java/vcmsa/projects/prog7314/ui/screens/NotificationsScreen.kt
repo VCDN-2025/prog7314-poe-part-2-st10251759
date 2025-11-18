@@ -30,6 +30,71 @@ import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.AuthManager
 import java.text.SimpleDateFormat
 import java.util.*
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * NotificationsScreen
+ *
+ * This composable displays a full-featured notification center for the user, including
+ * category filtering, badge counts, and individual notification management.
+ *
+ * Key Features:
+ * 1. State Management:
+ *    - `notifications`: List of notifications fetched from the repository.
+ *    - `selectedCategory`: Current filter category (ALL, GAME, SOCIAL, SYSTEM).
+ *    - `isLoading`: Indicates data loading state.
+ *    - `unreadCount`, `totalCount`, `todayCount`: Notification summary badges.
+ *    - `errorMessage`: Stores any error messages when fetching notifications.
+ *
+ * 2. Data Loading:
+ *    - `loadNotifications()` fetches notifications and counts from repository.
+ *    - Uses coroutine scope to handle asynchronous calls.
+ *    - Updates UI state based on selected category and user ID.
+ *    - Handles errors gracefully and logs key events using Logcat.
+ *
+ * 3. Layout & UI:
+ *    - Gradient background for visual appeal.
+ *    - Top Bar:
+ *        - Back button triggers `onBackClick`.
+ *        - Clear All button deletes all notifications for the current user.
+ *    - Title Section displays main header and subtitle.
+ *    - Badge Counts:
+ *        - Shows UNREAD, TOTAL, and TODAY counts in separate cards.
+ *    - Category Tabs:
+ *        - Filter notifications by ALL, GAME, SOCIAL, or SYSTEM categories.
+ *        - Highlights the selected category visually.
+ *    - Notifications List:
+ *        - Loading: Shows CircularProgressIndicator.
+ *        - Error: Displays error message with icon.
+ *        - Empty: Shows placeholder if no notifications exist.
+ *        - Populated: Scrollable list of NotificationCard items.
+ *
+ * 4. NotificationCard:
+ *    - Shows notification icon, title, message, timestamp.
+ *    - Buttons for marking as read and deleting notification.
+ *    - Visual cues for unread notifications (small dot indicator).
+ *    - Color-codes icons based on category.
+ *
+ * 5. Helper Functions:
+ *    - `formatTimestamp(timestamp: Long)`: Formats timestamps into human-readable relative times
+ *      ("Just now", "x minutes ago", "x hours ago", etc.) or absolute dates if older than a week.
+ *
+ * 6. Interaction & Side Effects:
+ *    - Selecting a category updates `selectedCategory` and triggers data reload.
+ *    - Actions like mark as read, delete, and clear all notifications update repository
+ *      and refresh UI asynchronously.
+ *
+ * Purpose:
+ * Provides a visually appealing, interactive, and responsive notification center
+ * for users to stay updated with game, social, and system events.
+ */
+
 
 private const val TAG = "NotificationsScreen"
 

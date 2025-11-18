@@ -29,6 +29,68 @@ import vcmsa.projects.prog7314.data.repository.UserProfileRepository
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.AuthResult
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * EditProfileScreen
+ *
+ * This Composable allows the user to view and edit their profile information.
+ * The primary editable field is the display name, while the email is read-only.
+ * The screen provides validation, feedback messages, and updates both Firebase
+ * authentication and the local database on successful profile changes.
+ *
+ * Parameters:
+ * - onBackClick: () -> Unit -> Callback triggered when the user presses the back or cancel button.
+ * - onSaveSuccess: () -> Unit -> Callback triggered after successfully saving the profile.
+ *
+ * Key Concepts:
+ * 1. State Management:
+ *    - Uses `remember` to store displayName, loading state, error messages, and success messages.
+ *    - Tracks validation errors for the display name.
+ *
+ * 2. Validation:
+ *    - Display name cannot be blank.
+ *    - Minimum length 2 characters, maximum 30 characters.
+ *    - Only allows alphanumeric characters, underscores, and spaces.
+ *
+ * 3. Profile Save Workflow:
+ *    - Clears keyboard focus before saving.
+ *    - Validates the display name; exits if validation fails.
+ *    - Calls AuthManager to update the display name in Firebase.
+ *    - On success, updates the local Room database via UserProfileRepository.
+ *    - Displays a success message and calls onSaveSuccess() after a short delay.
+ *    - Displays error messages if saving fails.
+ *
+ * 4. UI Layout:
+ *    - Box with vertical gradient background for modern look.
+ *    - Column structure:
+ *      - Header row with back button and title.
+ *      - Scrollable content including profile card.
+ *      - Card contains:
+ *          - Read-only email field.
+ *          - Editable display name field with validation errors.
+ *          - Success and error messages.
+ *      - Save and Cancel buttons at the bottom with proper styling.
+ *
+ * 5. UX Features:
+ *    - Keyboard navigation using ImeAction.Done triggers saveProfile().
+ *    - Buttons are disabled while loading to prevent multiple submissions.
+ *    - Provides immediate feedback for validation errors.
+ *    - Displays loading indicator on save button while profile is being updated.
+ *
+ * 6. Design Choices:
+ *    - Semi-transparent white card with rounded corners for content separation.
+ *    - Color-coded feedback: green for success, red for errors.
+ *    - Consistent button styling and gradients matching the app theme.
+ */
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(

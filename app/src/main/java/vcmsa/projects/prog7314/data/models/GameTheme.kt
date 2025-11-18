@@ -4,13 +4,31 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import vcmsa.projects.prog7314.R
 
+/*
+    Code Attribution for: Enum Classes
+    ===================================================
+    Kotlin, 2025b. Enum classes | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://kotlinlang.org/docs/enum-classes.html>
+    [Accessed 18 November 2025].
+*/
+
+
+
+/**
+ * Represents a theme for the memory card game, including the display name,
+ * preview image, and the set of images used for the cards in this theme.
+ *
+ * @property themeNameResId Resource ID for the theme name (for localization).
+ * @property previewImage Drawable resource ID for the theme preview image.
+ * @property cardImages List of drawable resource IDs for the individual card images.
+ */
 enum class GameTheme(
-    @StringRes val themeNameResId: Int,  // ✅ Changed to string resource
+    @StringRes val themeNameResId: Int,
     @DrawableRes val previewImage: Int,
     val cardImages: List<Int>
 ) {
     ANIMALS(
-        themeNameResId = R.string.theme_animals,  // ✅ Uses localized string
+        themeNameResId = R.string.theme_animals,
         previewImage = R.drawable.animal_theme,
         cardImages = listOf(
             R.drawable.animal_1,
@@ -28,7 +46,7 @@ enum class GameTheme(
         )
     ),
     POKEMON(
-        themeNameResId = R.string.theme_pokemon,  // ✅ Uses localized string
+        themeNameResId = R.string.theme_pokemon,
         previewImage = R.drawable.pokemon_theme,
         cardImages = listOf(
             R.drawable.pokemon_1,
@@ -46,7 +64,7 @@ enum class GameTheme(
         )
     ),
     FRUIT(
-        themeNameResId = R.string.theme_fruits,  // ✅ Uses localized string
+        themeNameResId = R.string.theme_fruits,
         previewImage = R.drawable.fruit_theme,
         cardImages = listOf(
             R.drawable.fruit_1,
@@ -64,7 +82,7 @@ enum class GameTheme(
         )
     ),
     HARRY_POTTER(
-        themeNameResId = R.string.theme_harry_potter,  // ✅ Uses localized string
+        themeNameResId = R.string.theme_harry_potter,
         previewImage = R.drawable.harry_potter_theme,
         cardImages = listOf(
             R.drawable.hp_1,
@@ -82,7 +100,7 @@ enum class GameTheme(
         )
     ),
     F1_LOGOS(
-        themeNameResId = R.string.theme_f1,  // ✅ Uses localized string
+        themeNameResId = R.string.theme_f1,
         previewImage = R.drawable.f1_theme,
         cardImages = listOf(
             R.drawable.f1_1,
@@ -101,6 +119,13 @@ enum class GameTheme(
     )
 }
 
+/**
+ * Represents the size of the game grid.
+ *
+ * @property rows Number of rows in the grid.
+ * @property columns Number of columns in the grid.
+ * @property difficulty Difficulty level associated with this grid.
+ */
 data class GridSize(
     val rows: Int,
     val columns: Int,
@@ -110,6 +135,11 @@ data class GridSize(
     val gridLabel: String get() = "$rows X $columns"
 }
 
+/**
+ * Enum representing the difficulty levels of a game.
+ *
+ * @property displayName Human-readable name of the difficulty level.
+ */
 enum class DifficultyLevel(val displayName: String) {
     BEGINNER("Beginner"),
     INTERMEDIATE("Intermediate"),
@@ -117,6 +147,9 @@ enum class DifficultyLevel(val displayName: String) {
     EXPERT("Expert")
 }
 
+/**
+ * Predefined grid sizes for different difficulty levels.
+ */
 object GridSizes {
     val BEGINNER_3X2 = GridSize(3, 2, DifficultyLevel.BEGINNER)
     val INTERMEDIATE_3X4 = GridSize(3, 4, DifficultyLevel.INTERMEDIATE)

@@ -6,6 +6,14 @@ import vcmsa.projects.prog7314.data.dao.GameResultDao
 import vcmsa.projects.prog7314.data.entities.GameResultEntity
 import java.util.UUID
 
+/*
+    Code Attribution for: Repositories
+    ===================================================
+    Android Developers, 2025. Data layer (Version unknown) [Source code].
+    Available at: <https://developer.android.com/topic/architecture/data-layer>
+    [Accessed 18 November 2025].
+*/
+
 class GameResultRepository(
     private val gameResultDao: GameResultDao
 ) {

@@ -36,6 +36,69 @@ import vcmsa.projects.prog7314.data.models.GridSize
 import vcmsa.projects.prog7314.ui.viewmodels.GameViewModel
 import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * GameplayScreen
+ *
+ * Main Composable responsible for rendering the memory card matching game screen.
+ * Provides real-time stats, the interactive game grid, and completion handling.
+ *
+ * Key Components & Features:
+ *
+ * 1. Game State Management:
+ *    - Uses GameViewModel to observe:
+ *      • gameState (current cards and their state)
+ *      • timeElapsed
+ *      • moves
+ *      • points
+ *      • isGameComplete
+ *      • gameResult
+ *    - CardBackgroundViewModel provides the selected card back drawable.
+ *    - LaunchedEffect initializes the game on theme/grid size changes.
+ *    - Saves last play date when game completes using LocalNotificationManager.
+ *
+ * 2. UI Layout:
+ *    - Box with vertical gradient background.
+ *    - Column contains:
+ *      • GameHeader: displays points, moves, and elapsed time with a back button.
+ *      • Spacer for layout spacing.
+ *      • GameGrid: displays a LazyVerticalGrid of FlipCard Composables.
+ *
+ * 3. GameHeader:
+ *    - Shows real-time points, moves, and time.
+ *    - Uses StatItem for consistent label-value display.
+ *    - Back button allows returning to previous screen.
+ *
+ * 4. GameGrid & FlipCard:
+ *    - LazyVerticalGrid dynamically renders cards based on grid size.
+ *    - FlipCard handles flipping animation, front/back display, and matched overlay.
+ *    - Cards use a selected background or fallback default.
+ *    - Rotation animation for smooth flip effect.
+ *
+ * 5. Completion Popup:
+ *    - GameCompletionPopup appears when isGameComplete is true.
+ *    - Provides actions: Replay, Next Level, Home.
+ *    - onReplay resets the game; onNext/onHome trigger navigation.
+ *
+ * 6. Animations & UX:
+ *    - Card flips are animated with FastOutSlowInEasing.
+ *    - Matched cards show semi-transparent overlay.
+ *    - Game stats and time are updated live via StateFlow observation.
+ *
+ * 7. Utility Functions:
+ *    - formatTime: Converts milliseconds into MM:SS format for display in header.
+ *
+ * Overall Purpose:
+ * This screen integrates real-time gameplay, user feedback, and completion handling
+ * with visually engaging card animations and a responsive, modern layout.
+ */
 
 @Composable
 fun GameplayScreen(

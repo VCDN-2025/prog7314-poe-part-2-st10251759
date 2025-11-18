@@ -19,6 +19,49 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import vcmsa.projects.prog7314.R
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * LoadingScreen
+ *
+ * Composable screen that displays a loading interface while the game assets or data are prepared.
+ * Shows a progress bar with animated fill, percentage text, and branding visuals.
+ *
+ * Key Components & Features:
+ *
+ * 1. Progress Animation:
+ *    - Uses a mutable state `progress` to track load progress from 0f to 1f.
+ *    - LaunchedEffect runs a coroutine to increment progress with a small delay (simulates loading).
+ *    - Calls `onLoadingComplete()` callback when progress reaches 100%.
+ *
+ * 2. Background:
+ *    - Full-screen card background image for visual appeal.
+ *    - Semi-transparent black overlay for better contrast of foreground elements.
+ *
+ * 3. Branding:
+ *    - Displays app logo prominently in the center.
+ *    - Shows app name and tagline below the logo.
+ *
+ * 4. Progress Indicator:
+ *    - LinearProgressIndicator represents the loading progress.
+ *    - Progress percentage is displayed below the progress bar.
+ *    - Styled with rounded corners and color gradients.
+ *
+ * 5. Layout:
+ *    - Centered Column aligns logo, texts, and progress indicator vertically.
+ *    - Responsive padding and spacing for visual balance.
+ *
+ * Purpose:
+ * Provides users with feedback that the game is loading, enhancing user experience
+ * and ensuring smooth transition to the main menu or next screen.
+ */
+
 
 @Composable
 fun LoadingScreen(

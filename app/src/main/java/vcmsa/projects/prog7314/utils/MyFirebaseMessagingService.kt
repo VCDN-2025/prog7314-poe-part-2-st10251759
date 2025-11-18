@@ -13,6 +13,14 @@ import com.google.firebase.messaging.RemoteMessage
 import vcmsa.projects.prog7314.MainActivity
 import vcmsa.projects.prog7314.R
 
+/*
+    Code Attribution for: Push Notifications
+    ===================================================
+    Firebase, 2019. Firebase Cloud Messaging | Firebase (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/cloud-messaging>
+    [Accessed 18 November 2025]
+*/
+
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {

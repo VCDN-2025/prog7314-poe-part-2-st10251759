@@ -7,20 +7,52 @@ import kotlinx.coroutines.tasks.await
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.SettingsManager
 
+/*
+    Code Attribution for: Repositories
+    ===================================================
+    Android Developers, 2025. Data layer (Version unknown) [Source code].
+    Available at: <https://developer.android.com/topic/architecture/data-layer>
+    [Accessed 18 November 2025].
+
+    Code Attribution for: Room DB Entities
+    ===================================================
+    Android Developers, 2020. Defining data using Room entities | Android Developers (Version unknown) [Source code].
+    Available at: <https://developer.android.com/training/data-storage/room/defining-data>
+    [Accessed 18 November 2025].
+
+    Code Attribution for: Connecting to Firebase Database
+    ===================================================
+    Firebase, 2025. Installation & Setup on Android | Firebase Realtime Database (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/database/android/start>
+    [Accessed 18 November 2025].
+
+*/
+
+/**
+ * Repository responsible for syncing user settings between local storage and Firebase Firestore.
+ * Handles both uploading and downloading settings, marking offline changes for later sync,
+ * and applying downloaded settings to the local device.
+ */
 class SettingsSyncRepository(private val context: Context) {
 
+    // Tag for logging
     private val TAG = "SettingsSyncRepo"
+
+    // Firebase Firestore instance
     private val firestore = FirebaseFirestore.getInstance()
+
+    // Firestore collection and field names
     private val COLLECTION_USERS = "users"
     private val FIELD_SETTINGS = "settings"
 
-    // Track if settings need sync
+    // SharedPreferences for tracking sync state
     private val PREFS_SYNC = "settings_sync"
     private val KEY_NEEDS_SYNC = "needs_sync"
     private val KEY_LAST_SYNC = "last_sync_time"
 
     /**
-     * Data class for settings that will be synced to Firestore
+     * Data class representing user settings to be synced with Firestore.
+     * All settings include default values to ensure robustness.
      */
     data class UserSettings(
         val language: String = "en",
@@ -31,12 +63,16 @@ class SettingsSyncRepository(private val context: Context) {
         val backgroundMusicEnabled: Boolean = true,
         val cardBackground: String = "blue",
         val highContrastMode: Boolean = false,
-        val biometricPreference: Boolean = false, // Preference only, not actual biometric data
-        val lastUpdated: Long = System.currentTimeMillis()
+        val biometricPreference: Boolean = false, // User preference only
+        val lastUpdated: Long = System.currentTimeMillis() // Timestamp for last update
     )
 
     /**
-     * Save all current settings to Firestore
+     * Save all current user settings to Firestore.
+     * Uses SettingsManager to read current local settings.
+     * Marks settings as synced locally after successful upload.
+     *
+     * @return Result<Unit> indicating success or failure
      */
     suspend fun syncSettingsToFirestore(): Result<Unit> {
         return try {
@@ -46,7 +82,7 @@ class SettingsSyncRepository(private val context: Context) {
                 return Result.failure(Exception("No user logged in"))
             }
 
-            // Gather current settings from SettingsManager
+            // Gather current settings from local storage
             val settings = UserSettings(
                 language = SettingsManager.getLanguage(context),
                 notificationsEnabled = SettingsManager.isNotificationsEnabled(context),
@@ -60,13 +96,13 @@ class SettingsSyncRepository(private val context: Context) {
                 lastUpdated = System.currentTimeMillis()
             )
 
-            // Save to Firestore
+            // Upload settings to Firestore under user document
             firestore.collection(COLLECTION_USERS)
                 .document(userId)
                 .set(mapOf(FIELD_SETTINGS to settings), com.google.firebase.firestore.SetOptions.merge())
                 .await()
 
-            // Mark as synced
+            // Mark settings as successfully synced locally
             markAsSynced()
 
             Log.d(TAG, "✅ Settings synced to Firestore successfully")
@@ -79,7 +115,10 @@ class SettingsSyncRepository(private val context: Context) {
     }
 
     /**
-     * Load settings from Firestore and apply to local storage
+     * Load settings from Firestore for the current user and apply them to local storage.
+     * Falls back to local defaults if Firestore document does not exist or error occurs.
+     *
+     * @return Result<UserSettings> with loaded settings or error
      */
     suspend fun loadSettingsFromFirestore(): Result<UserSettings> {
         return try {
@@ -89,14 +128,17 @@ class SettingsSyncRepository(private val context: Context) {
                 return Result.failure(Exception("No user logged in"))
             }
 
+            // Fetch Firestore document for current user
             val document = firestore.collection(COLLECTION_USERS)
                 .document(userId)
                 .get()
                 .await()
 
+            // Attempt to parse settings map from Firestore
             val settingsMap = document.get(FIELD_SETTINGS) as? Map<*, *>
 
             if (settingsMap != null) {
+                // Convert map to UserSettings data class, using defaults if missing
                 val settings = UserSettings(
                     language = settingsMap["language"] as? String ?: "en",
                     notificationsEnabled = settingsMap["notificationsEnabled"] as? Boolean ?: true,
@@ -110,7 +152,7 @@ class SettingsSyncRepository(private val context: Context) {
                     lastUpdated = (settingsMap["lastUpdated"] as? Long) ?: System.currentTimeMillis()
                 )
 
-                // Apply settings to local storage
+                // Apply loaded settings locally
                 applySettingsLocally(settings)
 
                 Log.d(TAG, "✅ Settings loaded from Firestore and applied locally")
@@ -127,7 +169,8 @@ class SettingsSyncRepository(private val context: Context) {
     }
 
     /**
-     * Apply downloaded settings to local storage
+     * Apply settings to local device storage using SettingsManager.
+     * Biometric preference is applied but does not enable authentication automatically.
      */
     private fun applySettingsLocally(settings: UserSettings) {
         SettingsManager.setLanguage(context, settings.language)
@@ -138,14 +181,12 @@ class SettingsSyncRepository(private val context: Context) {
         SettingsManager.setBackgroundMusicEnabled(context, settings.backgroundMusicEnabled)
         SettingsManager.setCardBackground(context, settings.cardBackground)
         SettingsManager.setHighContrastMode(context, settings.highContrastMode)
-        // Note: We apply the biometric preference but don't enable biometric auth automatically
-        // The user will need to set up biometric on the new device
-
+        // Note: Biometric preference applied only
         Log.d(TAG, "Settings applied locally")
     }
 
     /**
-     * Mark that settings need to be synced (when offline)
+     * Mark that settings need to be synced to Firestore (e.g., when offline).
      */
     fun markAsNeedingSync() {
         val prefs = context.getSharedPreferences(PREFS_SYNC, Context.MODE_PRIVATE)
@@ -154,7 +195,8 @@ class SettingsSyncRepository(private val context: Context) {
     }
 
     /**
-     * Mark settings as synced
+     * Mark settings as synced successfully.
+     * Updates both sync flag and last sync timestamp in SharedPreferences.
      */
     private fun markAsSynced() {
         val prefs = context.getSharedPreferences(PREFS_SYNC, Context.MODE_PRIVATE)
@@ -166,7 +208,9 @@ class SettingsSyncRepository(private val context: Context) {
     }
 
     /**
-     * Check if settings need to be synced
+     * Check if settings need to be synced to Firestore.
+     *
+     * @return true if sync is required, false otherwise
      */
     fun needsSync(): Boolean {
         val prefs = context.getSharedPreferences(PREFS_SYNC, Context.MODE_PRIVATE)
@@ -174,7 +218,9 @@ class SettingsSyncRepository(private val context: Context) {
     }
 
     /**
-     * Get last sync time
+     * Get the timestamp of the last successful sync.
+     *
+     * @return Long representing last sync time in milliseconds
      */
     fun getLastSyncTime(): Long {
         val prefs = context.getSharedPreferences(PREFS_SYNC, Context.MODE_PRIVATE)
@@ -182,15 +228,18 @@ class SettingsSyncRepository(private val context: Context) {
     }
 
     /**
-     * Save a single setting and mark for sync
-     * Call this whenever a setting changes
+     * Handle a single setting change.
+     * If online, immediately sync to Firestore.
+     * If offline, mark for later sync.
+     *
+     * @param online Whether the device currently has internet connectivity
      */
     suspend fun onSettingChanged(online: Boolean = true) {
         if (online) {
-            // If online, sync immediately
+            // Sync immediately if online
             syncSettingsToFirestore()
         } else {
-            // If offline, mark for later sync
+            // Otherwise mark for later sync
             markAsNeedingSync()
             Log.d(TAG, "📴 Offline - Settings will sync when online")
         }

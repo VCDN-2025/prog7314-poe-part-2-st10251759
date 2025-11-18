@@ -21,6 +21,63 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * ArcadeModeScreen
+ *
+ * This Composable represents the main arcade mode menu screen.
+ * Users can navigate back, start a random arcade game, or view progressive levels.
+ *
+ * Parameters:
+ * - onBackClick: () -> Unit -> Callback for the back button.
+ * - onPlayArcade: () -> Unit -> Callback when the "Play Arcade" button is pressed.
+ * - onLevelsClick: () -> Unit -> Callback when the "Levels" button is pressed.
+ *
+ * Key Concepts:
+ * 1. Layout:
+ *    - Uses a Box as the main container with a vertical gradient background.
+ *    - Content is organized in a Column with top and bottom spacing using Spacer.
+ *    - Aligns all children horizontally centered.
+ *
+ * 2. Back Button:
+ *    - Positioned at the top-left using a Row.
+ *    - Styled with white semi-transparent background and rounded corners.
+ *    - Calls onBackClick when pressed.
+ *
+ * 3. Logo & Title:
+ *    - Displays a larger transparent logo image.
+ *    - Title text uses large font size, bold weight, white color, centered, and drop shadow for readability.
+ *
+ * 4. Action Buttons:
+ *    - Two buttons: "Play Arcade" and "Levels", implemented with ArcadeButton3D() for 3D visual effect.
+ *    - ArcadeButton3D creates a shadow layer behind the button to simulate depth.
+ *    - Buttons use customizable background and shadow colors.
+ *    - Each button displays a main title (text) and a smaller subtitle describing the action.
+ *    - onClick triggers respective callbacks.
+ *
+ * 5. Responsiveness:
+ *    - Spacers with weight adjust spacing dynamically.
+ *    - Buttons and images fill available width with proper padding.
+ *
+ * ArcadeButton3D:
+ * - Creates a 3D button effect with shadow layer behind the main button.
+ * - Main button has no elevation; shadow is simulated by an offset colored box.
+ * - Texts are centered and styled for visibility.
+ *
+ * Design Notes:
+ * - Colors chosen for arcade theme: cyan gradient background, yellow/orange for "Play Arcade", purple for "Levels".
+ * - Rounded corners and drop shadows enhance modern, playful UI feel.
+ * - Modular design allows reuse of ArcadeButton3D for other screens if needed.
+ */
+
+
 @Composable
 fun ArcadeModeScreen(
     onBackClick: () -> Unit,

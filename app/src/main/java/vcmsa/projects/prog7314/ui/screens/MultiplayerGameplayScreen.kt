@@ -40,6 +40,67 @@ import vcmsa.projects.prog7314.data.models.PlayerColor
 import vcmsa.projects.prog7314.ui.viewmodels.MultiplayerViewModel
 import vcmsa.projects.prog7314.ui.viewmodels.CardBackgroundViewModel
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * MultiplayerGameplayScreen
+ *
+ * This composable represents the multiplayer gameplay screen of the Memory Match Madness app.
+ * It manages the UI for two players playing a card-matching game in real time.
+ *
+ * Key Features:
+ *
+ * 1. Game Initialization:
+ *    - Initializes the game board and player data based on the selected GameTheme.
+ *    - Uses MultiplayerViewModel to handle game logic, state, and player interactions.
+ *
+ * 2. Game Header:
+ *    - Displays both players with PlayerBadge indicating score and current turn.
+ *    - Shows elapsed time and a pause/resume button.
+ *    - Pause button toggles game state and displays MultiplayerPauseDialog.
+ *
+ * 3. Game Grid:
+ *    - Displays all game cards in a 4-column LazyVerticalGrid.
+ *    - Each card is clickable to reveal its content, unless the game is paused or card is already matched.
+ *    - Supports animated 3D card flip using rotationY and graphicsLayer.
+ *
+ * 4. Card Rendering:
+ *    - Card back uses a drawable from CardBackgroundViewModel or default fallback.
+ *    - Matched cards show a semi-transparent green overlay.
+ *
+ * 5. Pause Dialog:
+ *    - Dialog appears when the game is paused.
+ *    - Provides buttons to resume or return to home.
+ *
+ * 6. Winner Dialog:
+ *    - Displays when the game completes.
+ *    - Shows winner, scores, total moves, time taken, and theme used.
+ *    - Buttons for rematch or returning home.
+ *
+ * 7. Animations:
+ *    - Uses animateFloatAsState to smoothly rotate cards on flip.
+ *    - PlayerBadge includes shadow and pulsing effect for the current turn.
+ *
+ * 8. UI Styling:
+ *    - Gradient background applied to the entire screen.
+ *    - Cards and badges use rounded corners, shadows, and color highlights.
+ *    - Responsive layout using Column, Row, Box, padding, and spacing.
+ *
+ * 9. Data Handling:
+ *    - Uses state flows from ViewModels to reactively update UI.
+ *    - Handles pause, resume, card clicks, and game completion events.
+ *
+ * Purpose:
+ * Provides an interactive and visually engaging multiplayer card matching experience.
+ * Combines real-time game state updates, animated card interactions, and clear player feedback.
+ */
+
 
 @Composable
 fun MultiplayerGameplayScreen(

@@ -23,6 +23,59 @@ import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.DifficultyLevel
 import vcmsa.projects.prog7314.data.models.GridSize
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * GridSizeSelectionScreen
+ *
+ * Composable screen that allows the user to select the grid size and difficulty level
+ * for the memory card matching game.
+ *
+ * Key Components & Features:
+ *
+ * 1. Screen Layout:
+ *    - Uses a Box with a vertical gradient background (cyan to blue).
+ *    - Column contains the back button, logo/title, subtitle, and grid size options.
+ *
+ * 2. Back Button:
+ *    - Top-left positioned IconButton to navigate back.
+ *    - Styled with semi-transparent white background and rounded corners.
+ *
+ * 3. Logo and Titles:
+ *    - Displays game logo at the top.
+ *    - Subtitle prompts the user to choose a grid size and difficulty level.
+ *    - Text styling uses font size, weight, color, and letter spacing for visual hierarchy.
+ *
+ * 4. Grid Size Options:
+ *    - Arranged in a 2x2 layout (beginner/intermediate and hard/expert rows).
+ *    - Each option represented with GridSizeCardStyled:
+ *        • Displays difficulty label, card icon, and grid size with total cards.
+ *        • Color-coded based on difficulty (green, yellow, orange, red).
+ *        • Clickable to trigger onGridSizeSelected callback.
+ *
+ * 5. GridSizeCardStyled:
+ *    - Card with rounded corners, elevation, and gradient/solid background.
+ *    - Top: difficulty label with small colored indicator.
+ *    - Center: card back icon styled with gradient blue background.
+ *    - Bottom: grid size and total cards information.
+ *    - All elements aligned and spaced for consistent visual design.
+ *
+ * 6. Accessibility & UX:
+ *    - Text and colors ensure readability against background.
+ *    - Card click areas large enough for easy selection.
+ *    - Consistent design with theme and other screens (back button, titles, logos).
+ *
+ * Overall Purpose:
+ * Provides an intuitive, visually appealing interface for selecting game difficulty
+ * and grid size before starting a memory match game session.
+ */
+
 
 @Composable
 fun GridSizeSelectionScreen(

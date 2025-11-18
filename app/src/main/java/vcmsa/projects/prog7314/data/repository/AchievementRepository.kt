@@ -12,6 +12,14 @@ import vcmsa.projects.prog7314.utils.LocalNotificationManager
 import vcmsa.projects.prog7314.utils.NotificationTracker
 import java.util.UUID
 
+/*
+    Code Attribution for: Repositories
+    ===================================================
+    Android Developers, 2025. Data layer (Version unknown) [Source code].
+    Available at: <https://developer.android.com/topic/architecture/data-layer>
+    [Accessed 18 November 2025].
+*/
+
 class AchievementRepository(
     private val achievementDao: AchievementDao,
     private val gameResultDao: GameResultDao,
@@ -580,7 +588,7 @@ class AchievementRepository(
     }
 
     /**
-     * 🔥 COMPREHENSIVE: Check ALL achievements at once after a game
+     * Check ALL achievements at once after a game
      * Call this from ViewModels after each game completion
      */
     suspend fun checkAllAchievements(

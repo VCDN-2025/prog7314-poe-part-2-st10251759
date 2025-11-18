@@ -4,6 +4,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 
+/*
+    Code Attribution for: Push Notifications
+    ===================================================
+    Firebase, 2019. Firebase Cloud Messaging | Firebase (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/cloud-messaging>
+    [Accessed 18 November 2025]
+*/
+
+
 /**
  * Notification Tracker - Prevents duplicate notifications
  *

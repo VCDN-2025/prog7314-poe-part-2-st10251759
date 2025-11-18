@@ -10,6 +10,15 @@ import vcmsa.projects.prog7314.game.GameConfig
 import vcmsa.projects.prog7314.game.GameEngine
 import vcmsa.projects.prog7314.game.MultiplayerGameEngine
 
+/*
+    Code Attribution for: Unit testing
+    ===================================================
+    Android Developers, 2025. Build local unit tests (Version unknown) [Source code].
+    Available at: <https://developer.android.com/training/testing/local-tests>
+    [Accessed 18 November 2025].
+*/
+
+
 /**
  * Comprehensive Unit Tests for Game Engines
  * Tests both GameEngine and MultiplayerGameEngine functionality

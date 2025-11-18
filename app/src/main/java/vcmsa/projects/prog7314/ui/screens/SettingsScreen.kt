@@ -47,6 +47,82 @@ import vcmsa.projects.prog7314.utils.NotificationTracker
 import vcmsa.projects.prog7314.utils.ProfileImageHelper
 import vcmsa.projects.prog7314.utils.SettingsManager
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * SettingsScreen
+ *
+ * A comprehensive user settings screen for the Memory Match Madness app.
+ * Provides functionality for managing user profile, appearance, language, notifications,
+ * biometric login, and app-related actions.
+ *
+ * Features:
+ * 1. Profile Section:
+ *    - Displays user profile image, initials fallback, name, and email.
+ *    - Allows uploading a new profile image via system image picker.
+ *    - Shows a progress indicator while the image is uploading.
+ *
+ * 2. Account Management:
+ *    - Edit Profile: Navigate to edit user details.
+ *    - Change Password: Navigate to change password screen.
+ *    - Logout: Displays confirmation dialog and clears Firebase session, credentials, and notification tracking.
+ *
+ * 3. Appearance Settings:
+ *    - Card Background: Select a theme for the card backgrounds in-game.
+ *    - Shows a dialog with available card background options using NewCardBackgroundDialog.
+ *
+ * 4. Language Settings:
+ *    - Multi-language support.
+ *    - Displays LanguageSelectionDialog for choosing preferred language.
+ *    - Applies language changes immediately by restarting the activity.
+ *
+ * 5. Notifications:
+ *    - Push notification toggle using SettingsManager.
+ *    - Reflects current state and updates settings immediately.
+ *
+ * 6. Biometric Authentication:
+ *    - Toggle for enabling/disabling biometric login (if device supports it).
+ *    - Uses BiometricHelper to prompt authentication and save credentials.
+ *
+ * 7. About & Reset:
+ *    - About dialog displays app version and description.
+ *    - Reset button allows restoring all settings to defaults.
+ *
+ * 8. UI Structure:
+ *    - Gradient background.
+ *    - Scrollable column for smaller screens.
+ *    - Section headers separate account, appearance, language, notifications, and about.
+ *    - Cards and toggle cards styled consistently with rounded corners and alpha backgrounds.
+ *
+ * 9. Dialogs & Modals:
+ *    - CardBackground selection, Language selection, Logout confirmation, Reset confirmation, About info.
+ *
+ * 10. State Management:
+ *    - Uses `remember` and `collectAsState` for UI reactive updates.
+ *    - Handles async image loading and saving with coroutineScope.
+ *    - Maintains local state for dialog visibility and toggle switches.
+ *
+ * 11. Helper Integration:
+ *    - AuthManager: current user info, credentials, logout.
+ *    - ProfileImageHelper: load/save profile images locally and from Firestore.
+ *    - SettingsManager: notification preferences, reset to defaults.
+ *    - BiometricHelper: enable/disable biometric login.
+ *    - LanguageManager: manage current language, restart activity on change.
+ *    - NotificationTracker: clears tracking data on logout.
+ *    - CardBackgroundRepository/ViewModel: fetch and update selected card background.
+ *
+ * Purpose:
+ * Provides a full-featured, responsive, and visually consistent settings screen
+ * for the app, handling all user-related preferences, profile updates, and app customization.
+ */
+
+
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit = {},

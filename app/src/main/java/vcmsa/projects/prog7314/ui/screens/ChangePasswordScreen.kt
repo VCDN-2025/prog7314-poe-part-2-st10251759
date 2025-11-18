@@ -28,6 +28,68 @@ import kotlinx.coroutines.launch
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.AuthResult
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * ChangePasswordScreen
+ *
+ * This Composable provides a user interface for changing the current user's password.
+ * Users must enter their current password, a new password, and confirm the new password.
+ * The screen handles validation, shows errors or success messages, and interacts with AuthManager
+ * to reauthenticate the user and update their password in Firebase.
+ *
+ * Parameters:
+ * - onBackClick: () -> Unit -> Callback when the user presses the back or cancel button.
+ * - onChangeSuccess: () -> Unit -> Callback when the password change is successful (after delay).
+ *
+ * Key Concepts:
+ * 1. State Management:
+ *    - Uses `remember` to store the current, new, and confirm password fields.
+ *    - Tracks visibility toggles for each password input.
+ *    - Tracks loading state, error messages, and success messages.
+ *    - Tracks validation errors for each field.
+ *
+ * 2. Validation:
+ *    - Validates that current password is entered.
+ *    - Validates that new password is at least 6 characters and differs from current password.
+ *    - Validates that confirmation matches new password.
+ *
+ * 3. Password Change Workflow:
+ *    - Clears keyboard focus before processing.
+ *    - Runs validation functions and stops if any fail.
+ *    - Uses coroutineScope to reauthenticate user via AuthManager.
+ *    - On successful reauthentication, attempts to change password.
+ *    - Shows success or error messages based on the result.
+ *    - Calls onChangeSuccess() after a short delay if password changed successfully.
+ *
+ * 4. UI Layout:
+ *    - Uses a Box with vertical gradient background.
+ *    - Column organizes the header, scrollable form, and action buttons.
+ *    - Header contains back button and screen title.
+ *    - Form is inside a Card with white semi-transparent background and rounded corners.
+ *    - Form fields are OutlinedTextFields with show/hide password toggles.
+ *    - Shows field-specific error messages and global success/error messages.
+ *    - "Change Password" button shows a loading indicator when processing.
+ *    - "Cancel" button calls onBackClick and uses outlined styling.
+ *
+ * 5. UX Features:
+ *    - Password visibility toggle for all fields using trailing icons.
+ *    - Keyboard actions integrated (Next / Done) for smooth form navigation.
+ *    - Buttons are disabled during loading to prevent multiple submissions.
+ *    - Clear feedback for users via error messages, success messages, and loading indicators.
+ *
+ * 6. Design Choices:
+ *    - Gradient background and rounded card for modern look.
+ *    - Color coding for success (green) and errors (red).
+ *    - Modular structure allows reuse of validation logic and field components if needed.
+ */
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

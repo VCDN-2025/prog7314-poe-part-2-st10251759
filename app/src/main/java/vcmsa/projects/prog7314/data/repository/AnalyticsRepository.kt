@@ -7,6 +7,14 @@ import vcmsa.projects.prog7314.data.dao.UserProfileDao
 import vcmsa.projects.prog7314.data.models.RecentGameSummary
 import vcmsa.projects.prog7314.data.models.UserAnalytics
 
+/*
+    Code Attribution for: Repositories
+    ===================================================
+    Android Developers, 2025. Data layer (Version unknown) [Source code].
+    Available at: <https://developer.android.com/topic/architecture/data-layer>
+    [Accessed 18 November 2025].
+*/
+
 class AnalyticsRepository(
     private val gameResultDao: GameResultDao,
     private val achievementDao: AchievementDao,
@@ -223,26 +231,35 @@ class AnalyticsRepository(
 
     /**
      * Get performance trend (improving, stable, declining)
+     * Calculate the performance trend of a user based on their last 10 games.
      */
     suspend fun getPerformanceTrend(userId: String): PerformanceTrend {
         return try {
+            // Get all games for this user
             val games = gameResultDao.getAllGamesForUser(userId)
+
+            // Require at least 10 games (5 recent + 5 older) to determine trend
             if (games.size < 5) return PerformanceTrend.INSUFFICIENT_DATA
 
+            // Split games into recent (last 5) and older (previous 5)
             val recentGames = games.takeLast(5)
             val olderGames = games.dropLast(5).takeLast(5)
 
+            // If no older games exist (less than 5 before recent), cannot compute trend
             if (olderGames.isEmpty()) return PerformanceTrend.INSUFFICIENT_DATA
 
+            // Calculate average scores for recent and older games
             val recentAvg = recentGames.map { it.score }.average()
             val olderAvg = olderGames.map { it.score }.average()
 
+            // Compare averages to determine trend
             when {
-                recentAvg > olderAvg * 1.1 -> PerformanceTrend.IMPROVING
-                recentAvg < olderAvg * 0.9 -> PerformanceTrend.DECLINING
-                else -> PerformanceTrend.STABLE
+                recentAvg > olderAvg * 1.1 -> PerformanceTrend.IMPROVING  // 10% improvement threshold
+                recentAvg < olderAvg * 0.9 -> PerformanceTrend.DECLINING // 10% decline threshold
+                else -> PerformanceTrend.STABLE                          // Within ±10%
             }
         } catch (e: Exception) {
+            // Return insufficient data if any error occurs
             PerformanceTrend.INSUFFICIENT_DATA
         }
     }

@@ -34,6 +34,66 @@ import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.AuthResult
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * RegisterScreen
+ *
+ * This composable implements a full-featured user registration screen with both
+ * email/password and Google Sign-In options.
+ *
+ * Key Features:
+ * 1. State Management:
+ *    - `email`, `password`, `confirmPassword`: Input fields for registration.
+ *    - `isLoading`: Indicates ongoing authentication or data operations.
+ *    - `errorMessage`: Displays validation or authentication errors.
+ *
+ * 2. Validation:
+ *    - Ensures all fields are filled.
+ *    - Checks that passwords match and meet minimum length requirements.
+ *    - Validates email format.
+ *
+ * 3. Email/Password Registration:
+ *    - Calls `AuthManager.registerWithEmail()` to create a new account.
+ *    - On success, creates a new user profile in the repository.
+ *    - Updates UI state and triggers `onRegisterSuccess()` callback.
+ *
+ * 4. Google Sign-In Integration:
+ *    - Uses `rememberLauncherForActivityResult` to handle Google sign-in intent.
+ *    - Calls `AuthManager.signInWithGoogle()` and creates a profile if new.
+ *    - Handles ApiExceptions and updates `errorMessage` on failure.
+ *
+ * 5. Layout & UI:
+ *    - Gradient background for visual appeal.
+ *    - Logo and title sections with layered text effects.
+ *    - Card containing registration form:
+ *        - Email, password, and confirm password fields.
+ *        - Register button with loading indicator.
+ *        - Google Sign-In button with click handling.
+ *        - Navigation button to login screen.
+ *    - Vertical scroll enabled to handle smaller screens and keyboard interaction.
+ *
+ * 6. Interaction & Side Effects:
+ *    - Input fields reset error message on value change.
+ *    - Button clicks trigger validation, authentication, and profile creation asynchronously.
+ *    - Shows progress indicators during network/auth operations.
+ *    - Uses coroutine scope for suspending operations and repository calls.
+ *
+ * 7. Preview:
+ *    - `RegisterScreenPreview` allows quick UI preview in Android Studio.
+ *
+ * Purpose:
+ * Provides a visually appealing, responsive, and user-friendly registration screen,
+ * handling both traditional email/password and Google-based authentication, including
+ * error handling, loading states, and user profile creation.
+ */
+
 
 @Composable
 fun RegisterScreen(

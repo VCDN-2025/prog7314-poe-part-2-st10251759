@@ -10,6 +10,13 @@ import vcmsa.projects.prog7314.data.repository.ApiRepository
 import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.NetworkManager
 import java.util.concurrent.TimeUnit
+/*
+    Code Attribution for: Connecting to Firebase Database
+    ===================================================
+    Firebase, 2025. Installation & Setup on Android | Firebase Realtime Database (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/database/android/start>
+    [Accessed 18 November 2025].
+*/
 
 class SyncManager(private val context: Context) {
 
@@ -236,7 +243,7 @@ class SyncManager(private val context: Context) {
             try {
                 Log.d(TAG, "🔄 Starting manual sync...")
 
-                // FIXED: Remove context parameter
+                // Remove context parameter
                 val userRepo = RepositoryProvider.getUserProfileRepository()
                 val gameRepo = RepositoryProvider.getGameResultRepository()
                 val achievementRepo = RepositoryProvider.getAchievementRepository()

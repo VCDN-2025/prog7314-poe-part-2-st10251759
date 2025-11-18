@@ -19,6 +19,63 @@ import androidx.compose.ui.window.Dialog
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameResult
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * GameCompletionPopup
+ *
+ * This Composable displays a modal dialog when a game is completed, showing
+ * the player's performance, score, and action buttons for replaying, moving
+ * to the next level, or returning home.
+ *
+ * Parameters:
+ * - gameResult: GameResult -> Data class containing moves, time taken, points, and stars earned.
+ * - onReplay: () -> Unit -> Callback triggered when the player taps the replay button.
+ * - onNext: () -> Unit -> Callback triggered when the player taps the next level button (optional).
+ * - onHome: () -> Unit -> Callback triggered when the player taps the home button.
+ * - onDismiss: () -> Unit -> Optional callback when the dialog is dismissed.
+ *
+ * Key Features:
+ * 1. Time Display:
+ *    - Converts game time from milliseconds to seconds for readability.
+ *
+ * 2. Dialog & Card:
+ *    - Uses a Dialog Composable to overlay the popup.
+ *    - Card provides rounded corners, elevation, and themed background color.
+ *
+ * 3. Visual Feedback:
+ *    - "NEW RECORD" badge highlights if the player achieved a new high score.
+ *    - Star rating shows performance (★ filled, ☆ empty) based on gameResult.stars.
+ *    - "WELL DONE!" title for positive reinforcement.
+ *
+ * 4. Stats Section:
+ *    - Displays moves, time in seconds, and bonus points inside a blue card.
+ *    - StatRow helper Composable creates a clean row layout for each stat.
+ *
+ * 5. Total Score:
+ *    - Shown in a yellow card with contrasting pink text for emphasis.
+ *
+ * 6. Action Buttons:
+ *    - CircularActionButton helper Composable creates rounded, elevated buttons.
+ *    - Includes Replay (orange) and Home (cyan) buttons, centered below stats.
+ *
+ * 7. UX & Design:
+ *    - Uses consistent padding, spacing, and rounded corners for a polished look.
+ *    - Colors are bright and motivating (pink, yellow, blue, orange, cyan).
+ *    - Immediate visual feedback to celebrate player achievements.
+ *
+ * 8. Extensibility:
+ *    - The popup can be easily extended to include a Next Level button by using
+ *      the onNext callback and adding another CircularActionButton.
+ */
+
+
 @Composable
 fun GameCompletionPopup(
     gameResult: GameResult,

@@ -31,6 +31,57 @@ import vcmsa.projects.prog7314.utils.AuthManager
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
 import vcmsa.projects.prog7314.utils.NotificationTracker
 
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * ThemeSelectionScreen
+ *
+ * A screen allowing users to select a card theme for the Memory Match Madness app.
+ * Provides a visually rich interface with preview images and notifications on first-time theme selection.
+ *
+ * Features:
+ * 1. Layout & Styling:
+ *    - Gradient background matching other screens.
+ *    - Back button for navigation consistency.
+ *    - Logo and title/subtitle at the top.
+ *
+ * 2. Theme List:
+ *    - LazyColumn displays all available GameTheme values.
+ *    - Each item is a ThemeCard showing the preview image and theme name.
+ *    - Subtle dark overlay ensures text readability over images.
+ *
+ * 3. ThemeCard:
+ *    - Card with rounded corners and elevation.
+ *    - Full-size background image of the theme.
+ *    - Text overlay with shadow for visibility.
+ *    - Clickable to select theme.
+ *
+ * 4. Notification Management:
+ *    - Checks NotificationTracker to prevent duplicate notifications.
+ *    - Sends a local notification on first-time theme unlock using LocalNotificationManager.
+ *    - Logs notification activity for debugging.
+ *
+ * 5. State & Context:
+ *    - Accesses current user via AuthManager.
+ *    - Context used for sending notifications and fetching resources.
+ *
+ * 6. Key Improvements in this version:
+ *    - Card background set to transparent for proper image display.
+ *    - Removed unnecessary alpha from theme images.
+ *    - Added dark gradient overlay to improve theme name readability.
+ *    - Enhanced shadow on text for better contrast.
+ *
+ * Purpose:
+ * To give users an interactive way to preview and select game card themes while rewarding first-time selections with notifications.
+ */
+
+
 @Composable
 fun ThemeSelectionScreen(
     onThemeSelected: (GameTheme) -> Unit,

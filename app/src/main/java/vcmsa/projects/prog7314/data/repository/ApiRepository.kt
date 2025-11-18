@@ -8,6 +8,28 @@ import vcmsa.projects.prog7314.data.entities.AchievementEntity
 import vcmsa.projects.prog7314.data.entities.GameResultEntity
 import vcmsa.projects.prog7314.data.entities.UserProfileEntity
 
+/*
+    Code Attribution for: Creating RESTful APIs
+    ===================================================
+    W3Schools, 2025. W3Schools.com (Version unknown) [Source code].
+    Available at: <https://www.w3schools.com/nodejs/nodejs_rest_api.asp>
+    [Accessed 17 November 2025].
+
+    Code Attribution for: Repositories
+    ===================================================
+    Android Developers, 2025. Data layer (Version unknown) [Source code].
+    Available at: <https://developer.android.com/topic/architecture/data-layer>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * Repository to handle all API interactions including:
+ * - Firebase token verification
+ * - User profile CRUD and sync
+ * - Game results sync and fetch
+ * - Leaderboards
+ * - Achievements sync and fetch
+ */
 class ApiRepository {
 
     private val TAG = "ApiRepository"
@@ -16,17 +38,17 @@ class ApiRepository {
 
     // ===== AUTH =====
 
+    /**
+     * Verify Firebase token with backend.
+     * Ensures the current user is authenticated and the token is valid.
+     */
     suspend fun verifyFirebaseToken(): Result<AuthVerifyResponse> {
         return try {
             val currentUser = auth.currentUser
-            if (currentUser == null) {
-                return Result.failure(Exception("No user logged in"))
-            }
+            if (currentUser == null) return Result.failure(Exception("No user logged in"))
 
             val idToken = currentUser.getIdToken(false).await().token
-            if (idToken == null) {
-                return Result.failure(Exception("Failed to get ID token"))
-            }
+            if (idToken == null) return Result.failure(Exception("Failed to get ID token"))
 
             Log.d(TAG, "Verifying token for user: ${currentUser.uid}")
 
@@ -53,6 +75,10 @@ class ApiRepository {
 
     // ===== USER PROFILE =====
 
+    /**
+     * Syncs a local UserProfileEntity to the backend.
+     * Creates or updates the user profile in the API.
+     */
     suspend fun syncUserProfile(userProfile: UserProfileEntity): Result<Boolean> {
         return try {
             Log.d(TAG, "Syncing user profile: ${userProfile.userId}")
@@ -87,6 +113,9 @@ class ApiRepository {
         }
     }
 
+    /**
+     * Fetch user profile data from API.
+     */
     suspend fun fetchUserProfile(userId: String): Result<UserProfileData> {
         return try {
             Log.d(TAG, "Fetching user profile: $userId")
@@ -114,6 +143,9 @@ class ApiRepository {
 
     // ===== GAME RESULTS =====
 
+    /**
+     * Syncs a single game result to the backend API.
+     */
     suspend fun syncGameResult(gameResult: GameResultEntity): Result<Boolean> {
         return try {
             Log.d(TAG, "Syncing game result: ${gameResult.gameId}")
@@ -154,6 +186,10 @@ class ApiRepository {
         }
     }
 
+    /**
+     * Fetch recent game results for a user from the API.
+     * @param limit Maximum number of games to fetch
+     */
     suspend fun fetchUserGames(userId: String, limit: Int = 10): Result<List<GameResultData>> {
         return try {
             Log.d(TAG, "Fetching user games: $userId")
@@ -179,6 +215,9 @@ class ApiRepository {
         }
     }
 
+    /**
+     * Fetch leaderboard for a specific mode from the API.
+     */
     suspend fun fetchLeaderboard(mode: String = "ARCADE", limit: Int = 10): Result<List<LeaderboardEntry>> {
         return try {
             Log.d(TAG, "Fetching leaderboard for mode: $mode")
@@ -206,6 +245,9 @@ class ApiRepository {
 
     // ===== ACHIEVEMENTS =====
 
+    /**
+     * Syncs an achievement to the backend API (unlock achievement)
+     */
     suspend fun syncAchievement(achievement: AchievementEntity): Result<Boolean> {
         return try {
             Log.d(TAG, "Syncing achievement: ${achievement.achievementId}")
@@ -238,6 +280,9 @@ class ApiRepository {
         }
     }
 
+    /**
+     * Fetch all achievements for a user from API.
+     */
     suspend fun fetchUserAchievements(userId: String): Result<List<AchievementData>> {
         return try {
             Log.d(TAG, "Fetching user achievements: $userId")
@@ -263,8 +308,9 @@ class ApiRepository {
         }
     }
 
-    // ADD THIS METHOD TO ApiRepository CLASS
-
+    /**
+     * Submit multiplayer game result to API.
+     */
     suspend fun submitMultiplayerResult(
         userId: String,
         theme: String,

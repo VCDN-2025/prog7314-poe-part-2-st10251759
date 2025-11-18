@@ -27,6 +27,47 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vcmsa.projects.prog7314.R
 import vcmsa.projects.prog7314.data.models.GameTheme
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * MultiplayerSetupScreen
+ *
+ * This composable provides the UI for setting up a multiplayer match.
+ *
+ * Key Features:
+ * 1. Header:
+ *    - Back button to navigate to the previous screen.
+ *    - Displays the app logo.
+ *
+ * 2. Player Info Cards:
+ *    - Shows two players with colored badges and names.
+ *    - Positioned with a “VS” indicator in between.
+ *
+ * 3. Theme Selection:
+ *    - LazyVerticalGrid displays all available GameTheme options.
+ *    - Selected theme is highlighted with a color overlay and checkmark.
+ *    - Uses localized theme names for accessibility.
+ *
+ * 4. Start Match Button:
+ *    - Enabled only when a theme is selected.
+ *    - Triggers `onThemeSelected` with the chosen theme.
+ *
+ * 5. UI Styling:
+ *    - Vertical gradient background.
+ *    - Cards and buttons use rounded corners and shadows.
+ *    - Responsive layout with padding, spacing, and aspect ratios.
+ *
+ * Purpose:
+ * Provides a visually appealing and intuitive interface for players
+ * to choose a theme and start a multiplayer memory match game.
+ */
+
 
 @Composable
 fun MultiplayerSetupScreen(

@@ -4,77 +4,106 @@ import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import vcmsa.projects.prog7314.data.entities.AchievementEntity
 
+/*
+    Code Attribution for: Creating Data Access Objects
+    ===================================================
+    Android Developers, 2019. Accessing data using Room DAOs | Android Developers (Version unknown) [Source code].
+    Available at: <https://developer.android.com/training/data-storage/room/accessing-data>
+    [Accessed 17 November 2025].
+*/
+
 @Dao
 interface AchievementDao {
 
-    // INSERT
+    // ===== INSERT OPERATIONS =====
+
+    // Insert a single achievement into the database. Replaces existing if conflict.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAchievement(achievement: AchievementEntity)
 
+    // Insert multiple achievements at once. Replaces existing on conflict.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAchievements(achievements: List<AchievementEntity>)
 
-    // UPDATE
+    // ===== UPDATE OPERATIONS =====
+
+    // Update an existing achievement's information
     @Update
     suspend fun updateAchievement(achievement: AchievementEntity)
 
-    // DELETE
+    // ===== DELETE OPERATIONS =====
+
+    // Remove a single achievement from the database
     @Delete
     suspend fun deleteAchievement(achievement: AchievementEntity)
 
-    // GET ACHIEVEMENT BY ID
+    // Delete all achievements for a specific user
+    @Query("DELETE FROM achievements WHERE userId = :userId")
+    suspend fun deleteAllAchievementsForUser(userId: String)
+
+    // Delete all achievements in the database (useful for testing or reset)
+    @Query("DELETE FROM achievements")
+    suspend fun deleteAll()
+
+    // ===== RETRIEVE / QUERY OPERATIONS =====
+
+    // Get a specific achievement by its unique ID
     @Query("SELECT * FROM achievements WHERE achievementId = :achievementId")
     suspend fun getAchievement(achievementId: String): AchievementEntity?
 
-    // GET ALL ACHIEVEMENTS FOR USER
+    // Get all achievements for a user, newest first
     @Query("SELECT * FROM achievements WHERE userId = :userId ORDER BY unlockedAt DESC")
     suspend fun getAllAchievementsForUser(userId: String): List<AchievementEntity>
 
-    // GET ALL ACHIEVEMENTS FOR USER (as Flow)
+    // Get all achievements for a user as a Flow (useful for observing changes in real-time)
     @Query("SELECT * FROM achievements WHERE userId = :userId ORDER BY unlockedAt DESC")
     fun getAllAchievementsForUserFlow(userId: String): Flow<List<AchievementEntity>>
 
-    // GET UNLOCKED ACHIEVEMENTS
+    // Get only achievements that are unlocked for a specific user
     @Query("SELECT * FROM achievements WHERE userId = :userId AND isUnlocked = 1 ORDER BY unlockedAt DESC")
     suspend fun getUnlockedAchievements(userId: String): List<AchievementEntity>
 
-    // GET UNLOCKED ACHIEVEMENTS COUNT
+    // Count how many achievements are unlocked for a user
     @Query("SELECT COUNT(*) FROM achievements WHERE userId = :userId AND isUnlocked = 1")
     suspend fun getUnlockedCount(userId: String): Int
 
-    // CHECK IF ACHIEVEMENT EXISTS
+    // Check if a specific type of achievement exists for a user
     @Query("SELECT COUNT(*) FROM achievements WHERE userId = :userId AND achievementType = :type")
     suspend fun achievementExists(userId: String, type: String): Int
 
-    // GET ACHIEVEMENT BY TYPE
+    // Get a single achievement by type for a user
     @Query("SELECT * FROM achievements WHERE userId = :userId AND achievementType = :type")
     suspend fun getAchievementByType(userId: String, type: String): AchievementEntity?
 
-    // GET RECENT ACHIEVEMENTS (limit)
+    // Get the most recent unlocked achievements for a user, with a default limit of 5
     @Query("SELECT * FROM achievements WHERE userId = :userId AND isUnlocked = 1 ORDER BY unlockedAt DESC LIMIT :limit")
     suspend fun getRecentAchievements(userId: String, limit: Int = 5): List<AchievementEntity>
 
-    // GET UNSYNCED ACHIEVEMENTS
+    // Get all achievements that have not yet been synced to the server
     @Query("SELECT * FROM achievements WHERE isSynced = 0")
     suspend fun getUnsyncedAchievements(): List<AchievementEntity>
 
-    // GET UNSYNCED ACHIEVEMENTS FOR USER
+    // Get all unsynced achievements for a specific user
     @Query("SELECT * FROM achievements WHERE userId = :userId AND isSynced = 0")
     suspend fun getUnsyncedAchievementsForUser(userId: String): List<AchievementEntity>
 
-    // MARK AS SYNCED
+    // ===== SYNC OPERATIONS =====
+
+    // Mark a single achievement as synced
     @Query("UPDATE achievements SET isSynced = 1 WHERE achievementId = :achievementId")
     suspend fun markAsSynced(achievementId: String)
 
-    // MARK MULTIPLE AS SYNCED
+    // Mark multiple achievements as synced at once
     @Query("UPDATE achievements SET isSynced = 1 WHERE achievementId IN (:achievementIds)")
     suspend fun markMultipleAsSynced(achievementIds: List<String>)
 
-    // UPDATE PROGRESS
+    // ===== PROGRESS / UNLOCK OPERATIONS =====
+
+    // Update progress percentage for a specific achievement
     @Query("UPDATE achievements SET progress = :progress WHERE achievementId = :achievementId")
     suspend fun updateProgress(achievementId: String, progress: Int)
 
-    // UNLOCK ACHIEVEMENT
+    // Unlock an achievement, set progress to 100%, and record the unlocked timestamp
     @Query("""
         UPDATE achievements 
         SET isUnlocked = 1, 
@@ -83,12 +112,4 @@ interface AchievementDao {
         WHERE achievementId = :achievementId
     """)
     suspend fun unlockAchievement(achievementId: String, timestamp: Long = System.currentTimeMillis())
-
-    // DELETE ALL ACHIEVEMENTS FOR USER
-    @Query("DELETE FROM achievements WHERE userId = :userId")
-    suspend fun deleteAllAchievementsForUser(userId: String)
-
-    // DELETE ALL (for testing/reset)
-    @Query("DELETE FROM achievements")
-    suspend fun deleteAll()
 }

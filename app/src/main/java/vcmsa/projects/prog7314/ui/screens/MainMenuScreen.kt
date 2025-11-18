@@ -33,6 +33,68 @@ import vcmsa.projects.prog7314.data.repository.RepositoryProvider
 import vcmsa.projects.prog7314.utils.NetworkManager
 import vcmsa.projects.prog7314.data.sync.SyncManager
 import vcmsa.projects.prog7314.utils.LocalNotificationManager
+/*
+    Code Attribution for: Developing Kotlin Game Application
+    ===================================================
+    Dentistkiller, 2025. X and O - Android Tic Tac Toe Game | Kotlin (Version 2.2.21) [Source code].
+    Available at: <https://github.com/Dentistkiller/TicTacToe>
+    [Accessed 18 November 2025].
+*/
+
+/**
+ * MainMenuScreen
+ *
+ * This composable represents the main menu interface of the Memory Match Madness app.
+ * It provides users with quick access to game modes, profile, settings, and notifications.
+ *
+ * Key Features:
+ *
+ * 1. User Streak Display:
+ *    - Shows the current and best streak of the user.
+ *    - Includes a countdown timer indicating the remaining time before the streak expires.
+ *
+ * 2. Online / Offline and Sync Status:
+ *    - Displays network status using a WiFi icon (online/offline).
+ *    - Shows number of unsynced items pending synchronization.
+ *    - Supports a clickable dialog showing detailed sync information.
+ *
+ * 3. Notifications:
+ *    - Notification bell icon with badge for unread notifications.
+ *    - Badge automatically updates based on unread count from the repository.
+ *
+ * 4. Top Bar:
+ *    - Contains the streak card, network status, notifications, and settings icons.
+ *    - Provides visual feedback using colors and icons for online/offline and sync state.
+ *
+ * 5. Logo and Branding:
+ *    - App logo displayed prominently below the top bar.
+ *
+ * 6. Game Mode Buttons:
+ *    - Arcade Mode, Adventure Mode, Multiplayer, Statistics, and Settings.
+ *    - Custom 3D button style using layered Box with shadows.
+ *    - Each button triggers a callback for navigation or action.
+ *
+ * 7. Data Loading:
+ *    - Fetches user profile, streaks, and unread notification counts from Firebase and local repositories.
+ *    - Retrieves unsynced counts from SyncManager to indicate pending local data to be synchronized.
+ *
+ * 8. Countdown Timer:
+ *    - Updates every minute showing hours and minutes remaining in the current streak.
+ *
+ * 9. UI Styling:
+ *    - Uses gradient background and semi-transparent overlay for visual depth.
+ *    - Cards and buttons use rounded corners, shadows, and color accents for modern design.
+ *    - Responsive layout using Column, Row, Box, and padding for alignment.
+ *
+ * 10. Dialogs:
+ *    - Displays an AlertDialog showing network/sync status when the WiFi icon is clicked.
+ *    - Dialog adapts content based on online/offline and unsynced items.
+ *
+ * Purpose:
+ * Enhances user engagement by visually tracking streaks, showing notifications,
+ * providing network and sync feedback, and giving quick access to all game modes.
+ */
+
 
 @Composable
 fun MainMenuScreen(

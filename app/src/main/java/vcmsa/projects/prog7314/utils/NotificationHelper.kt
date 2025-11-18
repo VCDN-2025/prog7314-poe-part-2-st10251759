@@ -10,13 +10,28 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
+/*
+    Code Attribution for: Push Notifications
+    ===================================================
+    Firebase, 2019. Firebase Cloud Messaging | Firebase (Version unknown) [Source code].
+    Available at: <https://firebase.google.com/docs/cloud-messaging>
+    [Accessed 18 November 2025]
+*/
 
+
+/**
+ * Utility object for managing notification permissions and preferences.
+ * Handles Android 13+ notification permissions, Firebase Cloud Messaging tokens,
+ * topic subscriptions, and user notification settings.
+ */
 object NotificationHelper {
 
     private const val TAG = "NotificationHelper"
+
+    // Request code used when asking for notification permission
     private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
 
-    // Notification preference keys
+    // SharedPreferences configuration
     private const val PREFS_NAME = "notification_prefs"
     private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
     private const val KEY_DAILY_REMINDER_ENABLED = "daily_reminder_enabled"
@@ -24,7 +39,10 @@ object NotificationHelper {
     private const val KEY_MULTIPLAYER_NOTIFICATIONS = "multiplayer_notifications"
 
     /**
-     * Request notification permission (Android 13+)
+     * Requests permission to show notifications on Android 13 and above.
+     * On Android 13+, apps must explicitly ask users for notification permission.
+     * On older versions, notifications are automatically allowed.
+     * Shows a system dialog that the user can accept or deny.
      */
     fun requestNotificationPermission(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -33,6 +51,7 @@ object NotificationHelper {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
+                // Permission not granted - show permission request dialog
                 ActivityCompat.requestPermissions(
                     activity,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
@@ -43,12 +62,15 @@ object NotificationHelper {
                 Log.d(TAG, "Notification permission already granted")
             }
         } else {
+            // No permission needed on Android 12 and below
             Log.d(TAG, "Notification permission not required for this Android version")
         }
     }
 
     /**
-     * Check if notification permission is granted
+     * Checks if the app has permission to show notifications.
+     * Returns true if permission is granted, or if running on Android 12 or below.
+     * Returns false if permission was denied on Android 13+.
      */
     fun hasNotificationPermission(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -57,12 +79,15 @@ object NotificationHelper {
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         } else {
-            true // Permissions not required for older versions
+            true // No permission required on older Android versions
         }
     }
 
     /**
-     * Get FCM token asynchronously
+     * Retrieves the Firebase Cloud Messaging token for this device.
+     * The FCM token uniquely identifies this device for push notifications.
+     * This token is needed to send targeted notifications to specific users.
+     * Returns null if token retrieval fails.
      */
     suspend fun getFCMToken(): String? {
         return try {
@@ -76,7 +101,9 @@ object NotificationHelper {
     }
 
     /**
-     * Subscribe to a topic
+     * Subscribes this device to a Firebase Cloud Messaging topic.
+     * Topics allow sending notifications to groups of users at once.
+     * For example, subscribing to "all_users" would receive broadcasts sent to that topic.
      */
     suspend fun subscribeToTopic(topic: String) {
         try {
@@ -88,7 +115,9 @@ object NotificationHelper {
     }
 
     /**
-     * Unsubscribe from a topic
+     * Unsubscribes this device from a Firebase Cloud Messaging topic.
+     * After unsubscribing, the device will no longer receive notifications sent to that topic.
+     * Useful when users opt out of certain notification categories.
      */
     suspend fun unsubscribeFromTopic(topic: String) {
         try {
@@ -102,7 +131,9 @@ object NotificationHelper {
     // ===== NOTIFICATION PREFERENCES =====
 
     /**
-     * Check if notifications are enabled
+     * Checks if the user has enabled notifications in app settings.
+     * This is the master switch for all notifications.
+     * Even if system permission is granted, notifications won't show if this is false.
      */
     fun areNotificationsEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -110,7 +141,9 @@ object NotificationHelper {
     }
 
     /**
-     * Enable or disable all notifications
+     * Enables or disables all notifications in the app.
+     * This is the master control that affects all notification types.
+     * When disabled, no notifications will be shown regardless of other settings.
      */
     fun setNotificationsEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -119,7 +152,9 @@ object NotificationHelper {
     }
 
     /**
-     * Check if daily reminders are enabled
+     * Checks if daily reminder notifications are enabled.
+     * Daily reminders encourage users to maintain their play streak.
+     * Includes streak notifications and comeback reminders.
      */
     fun areDailyRemindersEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -127,7 +162,8 @@ object NotificationHelper {
     }
 
     /**
-     * Enable or disable daily reminders
+     * Enables or disables daily reminder notifications.
+     * Users can turn this off if they find daily reminders annoying.
      */
     fun setDailyRemindersEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -136,7 +172,9 @@ object NotificationHelper {
     }
 
     /**
-     * Check if achievement notifications are enabled
+     * Checks if achievement unlock notifications are enabled.
+     * Achievement notifications celebrate when users unlock new achievements.
+     * These are typically high-priority notifications that users want to see.
      */
     fun areAchievementNotificationsEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -144,7 +182,8 @@ object NotificationHelper {
     }
 
     /**
-     * Enable or disable achievement notifications
+     * Enables or disables achievement unlock notifications.
+     * Users can disable these if they prefer not to be notified about achievements.
      */
     fun setAchievementNotificationsEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -153,7 +192,8 @@ object NotificationHelper {
     }
 
     /**
-     * Check if multiplayer notifications are enabled
+     * Checks if multiplayer game notifications are enabled.
+     * Multiplayer notifications alert users about game invites, challenges, and results.
      */
     fun areMultiplayerNotificationsEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -161,7 +201,8 @@ object NotificationHelper {
     }
 
     /**
-     * Enable or disable multiplayer notifications
+     * Enables or disables multiplayer game notifications.
+     * Users who don't play multiplayer mode might want to disable these.
      */
     fun setMultiplayerNotificationsEnabled(context: Context, enabled: Boolean) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -170,12 +211,15 @@ object NotificationHelper {
     }
 
     /**
-     * Initialize notification settings on first launch
+     * Sets up default notification preferences on first app launch.
+     * All notification types are enabled by default to give users the full experience.
+     * Users can later disable specific types in the settings screen.
+     * Only runs once - subsequent launches won't override user preferences.
      */
     fun initializeNotificationSettings(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         if (!prefs.contains(KEY_NOTIFICATIONS_ENABLED)) {
-            // First time setup - enable all by default
+            // First time launching the app - set default preferences
             prefs.edit().apply {
                 putBoolean(KEY_NOTIFICATIONS_ENABLED, true)
                 putBoolean(KEY_DAILY_REMINDER_ENABLED, true)
